@@ -32,6 +32,8 @@ namespace WebSocketLibrary
             {
                 /// 接続待機
                 HttpListenerContext listenerContext = await httpListener.GetContextAsync();
+
+                // 接続数に制限がある場合は、ここでチェック可能
                 if (listenerContext.Request.IsWebSocketRequest)
                 {
                     /// httpのハンドシェイクがWebSocketならWebSocket接続開始
