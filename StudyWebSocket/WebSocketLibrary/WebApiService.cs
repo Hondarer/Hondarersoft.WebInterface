@@ -112,29 +112,68 @@ namespace WebSocketLibrary
                 res.AppendHeader("Access-Control-Allow-Origin", "*");
             }
 
+            // TODO: req, resの基本イベントを作る
+
             StreamReader reader = null;
             StreamWriter writer = null;
-            string reqBody = null;
-            string resBoby = null;
 
             try
             {
-                res.StatusCode = (int)HttpStatusCode.OK;
                 res.ContentType = CONTENT_TYPE_JSON;
                 res.ContentEncoding = Encoding.UTF8;
 
                 reader = new StreamReader(req.InputStream);
                 writer = new StreamWriter(res.OutputStream);
-                reqBody = reader.ReadToEnd();
+                string reqBody = reader.ReadToEnd();
 
                 string path = GetApiPath(req.RawUrl);
+
+                //Console.WriteLine(req.QueryString.Get("hhh"));
 
                 CommonApiArgs commonApiArgs =
                     new CommonApiArgs(Enum.Parse<CommonApiArgs.Methods>(req.HttpMethod), path, reqBody);
 
                 OnRequest(commonApiArgs);
 
-                resBoby = commonApiArgs.ResponseBody;
+                if (commonApiArgs.Error == CommonApiArgs.Errors.None)
+                {
+                    res.StatusCode = (int)HttpStatusCode.OK;
+                    writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(commonApiArgs.ResponseBody));
+                }
+                else
+                {
+                    int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
+                    if (ErrorsToCode.ContainsKey(commonApiArgs.Error) == true)
+                    {
+                        code = ErrorsToCode[commonApiArgs.Error];
+                    }
+
+                    switch (commonApiArgs.Error)
+                    {
+                        case CommonApiArgs.Errors.ParseError:
+                        // No Break
+                        case CommonApiArgs.Errors.InvalidRequest:
+                        // No Break
+                        case CommonApiArgs.Errors.InvalidParams:
+                            res.StatusCode = (int)HttpStatusCode.BadRequest;
+                            break;
+                        case CommonApiArgs.Errors.MethodNotFound:
+                            res.StatusCode = (int)HttpStatusCode.NotFound;
+                            break;
+                        case CommonApiArgs.Errors.InternalError:
+                            res.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            break;
+                        case CommonApiArgs.Errors.MethodNotAvailable:
+                            res.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                            break;
+                        default:
+                            // 下記は念のため(本来通過することはない)
+                            res.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            break;
+                    }
+
+                    writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(new Error() { Code = code, Message = commonApiArgs.ErrorMessage }));
+                }
             }
             //catch (ApiException ex)
             //{
@@ -157,7 +196,7 @@ namespace WebSocketLibrary
             {
                 try
                 {
-                    writer.Write(resBoby);
+                    //writer.Write(resBoby);
                     writer.Flush();
 
                     if (null != reader)

@@ -8,21 +8,33 @@ namespace WebSocketLibrary
 {
     public class WebInterfaceBase : IDisposable
     {
+        protected static readonly Dictionary<CommonApiArgs.Errors, int> ErrorsToCode = new Dictionary<CommonApiArgs.Errors, int>()
+        {
+            {CommonApiArgs.Errors.ParseError,-32700},
+            {CommonApiArgs.Errors.InvalidRequest,-32600},
+            {CommonApiArgs.Errors.MethodNotFound,-32601}, // same
+            {CommonApiArgs.Errors.MethodNotAvailable,-32601}, // same
+            {CommonApiArgs.Errors.InvalidParams,-32602},
+            {CommonApiArgs.Errors.InternalError,-32603},
+        };
+
         public virtual void OnRequest(CommonApiArgs commonApiArgs)
         {
+            // TODO: この部分は基本の通信処理と分けて考えるべき
 
             // ★★★ テスト ★★★
             if (commonApiArgs.Path.Equals("/cpumodes") && commonApiArgs.Method== CommonApiArgs.Methods.GET)
             {
-                // SerializeToUtf8Bytes を使ったほうが速いが、トレースしたいので当面 string 経由とする。
-                commonApiArgs.ResponseBody = JsonSerializer.Serialize(new CpuModes() { new CpuMode() { Hostname = "localhoost" }, new CpuMode() { Hostname = "hostname2" } });
+                commonApiArgs.ResponseBody = new CpuModes() { new CpuMode() { Hostname = "localhoost" }, new CpuMode() { Hostname = "hostname2" } };
             }
-            if (commonApiArgs.Path.Equals("/cpumodes/localhost") && commonApiArgs.Method == CommonApiArgs.Methods.GET)
+            else if (commonApiArgs.Path.Equals("/cpumodes/localhost") && commonApiArgs.Method == CommonApiArgs.Methods.GET)
             {
-                commonApiArgs.ResponseBody = JsonSerializer.Serialize(new CpuMode() { Hostname = "localhoost" });
+                commonApiArgs.ResponseBody = new CpuMode() { Hostname = "localhoost" };
             }
-
-            commonApiArgs.ResponseBody = JsonSerializer.Serialize(new Error() { Message = "No such method" });
+            else
+            {
+                commonApiArgs.SetError(CommonApiArgs.Errors.MethodNotFound);
+            }
         }
 
         #region IDisposable Support

@@ -17,7 +17,7 @@ namespace GenericHostConsoleApp
                 .ConfigureAppConfiguration((hostContext, configApp) =>
                 {
                     // Configの追加
-                    hostContext.HostingEnvironment.EnvironmentName = System.Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "production";
+                    hostContext.HostingEnvironment.EnvironmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "production";
                     configApp.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
                     configApp.AddCommandLine(args);
                     configApp.AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json");
@@ -31,15 +31,10 @@ namespace GenericHostConsoleApp
                     {
                         c.TimestampFormat = "[HH:mm:ss.fff] ";
                     });
-
 #if DEBUG
                     // Debug ロガーの追加
                     b.AddDebug();
 #endif
-
-                    // NLog や Log4Net、SeriLog などを追加
-
-                    // あるいはApplication Insight の追加
                 })
                 .ConfigureServices(services =>
                 {

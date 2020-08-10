@@ -9,6 +9,8 @@ namespace WebSocketLibrary
     // 統一したインターフェースでAPIを実装するための引数。
     public class CommonApiArgs : EventArgs
     {
+        // TODO: IDを保持する必要がある
+
         public enum Methods
         {
             GET,
@@ -19,7 +21,7 @@ namespace WebSocketLibrary
 
         public Methods Method { get; }
 
-        public enum Errors
+        public enum Errors : int
         {
             /// <summary>
             /// No error.
@@ -38,9 +40,14 @@ namespace WebSocketLibrary
             InvalidRequest,
 
             /// <summary>
-            /// The method does not exist / is not available.
+            /// The method does not exist.
             /// </summary>
             MethodNotFound,
+
+            /// <summary>
+            /// The method is not available.
+            /// </summary>
+            MethodNotAvailable,
 
             /// <summary>
             /// Invalid method parameter(s).
@@ -52,19 +59,33 @@ namespace WebSocketLibrary
             /// </summary>
             InternalError,
 
-            /// <summary>
-            /// Reserved for implementation-defined server-errors.
-            /// </summary>
-            ServerError
+            ///// <summary>
+            ///// Reserved for implementation-defined server-errors.
+            ///// </summary>
+            //ServerError
         }
 
-        public Errors Error { get; set; }
+        public Errors Error { get; protected set; }
+
+        public string ErrorMessage { get; protected set; }
+
+        public void SetError(Errors error)
+        {
+            Error = error;
+            ErrorMessage = error.ToString();
+        }
+
+        public void SetError(Errors error, string message)
+        {
+            Error = error;
+            ErrorMessage = message;
+        }
 
         public string Path { get; }
 
         public string RequestBody { get; }
 
-        public string ResponseBody { get; set; }
+        public object ResponseBody { get; set; }
 
         public bool Handled { get; set; } = false;
 

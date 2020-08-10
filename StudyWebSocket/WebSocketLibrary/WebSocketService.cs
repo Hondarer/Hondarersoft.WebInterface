@@ -74,25 +74,40 @@ namespace WebSocketLibrary
         {
             //メッセージをデシリアライズ
 
-            dynamic document = System.Text.Json.JsonSerializer.Deserialize<ExpandoObject>(message);
+            // TODO: まだ未実装
+
+            // 最初に通知、リクエスト、レスポンス、エラーを判断する
+
+            // 通知とリクエストを処理する
+            // レスポンスとエラーはリクエストに紐づく応答として処理する
+
+            // メソッドの分解ができてない
+
+            dynamic document = JsonSerializer.Deserialize<ExpandoObject>(message);
 
             CommonApiArgs commonApiArgs =
                 new CommonApiArgs(CommonApiArgs.Methods.GET, document.method.ToString(), DynamicHelper.GetProperty(document, "params").ToString()) ;
 
             OnRequest(commonApiArgs);
 
-            string response;
+            object response;
 
-            if (commonApiArgs.Error != CommonApiArgs.Errors.None)
+            if (commonApiArgs.Error == CommonApiArgs.Errors.None)
             {
-                response = JsonSerializer.Serialize(new JsonRpcNormalResponse() { Data = "DATA" });
+                response = new JsonRpcNormalResponse() { Data = JsonSerializer.Serialize(commonApiArgs.ResponseBody) };
             }
             else
             {
-                response = JsonSerializer.Serialize(new JsonRpcErrorResponse() { Error = new Error() { Message = "ERROR" } });
+                int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
+                if (ErrorsToCode.ContainsKey(commonApiArgs.Error) == true)
+                {
+                    code = ErrorsToCode[commonApiArgs.Error];
+                }
+
+                response = new JsonRpcErrorResponse() { Error = new Error() { Code = code, Message = commonApiArgs.ErrorMessage } };
             }
 
-            await SendTextAsync(response, webSocket);
+            await SendJsonAsync(response, webSocket);
         }
 
         protected override async Task OnConnected(WebSocket webSocket)

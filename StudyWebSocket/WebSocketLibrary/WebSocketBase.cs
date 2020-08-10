@@ -64,6 +64,7 @@ namespace WebSocketLibrary
                     }
 
                     //メッセージの最後まで取得
+                    // TODO: バッファの自動拡張に対応していない
                     int count = result.Count;
                     while (!result.EndOfMessage)
                     {
