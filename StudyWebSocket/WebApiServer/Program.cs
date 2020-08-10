@@ -7,12 +7,9 @@ namespace WebApiServer
     {
         static void Main(string[] args)
         {
-            WebApiService webApiService = new WebApiService()
-            {
-                AllowCORS = true
-            };
+            CommonApiManager commonApiManager = new CommonApiManager();
 
-            webApiService.Start();
+            commonApiManager.Start();
 
             Console.ReadLine();
         }

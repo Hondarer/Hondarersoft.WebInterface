@@ -35,15 +35,20 @@ namespace WebSocketLibrary
             httpListener.Prefixes.Add("http://localhost:8000/ws/");
             httpListener.Start();
 
-            ProcessHttpRequest(httpListener);
+            ProcessHttpRequest();
         }
 
-        protected async void ProcessHttpRequest(HttpListener httpListener)
+        protected async void ProcessHttpRequest()
         {
-            while (true)
+            while (httpListener.IsListening == true)
             {
                 /// 接続待機
                 HttpListenerContext listenerContext = await httpListener.GetContextAsync();
+
+                if (httpListener.IsListening == false)
+                {
+                    break;
+                }
 
                 if (listenerContext.Request.IsWebSocketRequest)
                 {
@@ -68,46 +73,6 @@ namespace WebSocketLibrary
                     listenerContext.Response.Close();
                 }
             }
-        }
-
-        protected override async Task OnRecieveText(WebSocket webSocket, string message)
-        {
-            //メッセージをデシリアライズ
-
-            // TODO: まだ未実装
-
-            // 最初に通知、リクエスト、レスポンス、エラーを判断する
-
-            // 通知とリクエストを処理する
-            // レスポンスとエラーはリクエストに紐づく応答として処理する
-
-            // メソッドの分解ができてない
-
-            dynamic document = JsonSerializer.Deserialize<ExpandoObject>(message);
-
-            CommonApiArgs commonApiArgs =
-                new CommonApiArgs(CommonApiArgs.Methods.GET, document.method.ToString(), DynamicHelper.GetProperty(document, "params").ToString()) ;
-
-            OnRequest(commonApiArgs);
-
-            object response;
-
-            if (commonApiArgs.Error == CommonApiArgs.Errors.None)
-            {
-                response = new JsonRpcNormalResponse() { Data = JsonSerializer.Serialize(commonApiArgs.ResponseBody) };
-            }
-            else
-            {
-                int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
-                if (ErrorsToCode.ContainsKey(commonApiArgs.Error) == true)
-                {
-                    code = ErrorsToCode[commonApiArgs.Error];
-                }
-
-                response = new JsonRpcErrorResponse() { Error = new Error() { Code = code, Message = commonApiArgs.ErrorMessage } };
-            }
-
-            await SendJsonAsync(response, webSocket);
         }
 
         protected override async Task OnConnected(WebSocket webSocket)

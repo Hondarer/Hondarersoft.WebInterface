@@ -10,6 +10,21 @@ namespace WebSocketLibrary
 {
     public class WebSocketBase : WebInterfaceBase
     {
+        public class WebSocketRecieveTextEventArgs : EventArgs
+        {
+            public WebSocket WebSocket { get; }
+            public string Message { get; }
+
+            public WebSocketRecieveTextEventArgs(WebSocket webSocket, string message)
+            {
+                WebSocket = webSocket;
+                Message = message;
+            }
+        }
+
+        public delegate void WebSocketRecieveTextHandler(object sender, WebSocketRecieveTextEventArgs e);
+        public event WebSocketRecieveTextHandler WebSocketRecieveText;
+
         public virtual async Task SendTextAsync(string message, WebSocket webSocket)
         {
             byte[] sendbuffer = Encoding.UTF8.GetBytes(message);
@@ -102,6 +117,10 @@ namespace WebSocketLibrary
         protected virtual async Task OnRecieveText(WebSocket webSocket, string message)
 #pragma warning restore CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます
         {
+            if (WebSocketRecieveText != null)
+            {
+                WebSocketRecieveText(this, new WebSocketRecieveTextEventArgs(webSocket, message));
+            }
         }
 
 #pragma warning disable CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます

@@ -14,11 +14,23 @@ namespace WebSocketLibrary
 {
     public class WebApiService : WebInterfaceBase
     {
-        private const string CONTENT_TYPE_JSON = "application/json";
+        public class WebApiRequestEventArgs: EventArgs
+        {
+            public HttpListenerRequest Request { get; }
+            public HttpListenerResponse Response { get; }
+
+            public WebApiRequestEventArgs(HttpListenerRequest request, HttpListenerResponse response)
+            {
+                Request = request;
+                Response = response;
+            }
+        }
+
+        public delegate void WebApiRequestHandler(object sender, WebApiRequestEventArgs e);
+        public event WebApiRequestHandler WebApiRequest;
 
         //private static Logger log = Logger.GetInstance();
         private HttpListener listener;
-        private WebApiControllerMapper mapper = new WebApiControllerMapper();
 
         public bool AllowCORS { get; set; } = false;
 
@@ -45,16 +57,62 @@ namespace WebSocketLibrary
                 //log.Info(Resources.StartServer);
                 //EventLog.WriteEntry(GetSystemName(), Resources.StartServer, EventLogEntryType.Information, (int)ErrorCode.SUCCESS);
 
-                while (this.listener.IsListening)
-                {
-                    IAsyncResult result = this.listener.BeginGetContext(OnRequested, this.listener);
-                    result.AsyncWaitHandle.WaitOne();
-                }
+                ProcessHttpRequest(this.listener);
+
+                //while (this.listener.IsListening)
+                //{
+                //    IAsyncResult result = this.listener.BeginGetContext(OnRequested, this.listener);
+                //    result.AsyncWaitHandle.WaitOne();
+                //}
             }
             catch (Exception ex)
             {
                 //log.Error(ex.ToString());
                 //EventLog.WriteEntry(GetSystemName(), ex.ToString(), EventLogEntryType.Error, (int)ErrorCode.ERROR_START);
+            }
+        }
+
+        protected async void ProcessHttpRequest(HttpListener httpListener)
+        {
+            while (httpListener.IsListening == true)
+            {
+                /// 接続待機
+                HttpListenerContext context = await httpListener.GetContextAsync();
+
+                if (httpListener.IsListening == false)
+                {
+                    break;
+                }
+
+                HttpListenerRequest req = context.Request;
+                HttpListenerResponse res = context.Response;
+
+                if (AllowCORS == true)
+                {
+                    if (req.HttpMethod == "OPTIONS")
+                    {
+                        res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+                        res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+                        res.AddHeader("Access-Control-Max-Age", "1728000");
+                    }
+                    res.AppendHeader("Access-Control-Allow-Origin", "*");
+                }
+
+                try
+                {
+                    // TODO: 例外を処理したほうがいい
+                    if (WebApiRequest != null)
+                    {
+                        WebApiRequest(this, new WebApiRequestEventArgs(req, res));
+                    }
+                }
+                finally
+                {
+                    if (res != null)
+                    {
+                        res.Close();
+                    }
+                }
             }
         }
 
@@ -76,161 +134,13 @@ namespace WebSocketLibrary
             {
                 //log.Error(ex.ToString());
 
-                Assembly clsAsm = Assembly.GetExecutingAssembly();
-                string strSystemName = clsAsm.GetName().Name;
+                //Assembly clsAsm = Assembly.GetExecutingAssembly();
+                //string strSystemName = clsAsm.GetName().Name;
 
                 //EventLog.WriteEntry(GetSystemName(), ex.ToString(), EventLogEntryType.Error, (int)ErrorCode.ERROR_STOP);
             }
 
             //log.Info("########## HTTP Server [end] ##########");
-        }
-
-        /// <summary>
-        /// リクエスト時の処理を実行する
-        /// </summary>
-        /// <param name="result">結果</param>
-        private void OnRequested(IAsyncResult result)
-        {
-            HttpListener clsListener = (HttpListener)result.AsyncState;
-            if (!clsListener.IsListening)
-            {
-                return;
-            }
-
-            HttpListenerContext context = clsListener.EndGetContext(result);
-            HttpListenerRequest req = context.Request;
-            HttpListenerResponse res = context.Response;
-
-            if (AllowCORS == true)
-            {
-                if (req.HttpMethod == "OPTIONS")
-                {
-                    res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-                    res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                    res.AddHeader("Access-Control-Max-Age", "1728000");
-                }
-                res.AppendHeader("Access-Control-Allow-Origin", "*");
-            }
-
-            // TODO: req, resの基本イベントを作る
-
-            StreamReader reader = null;
-            StreamWriter writer = null;
-
-            try
-            {
-                res.ContentType = CONTENT_TYPE_JSON;
-                res.ContentEncoding = Encoding.UTF8;
-
-                reader = new StreamReader(req.InputStream);
-                writer = new StreamWriter(res.OutputStream);
-                string reqBody = reader.ReadToEnd();
-
-                string path = GetApiPath(req.RawUrl);
-
-                //Console.WriteLine(req.QueryString.Get("hhh"));
-
-                CommonApiArgs commonApiArgs =
-                    new CommonApiArgs(Enum.Parse<CommonApiArgs.Methods>(req.HttpMethod), path, reqBody);
-
-                OnRequest(commonApiArgs);
-
-                if (commonApiArgs.Error == CommonApiArgs.Errors.None)
-                {
-                    res.StatusCode = (int)HttpStatusCode.OK;
-                    writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(commonApiArgs.ResponseBody));
-                }
-                else
-                {
-                    int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
-                    if (ErrorsToCode.ContainsKey(commonApiArgs.Error) == true)
-                    {
-                        code = ErrorsToCode[commonApiArgs.Error];
-                    }
-
-                    switch (commonApiArgs.Error)
-                    {
-                        case CommonApiArgs.Errors.ParseError:
-                        // No Break
-                        case CommonApiArgs.Errors.InvalidRequest:
-                        // No Break
-                        case CommonApiArgs.Errors.InvalidParams:
-                            res.StatusCode = (int)HttpStatusCode.BadRequest;
-                            break;
-                        case CommonApiArgs.Errors.MethodNotFound:
-                            res.StatusCode = (int)HttpStatusCode.NotFound;
-                            break;
-                        case CommonApiArgs.Errors.InternalError:
-                            res.StatusCode = (int)HttpStatusCode.InternalServerError;
-                            break;
-                        case CommonApiArgs.Errors.MethodNotAvailable:
-                            res.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                            break;
-                        default:
-                            // 下記は念のため(本来通過することはない)
-                            res.StatusCode = (int)HttpStatusCode.InternalServerError;
-                            break;
-                    }
-
-                    writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(new Error() { Code = code, Message = commonApiArgs.ErrorMessage }));
-                }
-            }
-            //catch (ApiException ex)
-            //{
-            //    // APIエラー
-            //    resBoby = CreateApiErrorResponse(ex);
-            //}
-            //catch (JsonReaderException ex)
-            //{
-            //    // JSON構文エラー
-            //    resBoby = CreateErrorResponse(ErrorCode.ERROR_JSON_SYNTAX, String.Format(Resources.ErrorJsonSyntax, ex.Message));
-            //    res.StatusCode = (int)HttpStatusCode.InternalServerError;
-            //}
-            catch (Exception ex)
-            {
-                //resBoby = CreateErrorResponse(ErrorCode.SYSTEM_ERROR, String.Format(Resources.ErrorUnexpected, ex.Message));
-                res.StatusCode = (int)HttpStatusCode.InternalServerError;
-                //log.Error(ex.ToString());
-            }
-            finally
-            {
-                try
-                {
-                    //writer.Write(resBoby);
-                    writer.Flush();
-
-                    if (null != reader)
-                    {
-                        reader.Close();
-                    }
-                    if (null != writer)
-                    {
-                        writer.Close();
-                    }
-
-                    if (null != res)
-                    {
-                        res.Close();
-                    }
-                }
-                catch (Exception clsEx)
-                {
-                    //log.Error(clsEx.ToString());
-                }
-            }
-        }
-
-        /// <summary>
-        /// APIパスを取得する
-        /// </summary>
-        /// <param name="srcPath">URLパス</param>
-        /// <returns>APIパス</returns>
-        private string GetApiPath(string srcPath)
-        {
-            string[] path = srcPath.Split('?');
-            string condition = String.Format(@"^/{0}", "Temporary_Listen_Addresses");
-            //string condition = String.Format(@"^/{0}", Settings.Default.API_PATH);
-            return Regex.Replace(path[0], condition, "");
         }
     }
 }
