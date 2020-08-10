@@ -9,31 +9,40 @@ using System.Threading.Tasks;
 
 namespace WebSocketLibrary
 {
-    public class WebApiClient : HttpClient
+    public class WebApiClient : WebInterfaceBase
     {
-        public WebApiClient() : 
-            base(new HttpClientHandler() { UseCookies = false }) // Cookie のやり取りをしている場合に、Cookie がキャッシュされないようにする。
+        protected HttpClient Client { get; set; }
+
+        public WebApiClient()
         {
 
-            DefaultRequestHeaders.Accept.Clear();
-            DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            // Cookie のやり取りをしている場合に、Cookie がキャッシュされないようにする。
+            Client = new HttpClient(new HttpClientHandler() { UseCookies = false });
+
+            Client.DefaultRequestHeaders.Accept.Clear();
+            Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public new Uri BaseAddress
+        public Uri BaseAddress
         {
             get
             {
-                return base.BaseAddress;
+                return Client.BaseAddress;
             }
             set
             {
-                base.BaseAddress = value;
+                Client.BaseAddress = value;
 
                 // ずっと使用していると DNS 変更が反映されないということが起きうるので、 
                 // HttpClient にコネクションを定期的にリサイクルするように指示をする。
-                var sp = ServicePointManager.FindServicePoint(base.BaseAddress);
+                var sp = ServicePointManager.FindServicePoint(Client.BaseAddress);
                 sp.ConnectionLeaseTimeout = 60 * 1000; // 1 minute
             }
+        }
+
+        public Task<HttpResponseMessage> GetAsync(string requestUri)
+        {
+            return Client.GetAsync(requestUri);
         }
     }
 }

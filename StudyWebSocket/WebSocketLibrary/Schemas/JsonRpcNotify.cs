@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace WebSocketLibrary.Schemas
 {
-    public class JsonRpcRequestBase
+    public class JsonRpcNotify : JsonRpcBase
     {
-        public object Id { get; set; }
+        [JsonPropertyName("method")]
         public string Method { get; set; }
-        public string Version { get; set; }
     }
 }

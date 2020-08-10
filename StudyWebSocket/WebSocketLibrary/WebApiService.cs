@@ -2,17 +2,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using WebSocketLibrary.Schemas;
 
 namespace WebSocketLibrary
 {
-    public class WebApiService
+    public class WebApiService : WebInterfaceBase
     {
+        private const string CONTENT_TYPE_JSON = "application/json";
+
         //private static Logger log = Logger.GetInstance();
         private HttpListener listener;
         private WebApiControllerMapper mapper = new WebApiControllerMapper();
+
+        public bool AllowCORS { get; set; } = false;
 
         /// <summary>
         /// APIサービスを起動する
@@ -93,27 +101,74 @@ namespace WebSocketLibrary
             HttpListenerRequest req = context.Request;
             HttpListenerResponse res = context.Response;
 
-            // allow CORS
-            if (req.HttpMethod == "OPTIONS")
+            if (AllowCORS == true)
             {
-                res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-                res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                res.AddHeader("Access-Control-Max-Age", "1728000");
+                if (req.HttpMethod == "OPTIONS")
+                {
+                    res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+                    res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+                    res.AddHeader("Access-Control-Max-Age", "1728000");
+                }
+                res.AppendHeader("Access-Control-Allow-Origin", "*");
             }
-            res.AppendHeader("Access-Control-Allow-Origin", "*");
+
+            StreamReader reader = null;
+            StreamWriter writer = null;
+            string reqBody = null;
+            string resBoby = null;
 
             try
             {
-                mapper.Execute(req, res);
+                res.StatusCode = (int)HttpStatusCode.OK;
+                res.ContentType = CONTENT_TYPE_JSON;
+                res.ContentEncoding = Encoding.UTF8;
+
+                reader = new StreamReader(req.InputStream);
+                writer = new StreamWriter(res.OutputStream);
+                reqBody = reader.ReadToEnd();
+
+                string path = GetApiPath(req.RawUrl);
+
+                CommonApiArgs commonApiArgs =
+                    new CommonApiArgs(Enum.Parse<CommonApiArgs.Methods>(req.HttpMethod), path, reqBody);
+
+                OnRequest(commonApiArgs);
+
+                resBoby = commonApiArgs.ResponseBody;
             }
+            //catch (ApiException ex)
+            //{
+            //    // APIエラー
+            //    resBoby = CreateApiErrorResponse(ex);
+            //}
+            //catch (JsonReaderException ex)
+            //{
+            //    // JSON構文エラー
+            //    resBoby = CreateErrorResponse(ErrorCode.ERROR_JSON_SYNTAX, String.Format(Resources.ErrorJsonSyntax, ex.Message));
+            //    res.StatusCode = (int)HttpStatusCode.InternalServerError;
+            //}
             catch (Exception ex)
             {
+                //resBoby = CreateErrorResponse(ErrorCode.SYSTEM_ERROR, String.Format(Resources.ErrorUnexpected, ex.Message));
+                res.StatusCode = (int)HttpStatusCode.InternalServerError;
                 //log.Error(ex.ToString());
             }
             finally
             {
                 try
                 {
+                    writer.Write(resBoby);
+                    writer.Flush();
+
+                    if (null != reader)
+                    {
+                        reader.Close();
+                    }
+                    if (null != writer)
+                    {
+                        writer.Close();
+                    }
+
                     if (null != res)
                     {
                         res.Close();
@@ -127,13 +182,16 @@ namespace WebSocketLibrary
         }
 
         /// <summary>
-        /// システム名を取得する
+        /// APIパスを取得する
         /// </summary>
-        /// <returns>システム名</returns>
-        private string GetSystemName()
+        /// <param name="srcPath">URLパス</param>
+        /// <returns>APIパス</returns>
+        private string GetApiPath(string srcPath)
         {
-            Assembly asm = Assembly.GetExecutingAssembly();
-            return asm.GetName().Name;
+            string[] path = srcPath.Split('?');
+            string condition = String.Format(@"^/{0}", "Temporary_Listen_Addresses");
+            //string condition = String.Format(@"^/{0}", Settings.Default.API_PATH);
+            return Regex.Replace(path[0], condition, "");
         }
     }
 }

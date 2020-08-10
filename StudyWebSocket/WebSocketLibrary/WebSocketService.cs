@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using WebSocketLibrary.Schemas;
 
 namespace WebSocketLibrary
 {
@@ -71,8 +72,27 @@ namespace WebSocketLibrary
 
         protected override async Task OnRecieveText(WebSocket webSocket, string message)
         {
-            //クライアント側に文字列を送信
-            await SendTextAsync(DateTime.Now.ToLongTimeString(), webSocket);
+            //メッセージをデシリアライズ
+
+            dynamic document = System.Text.Json.JsonSerializer.Deserialize<ExpandoObject>(message);
+
+            CommonApiArgs commonApiArgs =
+                new CommonApiArgs(CommonApiArgs.Methods.GET, document.method.ToString(), DynamicHelper.GetProperty(document, "params").ToString()) ;
+
+            OnRequest(commonApiArgs);
+
+            string response;
+
+            if (commonApiArgs.Error != CommonApiArgs.Errors.None)
+            {
+                response = JsonSerializer.Serialize(new JsonRpcNormalResponse() { Data = "DATA" });
+            }
+            else
+            {
+                response = JsonSerializer.Serialize(new JsonRpcErrorResponse() { Error = new Error() { Message = "ERROR" } });
+            }
+
+            await SendTextAsync(response, webSocket);
         }
 
         protected override async Task OnConnected(WebSocket webSocket)
