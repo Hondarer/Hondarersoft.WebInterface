@@ -5,6 +5,7 @@
 // http://kimux.net/?p=956
 
 using System;
+using System.Threading.Tasks;
 
 namespace WebSocketServer
 {
@@ -12,9 +13,10 @@ namespace WebSocketServer
     {
         static void Main(string[] args)
         {
-            using (WebSocketLibrary.WebSocketServer server = new WebSocketLibrary.WebSocketServer())
+            using (WebSocketLibrary.WebSocketService webSocketService = new WebSocketLibrary.WebSocketService())
             {
-                server.Run();
+                webSocketService.Start();
+
                 Console.ReadKey();
             }
         }

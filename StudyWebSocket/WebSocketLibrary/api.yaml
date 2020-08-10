@@ -1,0 +1,72 @@
+openapi: 3.0.2
+info:
+  title: テスト
+  description: テスト
+  version: "1.0"
+servers:
+  - url: http://localhost:80/Temporary_Listen_Addresses/
+paths:
+  /cpumodes:
+    get:
+      summary: テスト
+      responses:
+        200:
+          description: 成功時のレスポンス
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cpumodes'
+  /cpumodes/{hostname}:
+    get:
+      summary: テスト
+      parameters:
+        - name: hostname
+          in: path
+          description: 計算機モードを取得したい計算機のホスト名
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: 成功時のレスポンス
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cpumode'
+        400:
+          description: 不正な要求時のレスポンス
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+components:
+  schemas:
+    cpumodes:
+      type: array
+      items:
+        $ref: '#/components/schemas/cpumode'
+    cpumode:
+      type: object
+      properties:
+        hostname:
+          type: string
+          description: name of host
+          example: localhost
+        modecode:
+          type: integer
+          format: int64
+          example: 4
+    error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+          description: A Number that indicates the error type that occurred.
+          example: -32700
+        message:
+          type: string
+          description: |
+            A String providing a short description of the error.
+            The message SHOULD be limited to a concise single sentence.
+          example: Parse error
