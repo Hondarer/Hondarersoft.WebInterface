@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using WebSocketLibrary.Controllers;
 using WebSocketLibrary.Schemas;
 
 namespace WebSocketLibrary
@@ -58,42 +59,126 @@ namespace WebSocketLibrary
         {
             //メッセージをデシリアライズ
 
-            // TODO: まだ未実装
-
-            // 最初に通知、リクエスト、レスポンス、エラーを判断する
+            // TODO: まだ実装中
 
             // 通知とリクエストを処理する
             // レスポンスとエラーはリクエストに紐づく応答として処理する
 
-            // メソッドの分解ができてない
+            // バッチ処理に対応していない(仕様にはあるが必要性は疑問)
 
             WebSocketBase webSocketBase = sender as WebSocketBase;
+            dynamic document;
 
-            dynamic document = JsonSerializer.Deserialize<ExpandoObject>(e.Message);
-
-            CommonApiArgs commonApiArgs =
-                new CommonApiArgs(CommonApiArgs.Methods.GET, document.method.ToString(), DynamicHelper.GetProperty(document, "params").ToString());
-
-            OnRequest(commonApiArgs);
+            try
+            {
+                document = JsonSerializer.Deserialize<ExpandoObject>(e.Message);
+            }
+            catch
+            {
+                // この段階の例外は応答する術がない
+                return;
+            }
 
             object response;
 
-            if (commonApiArgs.Error == CommonApiArgs.Errors.None)
+            // jsonrpc メンバーのチェック
+            if ((DynamicHelper.IsPropertyExist(document, "jsonrpc") == false) || 
+                (document.jsonrpc.ToString() != "2.0"))
             {
-                response = new JsonRpcNormalResponse() { Data = JsonSerializer.Serialize(commonApiArgs.ResponseBody) };
+                // NOP(レスポンスを返すことができない)
+                return;
             }
-            else
+
+            // id メンバーの取り出し
+            object id = null;
+            JsonElement idElement = document.id;
+            if (DynamicHelper.IsPropertyExist(document, "id") == true)
             {
-                int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
-                if (ErrorsToCode.ContainsKey(commonApiArgs.Error) == true)
+                if (idElement.ValueKind == JsonValueKind.Number)
                 {
-                    code = ErrorsToCode[commonApiArgs.Error];
+                    id = idElement.GetInt64();
+                }
+                else if (idElement.ValueKind == JsonValueKind.String)
+                {
+                    id = idElement.GetString();
+                }
+                else
+                {
+                    // NOP(レスポンスを返すことができない、受け取ったレスポンスを処理することができない)
+                    return;
+                }
+            }
+
+            // result か error があったら応答電文
+            if ((DynamicHelper.IsPropertyExist(document, "result") == true) || (DynamicHelper.IsPropertyExist(document, "error") == true))
+            {
+                // 応答電文の処理
+
+                // TODO: 処理未実装
+                return;
+            }
+
+            // メソッド名の特定
+            // JSON-RPC メソッド名の末尾を HTTP メソッドとして取り出し、
+            // ドット結合をピリオド結合にし、ルート記号を付加する
+            string jsonrpcMethod = document.method.ToString();
+            CommonApiArgs.Methods method = CommonApiArgs.Methods.UNKNOWN;
+            string path = string.Empty;
+            foreach(string methodEnum in Enum.GetNames(typeof(CommonApiArgs.Methods)))
+            {
+                if (jsonrpcMethod.EndsWith("." + methodEnum.ToLower()) == true)
+                {
+                    method = (CommonApiArgs.Methods)Enum.Parse(typeof(CommonApiArgs.Methods), methodEnum);
+                    path = "/" + jsonrpcMethod.Substring(0, jsonrpcMethod.Length - methodEnum.Length-1).Replace('.', '/');
+                    break;
+                }
+            }
+
+            // HTTP メソッド名で終わっていない JSON-RPC メソッド名は、エラーとして扱う
+            if (method == CommonApiArgs.Methods.UNKNOWN)
+            {
+                if (id != null)
+                {
+                    response = new JsonRpcResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.MethodNotFound], Message = CommonApiArgs.Errors.MethodNotFound.ToString() } };
+                    JsonSerializerOptions options = new JsonSerializerOptions
+                    {
+                        IgnoreNullValues = true
+                    };
+                    await webSocketBase.SendJsonAsync(response, e.WebSocket, options);
+                }
+                return;
+            }
+
+            CommonApiArgs apiArgs =
+                new CommonApiArgs(id, method, path, DynamicHelper.GetProperty(document, "params").ToString());
+
+            OnRequest(apiArgs);
+
+            if (id != null)
+            {
+                // 応答用の id が存在する場合に返送処理を行う
+
+                if (apiArgs.Error == CommonApiArgs.Errors.None)
+                {
+                    response = new JsonRpcResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
+                }
+                else
+                {
+                    int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
+                    if (ErrorsToCode.ContainsKey(apiArgs.Error) == true)
+                    {
+                        code = ErrorsToCode[apiArgs.Error];
+                    }
+
+                    response = new JsonRpcResponse() { Id = apiArgs.Identifier, Error = new Error() { Code = code, Message = apiArgs.ErrorMessage } };
                 }
 
-                response = new JsonRpcErrorResponse() { Error = new Error() { Code = code, Message = commonApiArgs.ErrorMessage } };
+                JsonSerializerOptions options = new JsonSerializerOptions
+                {
+                    IgnoreNullValues = true
+                };
+                await webSocketBase.SendJsonAsync(response, e.WebSocket, options);
             }
-
-            await webSocketBase.SendJsonAsync(response, e.WebSocket);
         }
 
         /// <summary>
@@ -104,7 +189,7 @@ namespace WebSocketLibrary
         private string GetApiPath(string srcPath)
         {
             string[] path = srcPath.Split('?');
-            string condition = String.Format(@"^/{0}", "Temporary_Listen_Addresses");
+            string condition = String.Format(@"^/{0}", "Temporary_Listen_Addresses/v1.0");
             //string condition = String.Format(@"^/{0}", Settings.Default.API_PATH);
             return Regex.Replace(path[0], condition, "");
         }
@@ -129,7 +214,7 @@ namespace WebSocketLibrary
                 //Console.WriteLine(req.QueryString.Get("hhh"));
 
                 CommonApiArgs commonApiArgs =
-                    new CommonApiArgs(Enum.Parse<CommonApiArgs.Methods>(e.Request.HttpMethod), path, reqBody);
+                    new CommonApiArgs(e.Request.RequestTraceIdentifier, Enum.Parse<CommonApiArgs.Methods>(e.Request.HttpMethod), path, reqBody);
 
                 OnRequest(commonApiArgs);
 
@@ -173,17 +258,6 @@ namespace WebSocketLibrary
                     writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(new Error() { Code = code, Message = commonApiArgs.ErrorMessage }));
                 }
             }
-            //catch (ApiException ex)
-            //{
-            //    // APIエラー
-            //    resBoby = CreateApiErrorResponse(ex);
-            //}
-            //catch (JsonReaderException ex)
-            //{
-            //    // JSON構文エラー
-            //    resBoby = CreateErrorResponse(ErrorCode.ERROR_JSON_SYNTAX, String.Format(Resources.ErrorJsonSyntax, ex.Message));
-            //    res.StatusCode = (int)HttpStatusCode.InternalServerError;
-            //}
             catch (Exception ex)
             {
                 //resBoby = CreateErrorResponse(ErrorCode.SYSTEM_ERROR, String.Format(Resources.ErrorUnexpected, ex.Message));
@@ -213,22 +287,19 @@ namespace WebSocketLibrary
             }
         }
 
-        public virtual void OnRequest(CommonApiArgs commonApiArgs)
+        public virtual void OnRequest(CommonApiArgs apiArgs)
         {
             // TODO: この部分は基本の通信処理と分けて考えるべき
 
-            // ★★★ テスト ★★★
-            if (commonApiArgs.Path.Equals("/cpumodes") && commonApiArgs.Method == CommonApiArgs.Methods.GET)
+            // メソッドとパスを使って分岐させて呼び出す。
+
+            CpuModesController cpuModesController = new CpuModesController();
+
+            cpuModesController.Get(apiArgs);
+
+            if (apiArgs.Handled == false)
             {
-                commonApiArgs.ResponseBody = new CpuModes() { new CpuMode() { Hostname = "localhoost" }, new CpuMode() { Hostname = "hostname2" } };
-            }
-            else if (commonApiArgs.Path.Equals("/cpumodes/localhost") && commonApiArgs.Method == CommonApiArgs.Methods.GET)
-            {
-                commonApiArgs.ResponseBody = new CpuMode() { Hostname = "localhoost" };
-            }
-            else
-            {
-                commonApiArgs.SetError(CommonApiArgs.Errors.MethodNotFound);
+                apiArgs.SetError(CommonApiArgs.Errors.MethodNotFound);
             }
         }
 

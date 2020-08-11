@@ -49,14 +49,19 @@ namespace WebSocketLibrary
             await base.SendTextAsync(message, websocket);
         }
 
-        public override async Task SendJsonAsync(object message, WebSocket websocket = null)
+        public async Task SendJsonAsync(object message, JsonSerializerOptions options = null)
+        {
+            await base.SendJsonAsync(message, this.websocket, options);
+        }
+
+        public override async Task SendJsonAsync(object message, WebSocket websocket = null, JsonSerializerOptions options = null)
         {
             if (websocket == null)
             {
                 websocket = this.websocket;
             }
 
-            await base.SendJsonAsync(message, websocket);
+            await base.SendJsonAsync(message, websocket, options);
         }
 
         #region IDisposable Support

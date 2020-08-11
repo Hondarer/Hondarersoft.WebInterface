@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace WebSocketLibrary.Schemas
 {
-    public class JsonRpcNotify : JsonRpcBase
+    public class JsonRpcNotify : JsonRpc
     {
         [JsonPropertyName("method")]
         public string Method { get; set; }

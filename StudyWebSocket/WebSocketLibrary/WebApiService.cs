@@ -51,7 +51,7 @@ namespace WebSocketLibrary
                 // HTTPサーバーを起動する
                 this.listener = new HttpListener();
                 //this.listener.Prefixes.Add(String.Format("http://+:{0}/{1}/", Settings.Default.API_PORT, Settings.Default.API_PATH));
-                this.listener.Prefixes.Add(String.Format("http://+:{0}/{1}/", 80, "Temporary_Listen_Addresses"));
+                this.listener.Prefixes.Add(String.Format("http://+:{0}/{1}/", 80, "Temporary_Listen_Addresses/v1.0"));
                 this.listener.Start();
 
                 //log.Info(Resources.StartServer);

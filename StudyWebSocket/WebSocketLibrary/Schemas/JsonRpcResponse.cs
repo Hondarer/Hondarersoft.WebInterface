@@ -5,9 +5,17 @@ using System.Text.Json.Serialization;
 
 namespace WebSocketLibrary.Schemas
 {
-    public class JsonRpcResponseBase : JsonRpcBase
+    public class JsonRpcResponse : JsonRpc
     {
         [JsonPropertyName("id")]
         public object Id { get; set; }
+
+        [JsonPropertyName("result")]
+
+        public object Result { get; set; } = null;
+
+        [JsonPropertyName("error")]
+
+        public Error Error { get; set; } = null;
     }
 }

@@ -13,11 +13,14 @@ namespace WebSocketLibrary
 
         public enum Methods
         {
+            UNKNOWN,
             GET,
             POST,
             PUT,
             DELETE
         }
+
+        public object Identifier { get; }
 
         public Methods Method { get; }
 
@@ -85,12 +88,31 @@ namespace WebSocketLibrary
 
         public string RequestBody { get; }
 
-        public object ResponseBody { get; set; }
+        private object responseBody = null;
 
+        public object ResponseBody 
+        {
+            get
+            {
+                return responseBody;
+            }
+            set
+            {
+                Handled = true;
+                responseBody = value;
+            }
+        }
+
+        /// <summary>
+        /// この要求を処理したことを取得または設定します。
+        /// <see cref="ResponseBody"/> プロパティを設定した場合、本プロパティは <c>true</c> に設定されます。
+        /// レスポンスが無いメソッドの処理完了を設定するときは、明示的に本プロパティを <c>true</c> に設定してください。
+        /// </summary>
         public bool Handled { get; set; } = false;
 
-        public CommonApiArgs(Methods method, string path, string requestBody)
+        public CommonApiArgs(object identifier, Methods method, string path, string requestBody)
         {
+            Identifier = identifier;
             Method = method;
             Path = path;
             RequestBody = requestBody;

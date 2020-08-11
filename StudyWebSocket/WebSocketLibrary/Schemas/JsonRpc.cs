@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace WebSocketLibrary.Schemas
 {
-    public class JsonRpcBase
+    public abstract class JsonRpc
     {
         public const string JSONRPC_VERSION = "2.0";
 

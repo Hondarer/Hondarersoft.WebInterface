@@ -17,7 +17,7 @@ namespace WebSocketClient
             {
                 await webSocketClient.ConnectAsync();
 
-                await webSocketClient.SendTextAsync("{\"jsonrpc\": \"2.0\", \"method\": \"subtract\", \"params\": [23, 42], \"id\": 3}");
+                await webSocketClient.SendTextAsync("{\"jsonrpc\": \"2.0\", \"method\": \"cpumodes.get\", \"params\": [23, 42], \"id\": 3}");
 
                 Console.ReadLine();
             }

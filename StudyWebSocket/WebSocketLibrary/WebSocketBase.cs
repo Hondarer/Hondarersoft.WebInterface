@@ -31,9 +31,9 @@ namespace WebSocketLibrary
             await SendBufferAsync(sendbuffer, webSocket);
         }
 
-        public virtual async Task SendJsonAsync(object message, WebSocket webSocket)
+        public virtual async Task SendJsonAsync(object message, WebSocket webSocket, JsonSerializerOptions options = null)
         {
-            byte[] sendbuffer = JsonSerializer.SerializeToUtf8Bytes(message);
+            byte[] sendbuffer = JsonSerializer.SerializeToUtf8Bytes(message, options);
             await SendBufferAsync(sendbuffer, webSocket);
         }
 
