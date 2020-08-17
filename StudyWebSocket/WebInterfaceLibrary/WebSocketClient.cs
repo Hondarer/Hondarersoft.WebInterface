@@ -51,11 +51,27 @@ namespace WebInterfaceLibrary
 
         public async Task SendJsonAsync(object message, JsonSerializerOptions options = null)
         {
+            if (options == null)
+            {
+                options = new JsonSerializerOptions
+                {
+                    IgnoreNullValues = true
+                };
+            }
+
             await base.SendJsonAsync(message, this.websocket, options);
         }
 
         public override async Task SendJsonAsync(object message, WebSocket websocket = null, JsonSerializerOptions options = null)
         {
+            if (options == null)
+            {
+                options = new JsonSerializerOptions
+                {
+                    IgnoreNullValues = true
+                };
+            }
+
             if (websocket == null)
             {
                 websocket = this.websocket;

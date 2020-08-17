@@ -151,8 +151,18 @@ namespace WebInterfaceLibrary
                 return;
             }
 
+            object paramsValue = null;
+            if (DynamicHelper.IsPropertyExist(document, "params") == true)
+            {
+                paramsValue = DynamicHelper.GetProperty(document, "params");
+            }
+            if (paramsValue != null)
+            {
+                paramsValue = paramsValue.ToString();
+            }
+
             CommonApiArgs apiArgs =
-                new CommonApiArgs(id, method, path, DynamicHelper.GetProperty(document, "params").ToString());
+                new CommonApiArgs(id, method, path, (string)paramsValue);
 
             OnRequest(apiArgs);
 

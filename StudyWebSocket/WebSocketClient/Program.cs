@@ -6,6 +6,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WebInterfaceLibrary.Schemas;
 
 namespace WebSocketClient
 {
@@ -17,7 +18,9 @@ namespace WebSocketClient
             {
                 await webSocketClient.ConnectAsync();
 
-                await webSocketClient.SendTextAsync("{\"jsonrpc\": \"2.0\", \"method\": \"cpumodes.get\", \"params\": [23, 42], \"id\": 3}");
+                await webSocketClient.SendJsonAsync(new JsonRpcRequest() { Method = "cpumodes.localhost.get" });
+
+                // 戻っては来ているが、同期して受け取る処理をまだ書いていない
 
                 Console.ReadLine();
             }

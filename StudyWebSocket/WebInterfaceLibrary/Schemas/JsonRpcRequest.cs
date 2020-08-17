@@ -9,5 +9,10 @@ namespace WebInterfaceLibrary.Schemas
     {
         [JsonPropertyName("id")]
         public object Id { get; set; }
+
+        public JsonRpcRequest()
+        {
+            Id = Guid.NewGuid();
+        }
     }
 }
