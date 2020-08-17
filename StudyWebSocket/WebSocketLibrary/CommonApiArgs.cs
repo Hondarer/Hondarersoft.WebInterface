@@ -9,8 +9,6 @@ namespace WebSocketLibrary
     // 統一したインターフェースでAPIを実装するための引数。
     public class CommonApiArgs : EventArgs
     {
-        // TODO: IDを保持する必要がある
-
         public enum Methods
         {
             UNKNOWN,

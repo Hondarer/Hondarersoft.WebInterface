@@ -57,16 +57,10 @@ namespace WebSocketLibrary
 
         private async void WebSocketService_WebSocketRecieveText(object sender, WebSocketBase.WebSocketRecieveTextEventArgs e)
         {
-            //メッセージをデシリアライズ
+            // TODO: バッチ処理に対応していない(仕様にはあるが必要性は疑問)
+            //       受信したデータがいきなり配列の場合はバッチ処理
 
-            // TODO: まだ実装中
-
-            // 通知とリクエストを処理する
-            // レスポンスとエラーはリクエストに紐づく応答として処理する
-
-            // バッチ処理に対応していない(仕様にはあるが必要性は疑問)
-
-            WebSocketBase webSocketBase = sender as WebSocketBase;
+            WebSocket webSocket = sender as WebSocket;
             dynamic document;
 
             try
@@ -96,6 +90,8 @@ namespace WebSocketLibrary
             {
                 if (idElement.ValueKind == JsonValueKind.Number)
                 {
+                    // 規約上、Numbers SHOULD NOT contain fractional parts
+                    // とあるので、整数として扱う。少数の場合は動作不定となる。
                     id = idElement.GetInt64();
                 }
                 else if (idElement.ValueKind == JsonValueKind.String)
@@ -104,7 +100,13 @@ namespace WebSocketLibrary
                 }
                 else
                 {
-                    // NOP(レスポンスを返すことができない、受け取ったレスポンスを処理することができない)
+                    // id フィールドのフォーマット不良。
+                    // レスポンスを返すことができない、受け取ったレスポンスを処理することができない。
+                    // この場合は処理をしない。
+
+                    // 規約上は id フィールドは null も許容されるが、本実装では許容しない。
+                    // (id が特定できなかった際のレスポンスには、id が null のレスポンスを送ることになっている。
+                    //  本実装ではこの処理も省略している。)
                     return;
                 }
             }
@@ -144,7 +146,7 @@ namespace WebSocketLibrary
                     {
                         IgnoreNullValues = true
                     };
-                    await webSocketBase.SendJsonAsync(response, e.WebSocket, options);
+                    await webSocketService.SendJsonAsync(response, webSocket, options);
                 }
                 return;
             }
@@ -177,7 +179,7 @@ namespace WebSocketLibrary
                 {
                     IgnoreNullValues = true
                 };
-                await webSocketBase.SendJsonAsync(response, e.WebSocket, options);
+                await webSocketService.SendJsonAsync(response, webSocket, options);
             }
         }
 
@@ -289,9 +291,9 @@ namespace WebSocketLibrary
 
         public virtual void OnRequest(CommonApiArgs apiArgs)
         {
-            // TODO: この部分は基本の通信処理と分けて考えるべき
-
             // メソッドとパスを使って分岐させて呼び出す。
+
+            // TODO: 実装は検証用の決め打ち処理になっている。
 
             CpuModesController cpuModesController = new CpuModesController();
 

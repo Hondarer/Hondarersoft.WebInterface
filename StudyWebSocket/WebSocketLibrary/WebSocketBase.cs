@@ -12,12 +12,10 @@ namespace WebSocketLibrary
     {
         public class WebSocketRecieveTextEventArgs : EventArgs
         {
-            public WebSocket WebSocket { get; }
             public string Message { get; }
 
-            public WebSocketRecieveTextEventArgs(WebSocket webSocket, string message)
+            public WebSocketRecieveTextEventArgs(string message)
             {
-                WebSocket = webSocket;
                 Message = message;
             }
         }
@@ -103,7 +101,7 @@ namespace WebSocketLibrary
             }
             catch (Exception ex)
             {
-                /// 例外 クライアントが異常終了しやがった
+                /// 例外 クライアントが異常終了
                 Console.WriteLine("{0}:Session Abort:{1} {2}", DateTime.Now.ToString(), webSocket.CloseStatusDescription, ex.ToString());
             }
             finally
@@ -119,7 +117,7 @@ namespace WebSocketLibrary
         {
             if (WebSocketRecieveText != null)
             {
-                WebSocketRecieveText(this, new WebSocketRecieveTextEventArgs(webSocket, message));
+                WebSocketRecieveText(webSocket, new WebSocketRecieveTextEventArgs(message));
             }
         }
 
