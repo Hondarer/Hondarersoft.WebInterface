@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using WebSocketLibrary.Schemas;
+using WebInterfaceLibrary.Schemas;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     public class WebInterfaceBase : IDisposable
     {

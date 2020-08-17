@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     public class WebSocketClient : WebSocketBase
     {

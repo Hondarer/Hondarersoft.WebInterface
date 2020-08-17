@@ -3,14 +3,14 @@ using System.Data;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using WebSocketLibrary;
-using WebSocketLibrary.Schemas;
+using WebInterfaceLibrary;
+using WebInterfaceLibrary.Schemas;
 
 namespace WebApiClient
 {
     class Program
     {
-        static WebSocketLibrary.WebApiClient client = new WebSocketLibrary.WebApiClient()
+        static WebInterfaceLibrary.WebApiClient client = new WebInterfaceLibrary.WebApiClient()
         {
             BaseAddress = new Uri("http://localhost:80/")
         };

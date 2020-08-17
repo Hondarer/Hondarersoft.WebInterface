@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using WebSocketLibrary.Schemas;
+using WebInterfaceLibrary.Schemas;
 
-namespace WebSocketLibrary.Controllers
+namespace WebInterfaceLibrary.Controllers
 {
     public class CpuModesController : CommonApiController
     {

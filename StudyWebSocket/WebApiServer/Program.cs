@@ -1,5 +1,5 @@
 ﻿using System;
-using WebSocketLibrary;
+using WebInterfaceLibrary;
 
 namespace WebApiServer
 {

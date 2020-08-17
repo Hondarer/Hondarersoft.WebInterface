@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace WebSocketLibrary.Schemas
+namespace WebInterfaceLibrary.Schemas
 {
     public class CpuMode
     {

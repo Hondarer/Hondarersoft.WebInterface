@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     public class WebApiClient : WebInterfaceBase
     {

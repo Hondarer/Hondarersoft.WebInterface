@@ -13,7 +13,7 @@ namespace WebSocketClient
     {
         static async Task Main(string[] args)
         {
-            using (WebSocketLibrary.WebSocketClient webSocketClient = new WebSocketLibrary.WebSocketClient())
+            using (WebInterfaceLibrary.WebSocketClient webSocketClient = new WebInterfaceLibrary.WebSocketClient())
             {
                 await webSocketClient.ConnectAsync();
 

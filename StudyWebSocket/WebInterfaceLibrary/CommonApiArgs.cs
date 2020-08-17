@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     // WebSocket(JSON-RPC 2.0)およびWebAPI(REST WebAPI)の双方の要求を汎化して
     // 統一したインターフェースでAPIを実装するための引数。

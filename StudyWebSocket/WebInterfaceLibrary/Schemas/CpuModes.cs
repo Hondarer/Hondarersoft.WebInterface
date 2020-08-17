@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebSocketLibrary.Schemas
+namespace WebInterfaceLibrary.Schemas
 {
     public class CpuModes : List<CpuMode>
     {

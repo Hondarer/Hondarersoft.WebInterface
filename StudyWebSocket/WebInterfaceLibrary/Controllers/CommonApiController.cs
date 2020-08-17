@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebSocketLibrary.Controllers
+namespace WebInterfaceLibrary.Controllers
 {
     public abstract class CommonApiController
     {

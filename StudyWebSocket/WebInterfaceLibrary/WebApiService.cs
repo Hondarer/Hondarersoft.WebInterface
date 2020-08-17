@@ -8,9 +8,9 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using WebSocketLibrary.Schemas;
+using WebInterfaceLibrary.Schemas;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     public class WebApiService : WebInterfaceBase
     {

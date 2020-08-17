@@ -20,7 +20,11 @@ namespace GenericHostConsoleApp
                     hostContext.HostingEnvironment.EnvironmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "production";
                     configApp.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
                     configApp.AddCommandLine(args);
-                    configApp.AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json");
+                    string jsonFilePath = $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json";
+                    if (File.Exists(jsonFilePath) == true)
+                    {
+                        configApp.AddJsonFile(jsonFilePath);
+                    }
                 })
                 .ConfigureLogging((context, b) =>
                 {

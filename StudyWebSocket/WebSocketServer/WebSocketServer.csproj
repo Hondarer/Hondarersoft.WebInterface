@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebSocketLibrary\WebSocketLibrary.csproj" />
+    <ProjectReference Include="..\WebInterfaceLibrary\WebInterfaceLibrary.csproj" />
   </ItemGroup>
 
 </Project>

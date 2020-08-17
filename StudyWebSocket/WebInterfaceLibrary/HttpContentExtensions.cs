@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     public static class HttpContentExtensions
     {

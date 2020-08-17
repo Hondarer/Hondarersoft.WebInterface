@@ -10,9 +10,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using WebSocketLibrary.Schemas;
+using WebInterfaceLibrary.Schemas;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     public class WebSocketService : WebSocketBase
     {

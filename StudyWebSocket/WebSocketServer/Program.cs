@@ -13,7 +13,7 @@ namespace WebSocketServer
     {
         static void Main(string[] args)
         {
-            using (WebSocketLibrary.WebSocketService webSocketService = new WebSocketLibrary.WebSocketService())
+            using (WebInterfaceLibrary.WebSocketService webSocketService = new WebInterfaceLibrary.WebSocketService())
             {
                 webSocketService.Start();
 

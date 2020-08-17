@@ -8,10 +8,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using WebSocketLibrary.Controllers;
-using WebSocketLibrary.Schemas;
+using WebInterfaceLibrary.Controllers;
+using WebInterfaceLibrary.Schemas;
 
-namespace WebSocketLibrary
+namespace WebInterfaceLibrary
 {
     public class CommonApiManager
     {
