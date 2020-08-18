@@ -8,8 +8,12 @@ using System.Threading.Tasks;
 
 namespace WebInterfaceLibrary
 {
-    public class WebSocketBase : WebInterfaceBase
+    public class WebSocketBase : WebInterfaceBase, IWebInterfaceService
     {
+        public virtual async void Start()
+        {
+        }
+
         public class WebSocketRecieveTextEventArgs : EventArgs
         {
             public string Message { get; }
@@ -23,19 +27,19 @@ namespace WebInterfaceLibrary
         public delegate void WebSocketRecieveTextHandler(object sender, WebSocketRecieveTextEventArgs e);
         public event WebSocketRecieveTextHandler WebSocketRecieveText;
 
-        public virtual async Task SendTextAsync(string message, WebSocket webSocket)
+        public static async Task SendTextAsync(string message, WebSocket webSocket)
         {
             byte[] sendbuffer = Encoding.UTF8.GetBytes(message);
             await SendBufferAsync(sendbuffer, webSocket);
         }
 
-        public virtual async Task SendJsonAsync(object message, WebSocket webSocket, JsonSerializerOptions options = null)
+        public static async Task SendJsonAsync(object message, WebSocket webSocket, JsonSerializerOptions options = null)
         {
             byte[] sendbuffer = JsonSerializer.SerializeToUtf8Bytes(message, options);
             await SendBufferAsync(sendbuffer, webSocket);
         }
 
-        protected async Task SendBufferAsync(byte[] sendbuffer, WebSocket webSocket)
+        protected static async Task SendBufferAsync(byte[] sendbuffer, WebSocket webSocket)
         {
             ArraySegment<byte> segment = new ArraySegment<byte>(sendbuffer);
             await webSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);

@@ -32,27 +32,52 @@ namespace WebInterfaceLibrary
         // 受信イベントに応じた応答を返却する
         // 送信イベントも同様にここで握る
 
-        private WebApiService webApiService;
-        private WebSocketService webSocketService;
+        private List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
 
-        public void Start()
+        public CommonApiManager Start()
         {
             // TODO: 以下はとりあえずの動作確認
 
-            webApiService = new WebApiService()
+            //webApiService = new WebApiService()
+            //{
+            //    AllowCORS = true
+            //};
+
+            //webApiService.WebApiRequest += WebApiService_WebApiRequest;
+
+            //webApiService.Start();
+
+            //webSocketService = new WebSocketService();
+
+            //webSocketService.WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
+
+            //webSocketService.Start();
+
+            foreach (var webInterfaceBase in webInterfaceBasees)
             {
-                AllowCORS = true
-            };
+                if (webInterfaceBase is IWebInterfaceService)
+                {
+                    (webInterfaceBase as IWebInterfaceService).Start();
+                }
+            }
 
-            webApiService.WebApiRequest += WebApiService_WebApiRequest;
+            return this;
+        }
 
-            webApiService.Start();
+        public CommonApiManager Regist(WebInterfaceBase webInterfaceBase)
+        {
+            if(webInterfaceBase is WebApiService) // TODO: インターフェース化
+            {
+                (webInterfaceBase as WebApiService).WebApiRequest += WebApiService_WebApiRequest;
+            }
+            if (webInterfaceBase is WebSocketBase) // TODO: インターフェース化
+            {
+                (webInterfaceBase as WebSocketBase).WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
+            }
 
-            webSocketService = new WebSocketService();
+            webInterfaceBasees.Add(webInterfaceBase);
 
-            webSocketService.WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
-
-            webSocketService.Start();
+            return this;
         }
 
         private async void WebSocketService_WebSocketRecieveText(object sender, WebSocketBase.WebSocketRecieveTextEventArgs e)
@@ -146,7 +171,7 @@ namespace WebInterfaceLibrary
                     {
                         IgnoreNullValues = true
                     };
-                    await webSocketService.SendJsonAsync(response, webSocket, options);
+                    await WebSocketBase.SendJsonAsync(response, webSocket, options);
                 }
                 return;
             }
@@ -189,7 +214,7 @@ namespace WebInterfaceLibrary
                 {
                     IgnoreNullValues = true
                 };
-                await webSocketService.SendJsonAsync(response, webSocket, options);
+                await WebSocketBase.SendJsonAsync(response, webSocket, options);
             }
         }
 

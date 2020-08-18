@@ -12,6 +12,11 @@ namespace WebInterfaceLibrary
     {
         protected ClientWebSocket websocket = null;
 
+        public override async void Start()
+        {
+            await ConnectAsync();
+        }
+
         public async Task ConnectAsync()
         {
             if ((websocket != null) && ((websocket.State == WebSocketState.Connecting) || (websocket.State == WebSocketState.Open)))
@@ -39,17 +44,30 @@ namespace WebInterfaceLibrary
             }
         }
 
-        public override async Task SendTextAsync(string message, WebSocket websocket = null)
+        public new async Task SendTextAsync(string message, WebSocket websocket = null)
         {
             if (websocket == null)
             {
                 websocket = this.websocket;
             }
 
-            await base.SendTextAsync(message, websocket);
+            await WebSocketBase.SendTextAsync(message, websocket);
         }
 
-        public async Task SendJsonAsync(object message, JsonSerializerOptions options = null)
+        //public async Task SendJsonAsync(object message, JsonSerializerOptions options = null)
+        //{
+        //    if (options == null)
+        //    {
+        //        options = new JsonSerializerOptions
+        //        {
+        //            IgnoreNullValues = true
+        //        };
+        //    }
+
+        //    await WebSocketBase.SendJsonAsync(message, this.websocket, options);
+        //}
+
+        public new async Task SendJsonAsync(object message, WebSocket websocket = null, JsonSerializerOptions options = null)
         {
             if (options == null)
             {
@@ -59,25 +77,12 @@ namespace WebInterfaceLibrary
                 };
             }
 
-            await base.SendJsonAsync(message, this.websocket, options);
-        }
-
-        public override async Task SendJsonAsync(object message, WebSocket websocket = null, JsonSerializerOptions options = null)
-        {
-            if (options == null)
-            {
-                options = new JsonSerializerOptions
-                {
-                    IgnoreNullValues = true
-                };
-            }
-
             if (websocket == null)
             {
                 websocket = this.websocket;
             }
 
-            await base.SendJsonAsync(message, websocket, options);
+            await WebSocketBase.SendJsonAsync(message, websocket, options);
         }
 
         #region IDisposable Support

@@ -18,6 +18,8 @@ namespace WebSocketClient
             {
                 await webSocketClient.ConnectAsync();
 
+                // 統一した要求の形式を設けて、そこに要求したい
+
                 await webSocketClient.SendJsonAsync(new JsonRpcRequest() { Method = "cpumodes.localhost.get" });
 
                 // 戻っては来ているが、同期して受け取る処理をまだ書いていない

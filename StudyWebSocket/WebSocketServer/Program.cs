@@ -6,6 +6,7 @@
 
 using System;
 using System.Threading.Tasks;
+using WebInterfaceLibrary;
 
 namespace WebSocketServer
 {
@@ -13,12 +14,9 @@ namespace WebSocketServer
     {
         static void Main(string[] args)
         {
-            using (WebInterfaceLibrary.WebSocketService webSocketService = new WebInterfaceLibrary.WebSocketService())
-            {
-                webSocketService.Start();
+            CommonApiManager commonApiManager = new CommonApiManager().Regist(new WebSocketService()).Start();
 
-                Console.ReadKey();
-            }
+            Console.ReadLine();
         }
     }
 }

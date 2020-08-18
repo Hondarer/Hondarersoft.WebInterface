@@ -12,7 +12,7 @@ using WebInterfaceLibrary.Schemas;
 
 namespace WebInterfaceLibrary
 {
-    public class WebApiService : WebInterfaceBase
+    public class WebApiService : WebInterfaceBase, IWebInterfaceService
     {
         public class WebApiRequestEventArgs: EventArgs
         {

@@ -28,7 +28,7 @@ namespace WebInterfaceLibrary
         /// <summary>
         /// WebSocketサーバースタート
         /// </summary>
-        public void Start()
+        public override void Start()
         {
             /// httpListenerで待ち受け
             httpListener = new HttpListener();

@@ -18,16 +18,17 @@ namespace WebApiClient
         static async Task Main(string[] args)
         {
             HttpResponseMessage response = await client.GetAsync("Temporary_Listen_Addresses/v1.0/cpumodes/localhost");
+
             if (response.IsSuccessStatusCode)
             {
                 CpuMode result = await response.Content.ReadAsAsync<CpuMode>();
 
-                Console.WriteLine(result.Hostname);
+                Console.WriteLine($"target={result.Hostname}, mode={result.Modecode}");
             }
             else
             {
                 // TODO: 例外のハンドリングが甘い
-                // (中まで行って帰ってきたら Error 型になるが、503とか、行きつかないエラーだとjsonになっていない)
+                // (中まで行って帰ってきたら Error 型になるが、503とか、行きつかないエラーだとjsonになっていないとか)
 
                 Error error = await response.Content.ReadAsAsync<Error>();
 
