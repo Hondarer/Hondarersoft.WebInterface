@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GenericHostConsoleApp
+namespace WebInterfaceLibrary
 {
     public class LifetimeEventsHostedService : IHostedService
     {
