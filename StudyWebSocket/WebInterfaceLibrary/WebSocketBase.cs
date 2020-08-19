@@ -36,6 +36,10 @@ namespace WebInterfaceLibrary
         public static async Task SendJsonAsync(object message, WebSocket webSocket, JsonSerializerOptions options = null)
         {
             byte[] sendbuffer = JsonSerializer.SerializeToUtf8Bytes(message, options);
+
+            // TODO: 重要:
+            // このタイミングでソケットが閉じていると、HttpListenerExceptionが発生するため
+            // 各処理は例外のハンドリングをきちんと行う必要がある。現状棚卸未。
             await SendBufferAsync(sendbuffer, webSocket);
         }
 

@@ -16,10 +16,9 @@ namespace GenericHostConsoleApp
 
         private readonly IConfiguration configration;
 
-        public GenericHostConsoleAppImpl(ILogger<GenericHostConsoleAppImpl> logger, IHostApplicationLifetime appLifetime, ITestService testService, IConfiguration configration) : base(logger, appLifetime)
+        public GenericHostConsoleAppImpl(ILogger<GenericHostConsoleAppImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, ITestService testService) : base(logger, appLifetime, configration)
         {
             this.testService = testService;
-            this.configration = configration;
         }
 
         protected override void OnStarted()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -31,6 +32,13 @@ namespace WebInterfaceLibrary
         // 登録されたときに受信イベントをハンドリングする
         // 受信イベントに応じた応答を返却する
         // 送信イベントも同様にここで握る
+
+        //private readonly IServiceProvider serviceProvider;
+
+        //public CommonApiManager(IServiceProvider serviceProvider)
+        //{
+        //    this.serviceProvider = serviceProvider;
+        //}
 
         private List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
 
@@ -326,9 +334,11 @@ namespace WebInterfaceLibrary
 
         public virtual void OnRequest(CommonApiArgs apiArgs)
         {
-            // メソッドとパスを使って分岐させて呼び出す。
+            // パスを使って分岐させて呼び出す。
 
             // TODO: 実装は検証用の決め打ち処理になっている。
+
+            //var test = serviceProvider.GetService(typeof(ILogger).MakeGenericType(typeof(CpuModesController)));
 
             CpuModesController cpuModesController = new CpuModesController();
 

@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Text;
 using WebInterfaceLibrary;
 
-namespace WebApiServer
+namespace WebSocketServer
 {
-    public class WebApiServerImpl : LifetimeEventsHostedService
+    public class WebSocketServerImpl : LifetimeEventsHostedService
     {
         CommonApiManager commonApiManager; // TODO: DI化
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration) : base(logger, appLifetime, configration)
+        public WebSocketServerImpl(ILogger<WebSocketServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration) : base(logger, appLifetime, configration)
         {
         }
 
@@ -22,7 +22,11 @@ namespace WebApiServer
 
             base.OnStarted();
 
-            commonApiManager = new CommonApiManager().Regist(new WebApiService() { AllowCORS = true }).Start(); // TODO: DIに対応する
+            commonApiManager = new CommonApiManager().Regist(new WebSocketService()).Start(); // TODO: DIに対応する
+
+            //Console.WriteLine("Press any key");
+            //Console.ReadLine();
+            //appLifetime.StopApplication();
         }
     }
 }

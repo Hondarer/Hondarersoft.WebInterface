@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,14 +11,17 @@ namespace WebInterfaceLibrary
 {
     public class LifetimeEventsHostedService : IHostedService
     {
+        protected readonly IConfiguration configration;
+
         protected readonly ILogger logger;
         protected readonly IHostApplicationLifetime appLifetime;
 
         public LifetimeEventsHostedService(
-            ILogger<LifetimeEventsHostedService> logger, IHostApplicationLifetime appLifetime)
+            ILogger<LifetimeEventsHostedService> logger, IHostApplicationLifetime appLifetime, IConfiguration configration)
         {
             this.logger = logger;
             this.appLifetime = appLifetime;
+            this.configration = configration;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

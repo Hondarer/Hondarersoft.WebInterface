@@ -1,5 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -10,30 +16,43 @@ namespace WebApiClient
 {
     class Program
     {
-        static WebInterfaceLibrary.WebApiClient client = new WebInterfaceLibrary.WebApiClient()
-        {
-            BaseAddress = new Uri("http://localhost:80/")
-        };
-
         static async Task Main(string[] args)
         {
-            HttpResponseMessage response = await client.GetAsync("Temporary_Listen_Addresses/v1.0/cpumodes/localhost");
+            await new HostBuilder()
+                .ConfigureAppConfiguration((hostContext, configApp) =>
+                {
+                    // Configの追加
+                    hostContext.HostingEnvironment.EnvironmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "production";
+                    configApp.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
+                    configApp.AddCommandLine(args);
+                    string jsonFilePath = $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json";
+                    if (File.Exists(jsonFilePath) == true)
+                    {
+                        configApp.AddJsonFile(jsonFilePath);
+                    }
+                })
+                .ConfigureLogging((context, b) =>
+                {
+                    b.SetMinimumLevel(LogLevel.Information);
 
-            if (response.IsSuccessStatusCode)
-            {
-                CpuMode result = await response.Content.ReadAsAsync<CpuMode>();
+                    // Console ロガーの追加
+                    b.AddConsole(c =>
+                    {
+                        c.TimestampFormat = "[HH:mm:ss.fff] ";
+                    });
+#if DEBUG
+                    // Debug ロガーの追加
+                    b.AddDebug();
+#endif
+                })
+                .ConfigureServices(services =>
+                {
+                    // サービス処理のDI(AddTransient, AddSingleton)
 
-                Console.WriteLine($"target={result.Hostname}, mode={result.Modecode}");
-            }
-            else
-            {
-                // TODO: 例外のハンドリングが甘い
-                // (中まで行って帰ってきたら Error 型になるが、503とか、行きつかないエラーだとjsonになっていないとか)
-
-                Error error = await response.Content.ReadAsAsync<Error>();
-
-                Console.WriteLine(error.Message);
-            }
+                    // コンソールアプリケーションの実装クラスを指定
+                    services.AddHostedService<WebApiClientImpl>();
+                })
+                .RunConsoleAsync();
         }
     }
 }
