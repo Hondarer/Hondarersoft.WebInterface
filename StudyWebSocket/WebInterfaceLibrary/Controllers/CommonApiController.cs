@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WebInterfaceLibrary.Controllers
 {
-    public abstract class CommonApiController
+    public abstract class CommonApiController : ICommonApiController
     {
         protected readonly ILogger logger;
 

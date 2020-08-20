@@ -38,29 +38,22 @@ namespace WebInterfaceLibrary
         public CommonApiManager(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider;
+
+            // CpuModesController のインスタンスは、DI コンテナからではなく、
+            // 最終的にこのクラスの定義から払い出すように考えている。(リフレクションで行う)
+            // しかし、ILogger は DI コンテナから払い出したいので、
+            // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
+            ILogger targetLogger = serviceProvider.GetService(typeof(ILogger<CpuModesController>)) as ILogger;
+            ICommonApiController cpuModesController = new CpuModesController(targetLogger);
+            commonApiControllers.Add(cpuModesController);
         }
 
-        private List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
+        protected readonly List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
+
+        protected readonly List<ICommonApiController> commonApiControllers = new List<ICommonApiController>();
 
         public ICommonApiManager Start()
         {
-            // TODO: 以下はとりあえずの動作確認
-
-            //webApiService = new WebApiService()
-            //{
-            //    AllowCORS = true
-            //};
-
-            //webApiService.WebApiRequest += WebApiService_WebApiRequest;
-
-            //webApiService.Start();
-
-            //webSocketService = new WebSocketService();
-
-            //webSocketService.WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
-
-            //webSocketService.Start();
-
             foreach (var webInterfaceBase in webInterfaceBasees)
             {
                 if (webInterfaceBase is IWebInterfaceService)
@@ -74,7 +67,7 @@ namespace WebInterfaceLibrary
 
         public ICommonApiManager Regist(WebInterfaceBase webInterfaceBase)
         {
-            if(webInterfaceBase is WebApiService) // TODO: インターフェース化
+            if (webInterfaceBase is WebApiService) // TODO: インターフェース化
             {
                 (webInterfaceBase as WebApiService).WebApiRequest += WebApiService_WebApiRequest;
             }
@@ -109,7 +102,7 @@ namespace WebInterfaceLibrary
             object response;
 
             // jsonrpc メンバーのチェック
-            if ((DynamicHelper.IsPropertyExist(document, "jsonrpc") == false) || 
+            if ((DynamicHelper.IsPropertyExist(document, "jsonrpc") == false) ||
                 (document.jsonrpc.ToString() != "2.0"))
             {
                 // NOP(レスポンスを返すことができない)
@@ -159,12 +152,12 @@ namespace WebInterfaceLibrary
             string jsonrpcMethod = document.method.ToString();
             CommonApiArgs.Methods method = CommonApiArgs.Methods.UNKNOWN;
             string path = string.Empty;
-            foreach(string methodEnum in Enum.GetNames(typeof(CommonApiArgs.Methods)))
+            foreach (string methodEnum in Enum.GetNames(typeof(CommonApiArgs.Methods)))
             {
                 if (jsonrpcMethod.EndsWith("." + methodEnum.ToLower()) == true)
                 {
                     method = (CommonApiArgs.Methods)Enum.Parse(typeof(CommonApiArgs.Methods), methodEnum);
-                    path = "/" + jsonrpcMethod.Substring(0, jsonrpcMethod.Length - methodEnum.Length-1).Replace('.', '/');
+                    path = "/" + jsonrpcMethod.Substring(0, jsonrpcMethod.Length - methodEnum.Length - 1).Replace('.', '/');
                     break;
                 }
             }
@@ -222,6 +215,8 @@ namespace WebInterfaceLibrary
                 {
                     IgnoreNullValues = true
                 };
+
+                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
                 await WebSocketBase.SendJsonAsync(response, webSocket, options);
             }
         }
@@ -334,20 +329,40 @@ namespace WebInterfaceLibrary
 
         public virtual void OnRequest(CommonApiArgs apiArgs)
         {
-            // パスを使って分岐させて呼び出す。
+            // 登録されているコントローラーでループする。
+            foreach (var commonApiController in commonApiControllers)
+            {
+                // パスが前方一致したコントローラーの指定したメソッドを呼び出す。
+                if (apiArgs.Path.StartsWith(commonApiController.AcceptPath) == true)
+                {
+                    // TODO: 例外を拾って、例外の場合はエラーを設定する。
+                    switch (apiArgs.Method)
+                    {
+                        case CommonApiArgs.Methods.GET:
+                            commonApiController.Get(apiArgs);
+                            break;
+                        case CommonApiArgs.Methods.POST:
+                            commonApiController.Post(apiArgs);
+                            break;
+                        case CommonApiArgs.Methods.PUT:
+                            commonApiController.Put(apiArgs);
+                            break;
+                        case CommonApiArgs.Methods.DELETE:
+                            commonApiController.Delete(apiArgs);
+                            break;
+                        default:
+                            break;
+                    }
 
-            // TODO: 実装は検証用の決め打ち処理になっている。
+                    // 処理完了していたら、他のコントローラーのチェックは行わない。
+                    if (apiArgs.Handled == true)
+                    {
+                        break;
+                    }
+                }
+            }
 
-            // CpuModesController のインスタンスは、DI コンテナからではなく、
-            // 最終的にこのクラスの定義から払い出すように考えている。
-            // しかし、ILogger は DI コンテナから払い出したいので、
-            // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
-            // なお本来は、この処理はコンストラクタで一回だけ実施する。
-            ILogger targetLogger = serviceProvider.GetService(typeof(ILogger<CpuModesController>)) as ILogger;
-            CpuModesController cpuModesController = new CpuModesController(targetLogger);
-
-            cpuModesController.Get(apiArgs);
-
+            // どのコントローラーも処理しなかった場合は、エラーを返す。
             if (apiArgs.Handled == false)
             {
                 apiArgs.SetError(CommonApiArgs.Errors.MethodNotFound);

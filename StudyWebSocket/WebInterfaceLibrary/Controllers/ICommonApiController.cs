@@ -6,6 +6,8 @@ namespace WebInterfaceLibrary.Controllers
 {
     public interface ICommonApiController
     {
+        public string AcceptPath { get; }
+
         public void Get(CommonApiArgs apiArgs);
 
         public void Post(CommonApiArgs apiArgs);
