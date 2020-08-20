@@ -1,14 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using WebInterfaceLibrary.Schemas;
 
 namespace WebInterfaceLibrary.Controllers
 {
+    [ApiPath("/cpumodes")]
     public class CpuModesController : CommonApiController
     {
-        public CpuModesController(ILogger logger) : base(logger, "/cpumodes") // TODO: アトリビュートで指定するほうが良い
+        public CpuModesController(ILogger logger) : base(logger)
         {
         }
 
@@ -16,12 +14,12 @@ namespace WebInterfaceLibrary.Controllers
         {
             base.Get(apiArgs);
 
-            if (apiArgs.Path.Equals(AcceptPath) == true)
+            if (apiArgs.Path.Equals(ApiPath) == true)
             {
                 // 一括取得
                 apiArgs.ResponseBody = new CpuModes() { new CpuMode() { Hostname = "localhost" }, new CpuMode() { Hostname = "hostname2" } };
             }
-            else if (apiArgs.Path.Equals(AcceptPath + "/localhost") == true)
+            else if (apiArgs.Path.Equals(ApiPath + "/localhost") == true)
             {
                 // ID 指定取得
                 apiArgs.ResponseBody = new CpuMode() { Hostname = "localhost" };

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace WebInterfaceLibrary.Controllers
@@ -9,12 +11,21 @@ namespace WebInterfaceLibrary.Controllers
     {
         protected readonly ILogger logger;
 
-        public string AcceptPath { get; private set; }
+        public string ApiPath { get; protected set; }
 
-        public CommonApiController(ILogger logger, string acceptPath)
+        public CommonApiController(ILogger logger)
         {
             this.logger = logger;
-            AcceptPath = acceptPath;
+            ApiPath = getApiPathAttribute();
+        }
+
+        protected string getApiPathAttribute()
+        {
+            ICustomAttributeProvider provider = GetType();
+
+            ApiPathAttribute apiPathAttribute = provider.GetCustomAttributes(typeof(ApiPathAttribute), true).FirstOrDefault() as ApiPathAttribute;
+
+            return apiPathAttribute.ApiPath;
         }
 
         public virtual void Get(CommonApiArgs apiArgs)

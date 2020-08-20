@@ -333,7 +333,7 @@ namespace WebInterfaceLibrary
             foreach (var commonApiController in commonApiControllers)
             {
                 // パスが前方一致したコントローラーの指定したメソッドを呼び出す。
-                if (apiArgs.Path.StartsWith(commonApiController.AcceptPath) == true)
+                if (apiArgs.Path.StartsWith(commonApiController.ApiPath) == true)
                 {
                     // TODO: 例外を拾って、例外の場合はエラーを設定する。
                     switch (apiArgs.Method)
