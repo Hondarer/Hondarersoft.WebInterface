@@ -10,10 +10,11 @@ namespace WebApiServer
 {
     public class WebApiServerImpl : LifetimeEventsHostedService
     {
-        CommonApiManager commonApiManager; // TODO: DI化
+        ICommonApiManager commonApiManager;
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration) : base(logger, appLifetime, configration)
+        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration)
         {
+            this.commonApiManager = commonApiManager;
         }
 
         protected override void OnStarted()
@@ -22,7 +23,7 @@ namespace WebApiServer
 
             base.OnStarted();
 
-            commonApiManager = new CommonApiManager().Regist(new WebApiService() { AllowCORS = true }).Start(); // TODO: DIに対応する
+            commonApiManager.Regist(new WebApiService() { AllowCORS = true }).Start(); // TODO: DIに対応する
         }
     }
 }

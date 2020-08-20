@@ -43,7 +43,8 @@ namespace WebApiServer
                 })
                 .ConfigureServices(services =>
                 {
-                    // サービス処理のDI(AddTransient, AddSingleton)
+                    // サービス処理の紐づけ(AddTransient, AddSingleton)
+                    services.AddSingleton<ICommonApiManager, CommonApiManager>();
 
                     // コンソールアプリケーションの実装クラスを指定
                     services.AddHostedService<WebApiServerImpl>();

@@ -14,7 +14,7 @@ using WebInterfaceLibrary.Schemas;
 
 namespace WebInterfaceLibrary
 {
-    public class CommonApiManager
+    public class CommonApiManager : ICommonApiManager
     {
         private const string CONTENT_TYPE_JSON = "application/json";
 
@@ -33,16 +33,16 @@ namespace WebInterfaceLibrary
         // 受信イベントに応じた応答を返却する
         // 送信イベントも同様にここで握る
 
-        //private readonly IServiceProvider serviceProvider;
+        private readonly IServiceProvider serviceProvider;
 
-        //public CommonApiManager(IServiceProvider serviceProvider)
-        //{
-        //    this.serviceProvider = serviceProvider;
-        //}
+        public CommonApiManager(IServiceProvider serviceProvider)
+        {
+            this.serviceProvider = serviceProvider;
+        }
 
         private List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
 
-        public CommonApiManager Start()
+        public ICommonApiManager Start()
         {
             // TODO: 以下はとりあえずの動作確認
 
@@ -72,7 +72,7 @@ namespace WebInterfaceLibrary
             return this;
         }
 
-        public CommonApiManager Regist(WebInterfaceBase webInterfaceBase)
+        public ICommonApiManager Regist(WebInterfaceBase webInterfaceBase)
         {
             if(webInterfaceBase is WebApiService) // TODO: インターフェース化
             {
@@ -338,9 +338,13 @@ namespace WebInterfaceLibrary
 
             // TODO: 実装は検証用の決め打ち処理になっている。
 
-            //var test = serviceProvider.GetService(typeof(ILogger).MakeGenericType(typeof(CpuModesController)));
-
-            CpuModesController cpuModesController = new CpuModesController();
+            // CpuModesController のインスタンスは、DI コンテナからではなく、
+            // 最終的にこのクラスの定義から払い出すように考えている。
+            // しかし、ILogger は DI コンテナから払い出したいので、
+            // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
+            // なお本来は、この処理はコンストラクタで一回だけ実施する。
+            ILogger targetLogger = serviceProvider.GetService(typeof(ILogger<CpuModesController>)) as ILogger;
+            CpuModesController cpuModesController = new CpuModesController(targetLogger);
 
             cpuModesController.Get(apiArgs);
 

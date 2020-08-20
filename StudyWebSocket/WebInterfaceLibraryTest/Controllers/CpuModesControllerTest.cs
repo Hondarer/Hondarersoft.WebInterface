@@ -13,7 +13,7 @@ namespace WebInterfaceLibraryTest
         [Fact]
         public void Test()
         {
-            CpuModesController CpuModesController = new CpuModesController();
+            CpuModesController CpuModesController = new CpuModesController(new TestLogger());
 
             CommonApiArgs apiArgs = new CommonApiArgs("TestID", CommonApiArgs.Methods.GET, "/cpumodes/localhost");
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace WebInterfaceLibrary
 {
@@ -114,6 +115,11 @@ namespace WebInterfaceLibrary
             Method = method;
             Path = path;
             RequestBody = requestBody;
+        }
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
         }
     }
 }

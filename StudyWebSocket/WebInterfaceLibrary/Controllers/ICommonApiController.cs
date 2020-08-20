@@ -7,5 +7,11 @@ namespace WebInterfaceLibrary.Controllers
     public interface ICommonApiController
     {
         public void Get(CommonApiArgs apiArgs);
+
+        public void Post(CommonApiArgs apiArgs);
+
+        public void Put(CommonApiArgs apiArgs);
+
+        public void Delete(CommonApiArgs apiArgs);
     }
 }

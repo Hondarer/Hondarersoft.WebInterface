@@ -47,6 +47,8 @@ namespace WebApiClient
 
             Console.WriteLine("Press any key");
             Console.ReadLine();
+
+            //Environment.ExitCode = 123;
             appLifetime.StopApplication();
         }
 

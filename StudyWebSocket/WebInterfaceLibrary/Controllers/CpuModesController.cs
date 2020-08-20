@@ -8,17 +8,13 @@ namespace WebInterfaceLibrary.Controllers
 {
     public class CpuModesController : CommonApiController
     {
-        //public CpuModesController(ILogger<CpuModesController> logger) : base(logger, "/cpumodes") // TODO: アトリビュートで指定するほうが良い
-        //{
-        //}
-        public CpuModesController() : base("/cpumodes") // TODO: アトリビュートで指定するほうが良い
+        public CpuModesController(ILogger logger) : base(logger, "/cpumodes") // TODO: アトリビュートで指定するほうが良い
         {
-            //var serviceCollection = Microsoft.Extensions.DependencyInjection.;
         }
 
         public override void Get(CommonApiArgs apiArgs)
         {
-            //logger.LogInformation("method: {0}", apiArgs.Method);
+            base.Get(apiArgs);
 
             if (apiArgs.Path.Equals(AcceptPath) == true)
             {

@@ -10,10 +10,11 @@ namespace WebSocketServer
 {
     public class WebSocketServerImpl : LifetimeEventsHostedService
     {
-        CommonApiManager commonApiManager; // TODO: DI化
+        ICommonApiManager commonApiManager;
 
-        public WebSocketServerImpl(ILogger<WebSocketServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration) : base(logger, appLifetime, configration)
+        public WebSocketServerImpl(ILogger<WebSocketServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration)
         {
+            this.commonApiManager = commonApiManager;
         }
 
         protected override void OnStarted()
@@ -22,7 +23,7 @@ namespace WebSocketServer
 
             base.OnStarted();
 
-            commonApiManager = new CommonApiManager().Regist(new WebSocketService()).Start(); // TODO: DIに対応する
+            commonApiManager.Regist(new WebSocketService()).Start();
 
             //Console.WriteLine("Press any key");
             //Console.ReadLine();
