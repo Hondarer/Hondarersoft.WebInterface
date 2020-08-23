@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.IO;
 using System.Net;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -40,12 +41,20 @@ namespace WebInterfaceLibrary
             this.serviceProvider = serviceProvider;
 
             // CpuModesController のインスタンスは、DI コンテナからではなく、
-            // 最終的にこのクラスの定義から払い出すように考えている。(リフレクションで行う)
+            // このクラスの定義から払い出す。
             // しかし、ILogger は DI コンテナから払い出したいので、
             // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
-            ILogger targetLogger = serviceProvider.GetService(typeof(ILogger<CpuModesController>)) as ILogger;
-            ICommonApiController cpuModesController = new CpuModesController(targetLogger);
-            commonApiControllers.Add(cpuModesController);
+
+            // この文字列を定義ファイルから得るようにすれば、動的にインスタンスを登録できる。
+            Assembly asm = Assembly.Load("WebInterfaceLibrary");
+            var commonApiControllerType = asm.GetType("WebInterfaceLibrary.Controllers.CpuModesController");
+
+            var loggerType = typeof(ILogger<>).MakeGenericType(commonApiControllerType);
+            ILogger targetLogger = serviceProvider.GetService(loggerType) as ILogger;
+            ConstructorInfo constructor = commonApiControllerType.GetConstructor(new Type[] { typeof(ILogger) });
+            ICommonApiController commonApiController = constructor.Invoke(new object[] { targetLogger }) as ICommonApiController;
+
+            commonApiControllers.Add(commonApiController);
         }
 
         protected readonly List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
