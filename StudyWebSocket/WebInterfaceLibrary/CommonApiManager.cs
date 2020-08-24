@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Hondarersoft.WebInterface.Controllers;
+using Hondarersoft.WebInterface.Schemas;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -10,10 +12,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using WebInterfaceLibrary.Controllers;
-using WebInterfaceLibrary.Schemas;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public class CommonApiManager : ICommonApiManager
     {

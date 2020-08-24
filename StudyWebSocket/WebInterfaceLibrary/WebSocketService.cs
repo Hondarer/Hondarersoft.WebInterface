@@ -10,9 +10,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using WebInterfaceLibrary.Schemas;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public class WebSocketService : WebSocketBase
     {

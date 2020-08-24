@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using WebInterfaceLibrary.Schemas;
+﻿using Hondarersoft.WebInterface.Controllers;
+using Hondarersoft.WebInterface.Sample.Schemas;
+using Microsoft.Extensions.Logging;
 
-namespace WebInterfaceLibrary.Controllers
+namespace Hondarersoft.WebInterface.Sample.Controllers
 {
     [ApiPath("/cpumodes")]
     public class CpuModesController : CommonApiController

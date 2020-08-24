@@ -7,14 +7,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.Hosting
 {
     public class LifetimeEventsHostedService : IHostedService
     {
-        protected readonly IConfiguration configration;
-
         protected readonly ILogger logger;
         protected readonly IHostApplicationLifetime appLifetime;
+        protected readonly IConfiguration configration;
 
         public LifetimeEventsHostedService(
             ILogger<LifetimeEventsHostedService> logger, IHostApplicationLifetime appLifetime, IConfiguration configration)

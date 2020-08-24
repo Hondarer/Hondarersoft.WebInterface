@@ -8,9 +8,8 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using WebInterfaceLibrary.Schemas;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public class WebApiService : WebInterfaceBase, IWebInterfaceService
     {

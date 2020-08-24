@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public static class DynamicHelper
     {

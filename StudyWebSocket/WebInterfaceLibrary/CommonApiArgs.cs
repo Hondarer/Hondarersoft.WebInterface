@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     // WebSocket(JSON-RPC 2.0)およびWebAPI(REST WebAPI)の双方の要求を汎化して
     // 統一したインターフェースでAPIを実装するための引数。

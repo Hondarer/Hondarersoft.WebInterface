@@ -1,19 +1,18 @@
-﻿using System;
+﻿using Hondarersoft.WebInterface.Sample.Schemas;
+using Hondarersoft.WebInterface.Test;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
-using WebInterfaceLibrary.Controllers;
-using WebInterfaceLibrary;
-using WebInterfaceLibrary.Schemas;
 
-namespace WebInterfaceLibraryTest
+namespace Hondarersoft.WebInterface.Sample.Test.Controllers
 {
     public class CpuModesControllerTest
     {
         [Fact]
         public void Test()
         {
-            CpuModesController CpuModesController = new CpuModesController(new TestLogger());
+            Sample.Controllers.CpuModesController CpuModesController = new Sample.Controllers.CpuModesController(new TestLogger());
 
             CommonApiArgs apiArgs = new CommonApiArgs("TestID", CommonApiArgs.Methods.GET, "/cpumodes/localhost");
 

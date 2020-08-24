@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using WebInterfaceLibrary.Schemas;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public class WebInterfaceBase : IDisposable
     {

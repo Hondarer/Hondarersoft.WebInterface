@@ -4,8 +4,9 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using WebInterfaceLibrary;
-using WebInterfaceLibrary.Schemas;
+using Hondarersoft.WebInterface;
+using Hondarersoft.Hosting;
+using Hondarersoft.WebInterface.Schemas;
 
 namespace WebSocketClient
 {
@@ -21,7 +22,7 @@ namespace WebSocketClient
 
             base.OnStarted();
 
-            using (WebInterfaceLibrary.WebSocketClient webSocketClient = new WebInterfaceLibrary.WebSocketClient())
+            using (Hondarersoft.WebInterface.WebSocketClient webSocketClient = new Hondarersoft.WebInterface.WebSocketClient())
             {
                 await webSocketClient.ConnectAsync();
 

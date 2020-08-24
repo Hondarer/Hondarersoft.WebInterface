@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace WebInterfaceLibrary.Schemas
+namespace Hondarersoft.WebInterface.Schemas
 {
     public class Error
     {

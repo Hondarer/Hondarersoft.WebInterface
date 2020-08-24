@@ -4,7 +4,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using WebInterfaceLibrary;
+using Hondarersoft.WebInterface;
+using Hondarersoft.Hosting;
 
 namespace WebSocketServer
 {

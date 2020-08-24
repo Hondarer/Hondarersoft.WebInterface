@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebInterfaceLibrary.Schemas
+namespace Hondarersoft.WebInterface.Sample.Schemas
 {
     public class CpuModes : List<CpuMode>
     {

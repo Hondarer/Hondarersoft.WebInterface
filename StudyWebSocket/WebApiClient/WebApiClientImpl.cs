@@ -1,18 +1,20 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Hondarersoft.Hosting;
+using Hondarersoft.WebInterface.Sample.Schemas;
+using Hondarersoft.WebInterface.Schemas;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using WebInterfaceLibrary;
-using WebInterfaceLibrary.Schemas;
+using Hondarersoft.WebInterface;
 
 namespace WebApiClient
 {
     class WebApiClientImpl : LifetimeEventsHostedService
     {
-        static WebInterfaceLibrary.WebApiClient client = new WebInterfaceLibrary.WebApiClient()
+        static Hondarersoft.WebInterface.WebApiClient client = new Hondarersoft.WebInterface.WebApiClient()
         {
             BaseAddress = new Uri("http://localhost:80/")
         };

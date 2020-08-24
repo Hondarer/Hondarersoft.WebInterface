@@ -11,11 +11,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiServer", "WebApiServe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiClient", "WebApiClient\WebApiClient.csproj", "{ACC22721-3563-4E77-B982-564F2416FB6A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebInterfaceLibrary", "WebInterfaceLibrary\WebInterfaceLibrary.csproj", "{A5A94CC7-AB8A-436B-B1E3-920F3A369DFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.WebInterface", "WebInterfaceLibrary\Hondarersoft.WebInterface.csproj", "{A5A94CC7-AB8A-436B-B1E3-920F3A369DFF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebInterfaceLibraryTest", "WebInterfaceLibraryTest\WebInterfaceLibraryTest.csproj", "{E29F21F3-BDB0-4FE3-802F-2803B32264F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.WebInterface.Test", "WebInterfaceLibraryTest\Hondarersoft.WebInterface.Test.csproj", "{E29F21F3-BDB0-4FE3-802F-2803B32264F2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{DB837136-E1D5-49F8-899B-F9EC62AB4721}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.Hosting", "Hondarersoft.Hosting\Hondarersoft.Hosting.csproj", "{2B1F5B50-A7AF-476B-8D2B-1612831A9718}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.WebInterface.Sample", "Sample\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj", "{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.WebInterface.Sample.Test", "Sample\Hondarersoft.WebInterface.Sample.Test\Hondarersoft.WebInterface.Sample.Test.csproj", "{A3352D5D-7536-4604-AC65-AD03EE384B00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,9 +53,29 @@ Global
 		{E29F21F3-BDB0-4FE3-802F-2803B32264F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E29F21F3-BDB0-4FE3-802F-2803B32264F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E29F21F3-BDB0-4FE3-802F-2803B32264F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B1F5B50-A7AF-476B-8D2B-1612831A9718}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B1F5B50-A7AF-476B-8D2B-1612831A9718}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B1F5B50-A7AF-476B-8D2B-1612831A9718}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B1F5B50-A7AF-476B-8D2B-1612831A9718}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3352D5D-7536-4604-AC65-AD03EE384B00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3352D5D-7536-4604-AC65-AD03EE384B00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3352D5D-7536-4604-AC65-AD03EE384B00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3352D5D-7536-4604-AC65-AD03EE384B00}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C4BDFE52-E8CA-4E61-B0D5-3AEC007CC313} = {DB837136-E1D5-49F8-899B-F9EC62AB4721}
+		{BACEC066-377D-4A2B-9B65-961AC2B596CC} = {DB837136-E1D5-49F8-899B-F9EC62AB4721}
+		{8D9FC89E-19FF-45F0-97D4-3C10E3C4764B} = {DB837136-E1D5-49F8-899B-F9EC62AB4721}
+		{ACC22721-3563-4E77-B982-564F2416FB6A} = {DB837136-E1D5-49F8-899B-F9EC62AB4721}
+		{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD} = {DB837136-E1D5-49F8-899B-F9EC62AB4721}
+		{A3352D5D-7536-4604-AC65-AD03EE384B00} = {DB837136-E1D5-49F8-899B-F9EC62AB4721}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {478A1141-88CC-46C5-AE2D-E8582C8003A5}

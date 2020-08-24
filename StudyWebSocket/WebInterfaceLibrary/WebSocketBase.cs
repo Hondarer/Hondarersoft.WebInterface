@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public class WebSocketBase : WebInterfaceBase, IWebInterfaceService
     {

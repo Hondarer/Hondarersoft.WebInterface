@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public static class HttpContentExtensions
     {

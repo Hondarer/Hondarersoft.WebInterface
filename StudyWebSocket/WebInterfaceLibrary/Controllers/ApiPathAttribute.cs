@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebInterfaceLibrary.Controllers
+namespace Hondarersoft.WebInterface.Controllers
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class ApiPathAttribute : Attribute

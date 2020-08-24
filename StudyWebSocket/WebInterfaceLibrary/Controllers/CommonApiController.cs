@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace WebInterfaceLibrary.Controllers
+namespace Hondarersoft.WebInterface.Controllers
 {
     public abstract class CommonApiController : ICommonApiController
     {

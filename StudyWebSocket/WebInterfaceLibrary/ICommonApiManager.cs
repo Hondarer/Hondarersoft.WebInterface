@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebInterfaceLibrary
+namespace Hondarersoft.WebInterface
 {
     public interface ICommonApiManager
     {

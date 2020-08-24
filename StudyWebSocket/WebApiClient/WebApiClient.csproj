@@ -10,7 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebInterfaceLibrary\WebInterfaceLibrary.csproj" />
+    <ProjectReference Include="..\Hondarersoft.Hosting\Hondarersoft.Hosting.csproj" />
+    <ProjectReference Include="..\Sample\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj" />
+    <ProjectReference Include="..\WebInterfaceLibrary\Hondarersoft.WebInterface.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebInterfaceLibraryTest
+namespace Hondarersoft.WebInterface.Test
 {
     public class TestLogger : ILogger
     {
