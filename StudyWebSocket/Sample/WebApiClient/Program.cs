@@ -3,11 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace WebApiClient
@@ -19,7 +16,7 @@ namespace WebApiClient
             await new HostBuilder()
                 .ConfigureAppConfiguration((hostContext, configApp) =>
                 {
-                    // Configの追加
+                    // Config の追加
                     hostContext.HostingEnvironment.EnvironmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "production";
                     configApp.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
                     configApp.AddCommandLine(args);
@@ -45,7 +42,7 @@ namespace WebApiClient
                 })
                 .ConfigureServices(services =>
                 {
-                    // サービス処理のDI(AddTransient, AddSingleton)
+                    // サービス処理の紐づけ(AddTransient, AddSingleton)
 
                     // コンソールアプリケーションの実装クラスを指定
                     services.AddHostedService<WebApiClientImpl>();

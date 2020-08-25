@@ -8,6 +8,9 @@ namespace Hondarersoft.WebInterface
     {
         public ICommonApiManager Start();
 
-        public ICommonApiManager Regist(WebInterfaceBase webInterfaceBase);
+        public ICommonApiManager RegistController(string assemblyName, string classFullName);
+
+
+        public ICommonApiManager RegistInterface(WebInterfaceBase webInterfaceBase);
     }
 }

@@ -4,6 +4,7 @@
 // [C#]System.Net.WebSocketsを試す。その２。サーバー編。
 // http://kimux.net/?p=956
 
+using Hondarersoft.WebInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +13,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Hondarersoft.WebInterface;
 
 namespace WebSocketServer
 {
@@ -23,7 +23,7 @@ namespace WebSocketServer
             await new HostBuilder()
                 .ConfigureAppConfiguration((hostContext, configApp) =>
                 {
-                    // Configの追加
+                    // Config の追加
                     hostContext.HostingEnvironment.EnvironmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "production";
                     configApp.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
                     configApp.AddCommandLine(args);

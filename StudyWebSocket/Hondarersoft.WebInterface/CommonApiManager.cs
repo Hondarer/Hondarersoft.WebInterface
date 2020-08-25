@@ -39,22 +39,6 @@ namespace Hondarersoft.WebInterface
         public CommonApiManager(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider;
-
-            // CpuModesController のインスタンスは、DI コンテナからではなく、
-            // このクラスの定義から払い出す。
-            // しかし、ILogger は DI コンテナから払い出したいので、
-            // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
-
-            // この文字列を定義ファイルから得るようにすれば、動的にインスタンスを登録できる。
-            Assembly asm = Assembly.Load("Hondarersoft.WebInterface.Sample");
-            var commonApiControllerType = asm.GetType("Hondarersoft.WebInterface.Sample.Controllers.CpuModesController");
-
-            var loggerType = typeof(ILogger<>).MakeGenericType(commonApiControllerType);
-            ILogger targetLogger = serviceProvider.GetService(loggerType) as ILogger;
-            ConstructorInfo constructor = commonApiControllerType.GetConstructor(new Type[] { typeof(ILogger) });
-            ICommonApiController commonApiController = constructor.Invoke(new object[] { targetLogger }) as ICommonApiController;
-
-            commonApiControllers.Add(commonApiController);
         }
 
         protected readonly List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
@@ -74,7 +58,25 @@ namespace Hondarersoft.WebInterface
             return this;
         }
 
-        public ICommonApiManager Regist(WebInterfaceBase webInterfaceBase)
+        public ICommonApiManager RegistController(string assemblyName, string classFullName)
+        {
+            Assembly asm = Assembly.Load(assemblyName);
+            var commonApiControllerType = asm.GetType(classFullName);
+
+            // ILogger は DI コンテナから払い出したいので、
+            // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
+
+            var loggerType = typeof(ILogger<>).MakeGenericType(commonApiControllerType);
+            ILogger targetLogger = serviceProvider.GetService(loggerType) as ILogger;
+            ConstructorInfo constructor = commonApiControllerType.GetConstructor(new Type[] { typeof(ILogger) });
+            ICommonApiController commonApiController = constructor.Invoke(new object[] { targetLogger }) as ICommonApiController;
+
+            commonApiControllers.Add(commonApiController);
+
+            return this;
+        }
+
+        public ICommonApiManager RegistInterface(WebInterfaceBase webInterfaceBase)
         {
             if (webInterfaceBase is WebApiService) // TODO: インターフェース化
             {

@@ -1,20 +1,18 @@
 ﻿using Hondarersoft.Hosting;
+using Hondarersoft.WebInterface;
 using Hondarersoft.WebInterface.Sample.Schemas;
 using Hondarersoft.WebInterface.Schemas;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
-using Hondarersoft.WebInterface;
 
 namespace WebApiClient
 {
     class WebApiClientImpl : LifetimeEventsHostedService
     {
-        static Hondarersoft.WebInterface.WebApiClient client = new Hondarersoft.WebInterface.WebApiClient()
+        static Hondarersoft.WebInterface.WebApiClient _client = new Hondarersoft.WebInterface.WebApiClient()
         {
             BaseAddress = new Uri("http://localhost:80/")
         };
@@ -25,11 +23,9 @@ namespace WebApiClient
 
         protected override async void OnStarted()
         {
-            //logger.LogInformation("{0} {1} {2}", configration.GetValue<string>("Option1"), configration.GetValue<int>("Option2"), configration.GetValue<Guid>("Option3"));
-
             base.OnStarted();
 
-            HttpResponseMessage response = await client.GetAsync("Temporary_Listen_Addresses/v1.0/cpumodes/localhost");
+            HttpResponseMessage response = await _client.GetAsync("Temporary_Listen_Addresses/v1.0/cpumodes/localhost");
 
             if (response.IsSuccessStatusCode)
             {
@@ -51,7 +47,7 @@ namespace WebApiClient
             Console.ReadLine();
 
             //Environment.ExitCode = 123;
-            appLifetime.StopApplication();
+            _appLifetime.StopApplication();
         }
 
     }
