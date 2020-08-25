@@ -46,8 +46,8 @@ namespace Hondarersoft.WebInterface
             // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
 
             // この文字列を定義ファイルから得るようにすれば、動的にインスタンスを登録できる。
-            Assembly asm = Assembly.Load("WebInterfaceLibrary");
-            var commonApiControllerType = asm.GetType("WebInterfaceLibrary.Controllers.CpuModesController");
+            Assembly asm = Assembly.Load("Hondarersoft.WebInterface.Sample");
+            var commonApiControllerType = asm.GetType("Hondarersoft.WebInterface.Sample.Controllers.CpuModesController");
 
             var loggerType = typeof(ILogger<>).MakeGenericType(commonApiControllerType);
             ILogger targetLogger = serviceProvider.GetService(loggerType) as ILogger;

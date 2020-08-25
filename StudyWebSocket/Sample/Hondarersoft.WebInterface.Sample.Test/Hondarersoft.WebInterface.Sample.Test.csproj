@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\WebInterfaceLibraryTest\Hondarersoft.WebInterface.Test.csproj" />
+    <ProjectReference Include="..\..\Hondarersoft.WebInterface.Test\Hondarersoft.WebInterface.Test.csproj" />
     <ProjectReference Include="..\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj" />
   </ItemGroup>
 
