@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Hondarersoft.WebInterface.Test
 {
-    public class TestLogger : ILogger
+    public class TestLogger<T> : ILogger<T>
     {
         public IDisposable BeginScope<TState>(TState state)
         {

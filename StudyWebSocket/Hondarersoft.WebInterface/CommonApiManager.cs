@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Hondarersoft.WebInterface
 {
@@ -61,15 +62,22 @@ namespace Hondarersoft.WebInterface
         public ICommonApiManager RegistController(string assemblyName, string classFullName)
         {
             Assembly asm = Assembly.Load(assemblyName);
-            var commonApiControllerType = asm.GetType(classFullName);
+            Type commonApiControllerType = asm.GetType(classFullName);
 
-            // ILogger は DI コンテナから払い出したいので、
-            // メソッドを使って ILogger を払い出し、ここで作成した CpuModesController に自分で注入している。
+            // 各インターフェースは DI コンテナから払い出したいので、ここで払い出し処理を行う。
+            // TODO: 各種例外への対応ができていない。
+            // TODO: 処理を別クラスに切り出したほうがいい。
 
-            var loggerType = typeof(ILogger<>).MakeGenericType(commonApiControllerType);
-            ILogger targetLogger = serviceProvider.GetService(loggerType) as ILogger;
-            ConstructorInfo constructor = commonApiControllerType.GetConstructor(new Type[] { typeof(ILogger) });
-            ICommonApiController commonApiController = constructor.Invoke(new object[] { targetLogger }) as ICommonApiController;
+            List<Type> types = new List<Type>();
+            List<object> objects = new List<object>();
+
+            foreach (ParameterInfo parameter in commonApiControllerType.GetConstructors().FirstOrDefault().GetParameters())
+            {
+                types.Add(parameter.ParameterType);
+                objects.Add(serviceProvider.GetService(parameter.ParameterType));
+            }
+            ConstructorInfo constructor = commonApiControllerType.GetConstructor(types.ToArray());
+            ICommonApiController commonApiController = constructor.Invoke(objects.ToArray()) as ICommonApiController;
 
             commonApiControllers.Add(commonApiController);
 

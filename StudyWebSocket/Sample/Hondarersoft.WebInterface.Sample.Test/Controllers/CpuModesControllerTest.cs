@@ -12,7 +12,7 @@ namespace Hondarersoft.WebInterface.Sample.Test.Controllers
         [Fact]
         public void Test()
         {
-            Sample.Controllers.CpuModesController CpuModesController = new Sample.Controllers.CpuModesController(new TestLogger());
+            Sample.Controllers.CpuModesController CpuModesController = new Sample.Controllers.CpuModesController(new TestLogger<Sample.Controllers.CpuModesController>());
 
             CommonApiArgs apiArgs = new CommonApiArgs("TestID", CommonApiArgs.Methods.GET, "/cpumodes/localhost");
 

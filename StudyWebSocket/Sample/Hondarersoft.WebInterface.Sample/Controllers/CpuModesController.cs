@@ -7,7 +7,7 @@ namespace Hondarersoft.WebInterface.Sample.Controllers
     [ApiPath("/cpumodes")]
     public class CpuModesController : CommonApiController
     {
-        public CpuModesController(ILogger logger) : base(logger)
+        public CpuModesController(ILogger<CpuModesController> logger) : base(logger)
         {
         }
 
