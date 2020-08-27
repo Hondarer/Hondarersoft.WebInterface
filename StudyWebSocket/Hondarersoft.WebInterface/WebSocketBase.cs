@@ -10,6 +10,11 @@ namespace Hondarersoft.WebInterface
 {
     public class WebSocketBase : WebInterfaceBase, IWebInterfaceService
     {
+        public WebSocketBase() : base()
+        {
+            BasePath = "ws";
+        }
+
         public virtual async void Start()
         {
         }

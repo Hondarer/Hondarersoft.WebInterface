@@ -7,6 +7,14 @@ namespace Hondarersoft.WebInterface
 {
     public class WebInterfaceBase : IDisposable
     {
+        public string Hostname { get; set; } = null;
+
+        public int PortNumber { get; set; } = 0;
+
+        public string BasePath { get; set; } = null;
+
+        public bool UseSSL { get; set; } = false;
+
         #region IDisposable Support
 
         private bool disposedValue = false; // 重複する呼び出しを検出するため

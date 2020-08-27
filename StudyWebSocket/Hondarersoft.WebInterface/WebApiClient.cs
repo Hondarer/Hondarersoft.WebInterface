@@ -23,25 +23,47 @@ namespace Hondarersoft.WebInterface
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public Uri BaseAddress
+        private string baseAddress = null;
+
+        public string BaseAddress
         {
             get
             {
-                return Client.BaseAddress;
+                return baseAddress;
             }
             set
             {
-                Client.BaseAddress = value;
+                if (baseAddress != value)
+                {
+                    baseAddress = value;
 
-                // ずっと使用していると DNS 変更が反映されないということが起きうるので、 
-                // HttpClient にコネクションを定期的にリサイクルするように指示をする。
-                var sp = ServicePointManager.FindServicePoint(Client.BaseAddress);
-                sp.ConnectionLeaseTimeout = 60 * 1000; // 1 minute
+                    Client.BaseAddress = new Uri(baseAddress);
+
+                    // ずっと使用していると DNS 変更が反映されないということが起きうるので、 
+                    // HttpClient にコネクションを定期的にリサイクルするように指示をする。
+                    var sp = ServicePointManager.FindServicePoint(Client.BaseAddress);
+                    sp.ConnectionLeaseTimeout = 60 * 1000; // 1 minute
+                }
             }
         }
 
         public Task<HttpResponseMessage> GetAsync(string requestUri)
         {
+            if ((string.IsNullOrEmpty(Hostname) == true) ||
+                (PortNumber == 0) ||
+                (string.IsNullOrEmpty(BasePath) == true))
+            {
+                throw new Exception("invalid endpoint parameter");
+            }
+
+            string ssl = string.Empty;
+            if (UseSSL == true)
+            {
+                ssl = "s";
+            }
+
+            BaseAddress = $"http{ssl}://{Hostname}:{PortNumber}/{BasePath}/";
+
             return Client.GetAsync(requestUri);
         }
     }

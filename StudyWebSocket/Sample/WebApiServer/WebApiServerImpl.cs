@@ -19,7 +19,7 @@ namespace WebApiServer
         {
             base.OnStarted();
 
-            _commonApiManager.RegistInterface(new WebApiService() { AllowCORS = true })
+            _commonApiManager.RegistInterface(new WebApiService() { AllowCORS = true, PortNumber=8001, BasePath="api/v1" })
                 .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
                 .Start();
         }

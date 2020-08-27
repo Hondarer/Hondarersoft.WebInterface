@@ -33,13 +33,25 @@ namespace Hondarersoft.WebInterface
 
         public bool AllowCORS { get; set; } = false;
 
+        public WebApiService():base()
+        {
+            Hostname = "+";
+        }
+
         /// <summary>
         /// APIサービスを起動する
         /// </summary>
         public void Start()
         {
-            Assembly asm = Assembly.GetExecutingAssembly();
-            string strSystemName = asm.GetName().Name;
+            if ((string.IsNullOrEmpty(Hostname) == true) ||
+                (PortNumber == 0) ||
+                (string.IsNullOrEmpty(BasePath) == true))
+            {
+                throw new Exception("invalid endpoint parameter");
+            }
+
+            //Assembly asm = Assembly.GetExecutingAssembly();
+            //string strSystemName = asm.GetName().Name;
 
             //log.Info("########## HTTP Server [start] ##########");
             //log.Info(">> System Name: " + strSystemName);
@@ -50,7 +62,12 @@ namespace Hondarersoft.WebInterface
                 // HTTPサーバーを起動する
                 this.listener = new HttpListener();
                 //this.listener.Prefixes.Add(String.Format("http://+:{0}/{1}/", Settings.Default.API_PORT, Settings.Default.API_PATH));
-                this.listener.Prefixes.Add(String.Format("http://+:{0}/{1}/", 80, "Temporary_Listen_Addresses/v1.0"));
+                string ssl = string.Empty;
+                if (UseSSL == true)
+                {
+                    ssl = "s";
+                }
+                this.listener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}/");
                 this.listener.Start();
 
                 //log.Info(Resources.StartServer);

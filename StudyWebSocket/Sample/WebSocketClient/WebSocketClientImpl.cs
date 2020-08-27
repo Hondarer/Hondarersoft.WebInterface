@@ -17,7 +17,7 @@ namespace WebSocketClient
         {
             base.OnStarted();
 
-            using (Hondarersoft.WebInterface.WebSocketClient webSocketClient = new Hondarersoft.WebInterface.WebSocketClient())
+            using (Hondarersoft.WebInterface.WebSocketClient webSocketClient = new Hondarersoft.WebInterface.WebSocketClient() { PortNumber = 8000, Hostname="localhost" })
             {
                 await webSocketClient.ConnectAsync();
 

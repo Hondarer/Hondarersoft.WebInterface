@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace Hondarersoft.Hosting
         {
             OnStarting();
 
-            _appLifetime.ApplicationStarted.Register(OnStarted);
+            _appLifetime.ApplicationStarted.Register(Started);
             _appLifetime.ApplicationStopping.Register(OnStopping);
             _appLifetime.ApplicationStopped.Register(OnStopped);
 
@@ -41,6 +42,23 @@ namespace Hondarersoft.Hosting
             _logger.LogInformation("OnStarting has been called.");
 
             // Perform on-startup activities here
+        }
+
+        private void Started()
+        {
+            try
+            {
+                // このメソッド内で例外が発生しても、プログラムは異常終了しないので、
+                // ここでキャッチして終了させる。
+                OnStarted();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("An error occurred starting the application\r\n{0}", ex);
+
+                Environment.ExitCode = 1;
+                _appLifetime.StopApplication();
+            }
         }
 
         protected virtual void OnStarted()

@@ -24,14 +24,36 @@ namespace Hondarersoft.WebInterface
 
         public int MaxClients { get; set; } = int.MaxValue;
 
+        public WebSocketService() : base()
+        {
+            Hostname = "+";
+        }
+
         /// <summary>
         /// WebSocketサーバースタート
         /// </summary>
         public override void Start()
         {
-            /// httpListenerで待ち受け
+            base.Start();
+
+            if ((string.IsNullOrEmpty(Hostname) == true) ||
+                (PortNumber == 0) ||
+                (string.IsNullOrEmpty(BasePath) == true))
+            {
+                throw new Exception("invalid endpoint parameter");
+            }
+
+            // httpListenerで待ち受け
             httpListener = new HttpListener();
-            httpListener.Prefixes.Add("http://localhost:8000/ws/");
+
+            string ssl = string.Empty;
+            if (UseSSL == true)
+            {
+                ssl = "s";
+            }
+            httpListener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}/");
+
+            //httpListener.Prefixes.Add("http://+:8000/ws/");
             httpListener.Start();
 
             ProcessHttpRequest();

@@ -19,7 +19,7 @@ namespace WebSocketServer
         {
             base.OnStarted();
 
-            _commonApiManager.RegistInterface(new WebSocketService())
+            _commonApiManager.RegistInterface(new WebSocketService() { PortNumber = 8000 })
                 .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
                 .Start();
         }

@@ -245,10 +245,10 @@ namespace Hondarersoft.WebInterface
         /// </summary>
         /// <param name="srcPath">URLパス</param>
         /// <returns>APIパス</returns>
-        private string GetApiPath(string srcPath)
+        private string GetApiPath(string srcPath, string basePath)
         {
             string[] path = srcPath.Split('?');
-            string condition = String.Format(@"^/{0}", "Temporary_Listen_Addresses/v1.0");
+            string condition = String.Format(@"^/{0}", basePath);
             //string condition = String.Format(@"^/{0}", Settings.Default.API_PATH);
             return Regex.Replace(path[0], condition, "");
         }
@@ -267,7 +267,7 @@ namespace Hondarersoft.WebInterface
                 writer = new StreamWriter(e.Response.OutputStream);
                 string reqBody = reader.ReadToEnd();
 
-                string path = GetApiPath(e.Request.RawUrl);
+                string path = GetApiPath(e.Request.RawUrl, (sender as IWebInterfaceService).BasePath);
 
                 // TODO: QueryString も渡せるようにしたほうがいい
                 //Console.WriteLine(req.QueryString.Get("hhh"));

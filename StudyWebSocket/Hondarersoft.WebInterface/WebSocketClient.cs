@@ -14,11 +14,20 @@ namespace Hondarersoft.WebInterface
 
         public override async void Start()
         {
+            base.Start();
+
             await ConnectAsync();
         }
 
         public async Task ConnectAsync()
         {
+            if ((string.IsNullOrEmpty(Hostname) == true) ||
+                (PortNumber == 0) ||
+                (string.IsNullOrEmpty(BasePath) == true))
+            {
+                throw new Exception("invalid endpoint parameter");
+            }
+
             if ((websocket != null) && ((websocket.State == WebSocketState.Connecting) || (websocket.State == WebSocketState.Open)))
             {
                 await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "The socket was closed via the ConnectAsync method.", CancellationToken.None);
@@ -26,7 +35,13 @@ namespace Hondarersoft.WebInterface
             }
 
             //接続先エンドポイントを指定
-            Uri uri = new Uri("ws://localhost:8000/ws/");
+
+            string ssl = string.Empty;
+            if (UseSSL == true)
+            {
+                ssl = "s";
+            }
+            Uri uri = new Uri($"ws{ssl}://{Hostname}:{PortNumber}/{BasePath}/");
 
             //サーバに対し、接続を開始
             websocket = new ClientWebSocket();

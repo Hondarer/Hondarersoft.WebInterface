@@ -14,7 +14,9 @@ namespace WebApiClient
     {
         static Hondarersoft.WebInterface.WebApiClient _client = new Hondarersoft.WebInterface.WebApiClient()
         {
-            BaseAddress = new Uri("http://localhost:80/")
+            Hostname="localhost",
+            PortNumber=8001,
+            BasePath="api/v1"
         };
 
         public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration) : base(logger, appLifetime, configration)
@@ -25,7 +27,7 @@ namespace WebApiClient
         {
             base.OnStarted();
 
-            HttpResponseMessage response = await _client.GetAsync("Temporary_Listen_Addresses/v1.0/cpumodes/localhost");
+            HttpResponseMessage response = await _client.GetAsync("cpumodes/localhost");
 
             if (response.IsSuccessStatusCode)
             {
