@@ -73,14 +73,23 @@ namespace Hondarersoft.WebInterface
 
         public void SetError(Errors error)
         {
-            Error = error;
-            ErrorMessage = error.ToString();
+            SetError(error, error.ToString());
         }
 
         public void SetError(Errors error, string message)
         {
             Error = error;
             ErrorMessage = message;
+            Handled = true;
+        }
+
+        public void SetException(Exception ex)
+        {
+#if DEBUG
+            SetError(Errors.InternalError, ex.ToString());
+#else
+            SetError(Errors.InternalError, ex.Message);
+#endif
         }
 
         public string Path { get; }

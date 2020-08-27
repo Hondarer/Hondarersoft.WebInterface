@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hondarersoft.WebInterface.Sample.Controllers
 {
-    [ApiPath("/cpumodes")]
+    [ApiPath("/api/v1/cpumodes")]
     public class CpuModesController : CommonApiController
     {
         public CpuModesController(ILogger<CpuModesController> logger) : base(logger)

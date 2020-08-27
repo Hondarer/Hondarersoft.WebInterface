@@ -14,7 +14,7 @@ namespace Hondarersoft.WebInterface.Sample.Test.Controllers
         {
             Sample.Controllers.CpuModesController CpuModesController = new Sample.Controllers.CpuModesController(new TestLogger<Sample.Controllers.CpuModesController>());
 
-            CommonApiArgs apiArgs = new CommonApiArgs("TestID", CommonApiArgs.Methods.GET, "/cpumodes/localhost");
+            CommonApiArgs apiArgs = new CommonApiArgs("TestID", CommonApiArgs.Methods.GET, "/api/v1/cpumodes/localhost");
 
             CpuModesController.Get(apiArgs);
 

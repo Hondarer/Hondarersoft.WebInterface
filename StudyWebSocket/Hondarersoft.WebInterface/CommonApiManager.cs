@@ -245,12 +245,10 @@ namespace Hondarersoft.WebInterface
         /// </summary>
         /// <param name="srcPath">URLパス</param>
         /// <returns>APIパス</returns>
-        private string GetApiPath(string srcPath, string basePath)
+        private string GetApiPath(string srcPath)
         {
             string[] path = srcPath.Split('?');
-            string condition = String.Format(@"^/{0}", basePath);
-            //string condition = String.Format(@"^/{0}", Settings.Default.API_PATH);
-            return Regex.Replace(path[0], condition, "");
+            return path[0];
         }
 
         private void WebApiService_WebApiRequest(object sender, WebApiService.WebApiRequestEventArgs e)
@@ -267,7 +265,7 @@ namespace Hondarersoft.WebInterface
                 writer = new StreamWriter(e.Response.OutputStream);
                 string reqBody = reader.ReadToEnd();
 
-                string path = GetApiPath(e.Request.RawUrl, (sender as IWebInterfaceService).BasePath);
+                string path = GetApiPath(e.Request.RawUrl);
 
                 // TODO: QueryString も渡せるようにしたほうがいい
                 //Console.WriteLine(req.QueryString.Get("hhh"));
