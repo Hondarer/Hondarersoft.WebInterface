@@ -44,8 +44,34 @@ namespace Hondarersoft.WebInterface
             Uri uri = new Uri($"ws{ssl}://{Hostname}:{PortNumber}/{BasePath}/");
 
             //サーバに対し、接続を開始
-            websocket = new ClientWebSocket();
-            await websocket.ConnectAsync(uri, CancellationToken.None);
+
+            int retry = 0;
+
+            while (true) 
+            {
+                try
+                {
+                    websocket = new ClientWebSocket();
+                    await websocket.ConnectAsync(uri, CancellationToken.None);
+                    break;
+                }
+                catch (WebSocketException)
+                {
+                    websocket.Dispose();
+                    websocket = null;
+
+                    retry++;
+
+                    Console.WriteLine($"Unable to connect {retry}/3 time(s). Retry after 3000 milliseconds."); // TODO: ILogger & Const
+
+                    if (retry >= 3) // TODO: メソッド引数に
+                    {
+                        throw;
+                    }
+
+                    Thread.Sleep(3000);
+                }
+            }
 
             ProcessRecieve(websocket);
         }
