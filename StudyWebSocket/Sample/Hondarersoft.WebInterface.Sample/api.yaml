@@ -4,7 +4,7 @@ info:
   description: テスト
   version: "1.0"
 servers:
-  - url: http://localhost:80/Temporary_Listen_Addresses/v1.0
+  - url: http://localhost:8001/api/v1
 paths:
   /cpumodes:
     get:
