@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,9 +15,5 @@
     <ProjectReference Include="..\..\Hondarersoft.WebInterface\Hondarersoft.WebInterface.csproj" />
     <ProjectReference Include="..\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj" />
   </ItemGroup>
-
-
-
-
 
 </Project>
