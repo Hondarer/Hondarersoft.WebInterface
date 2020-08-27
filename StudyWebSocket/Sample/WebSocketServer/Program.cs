@@ -16,46 +16,67 @@ using System.Threading.Tasks;
 
 namespace WebSocketServer
 {
+    /// <summary>
+    /// WebSocket サーバーの動作確認を行うコマンドを提供します。
+    /// </summary>
     class Program
     {
+        /// <summary>
+        /// プログラムのエントリー ポイントを提供します。
+        /// </summary>
+        /// <param name="args">プログラムの引数。</param>
+        /// <returns>待機する <see cref="Task"/>。</returns>
         static async Task Main(string[] args)
         {
             await new HostBuilder()
-                .ConfigureAppConfiguration((hostContext, configApp) =>
+            .ConfigureAppConfiguration((hostContext, configBuilder) =>
+            {
+                // 環境名の組み立て
+                string environmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
+                if (environmentName == null)
                 {
-                    // Config の追加
-                    hostContext.HostingEnvironment.EnvironmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "production";
-                    configApp.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
-                    configApp.AddCommandLine(args);
-                    string jsonFilePath = $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json";
-                    if (File.Exists(jsonFilePath) == true)
-                    {
-                        configApp.AddJsonFile(jsonFilePath);
-                    }
-                })
-                .ConfigureLogging((context, b) =>
-                {
-                    b.SetMinimumLevel(LogLevel.Information);
+                    environmentName = "production";
+                }
+                hostContext.HostingEnvironment.EnvironmentName = environmentName;
 
-                    // Console ロガーの追加
-                    b.AddConsole(c =>
-                    {
-                        c.TimestampFormat = "[HH:mm:ss.fff] ";
-                    });
+                // 基底パスの設定
+                configBuilder.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
+
+                // プログラムの引数を設定
+                configBuilder.AddCommandLine(args);
+
+                // 設定ファイルの読込
+                string jsonFilePath = $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json";
+                if (File.Exists(jsonFilePath) == true)
+                {
+                    configBuilder.AddJsonFile(jsonFilePath);
+                }
+            })
+            .ConfigureLogging((hostContext, loggingBuilder) =>
+            {
+                // ログ出力の最低レベルを設定
+                loggingBuilder.SetMinimumLevel(LogLevel.Information);
+
+                // Console ロガーの追加
+                loggingBuilder.AddConsole(configure =>
+                {
+                    configure.TimestampFormat = "[HH:mm:ss.fff] ";
+                });
+
 #if DEBUG
-                    // Debug ロガーの追加
-                    b.AddDebug();
+                // Debug ロガーの追加
+                loggingBuilder.AddDebug();
 #endif
-                })
-                .ConfigureServices(services =>
-                {
-                    // サービス処理の紐づけ(AddTransient, AddSingleton)
-                    services.AddSingleton<ICommonApiManager, CommonApiManager>();
+            })
+            .ConfigureServices(services =>
+            {
+                // サービス処理の紐づけ(AddTransient, AddSingleton)
+                services.AddSingleton<ICommonApiManager, CommonApiManager>();
 
-                    // コンソールアプリケーションの実装クラスを指定
-                    services.AddHostedService<WebSocketServerImpl>();
-                })
-                .RunConsoleAsync();
+                // アプリケーションの実装クラスを指定
+                services.AddHostedService<WebSocketServerImpl>();
+            })
+            .RunConsoleAsync();
         }
     }
 }
