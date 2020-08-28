@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -9,15 +10,83 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiClient : WebInterfaceBase
+    public class WebApiClient : WebInterfaceBase, IWebInteraceProxySetting
     {
         protected HttpClient Client { get; set; }
+
+        #region IWebInteraceProxySetting Implements
+
+        private bool _useDefaultProxy = false;
+
+        public bool UseDefaultProxy
+        {
+            get
+            {
+                return _useDefaultProxy;
+            }
+            set
+            {
+                _useDefaultProxy = value;
+                if (value == true)
+                {
+                    UseCustomProxy = false;
+                }
+            }
+        }
+
+        private bool _useCustomProxy = false;
+
+        public bool UseCustomProxy
+        {
+            get
+            {
+                return _useCustomProxy;
+            }
+            set
+            {
+                _useCustomProxy = value;
+                if (value == true)
+                {
+                    UseDefaultProxy = false;
+                }
+            }
+        }
+
+        public string ProxyUrl { get; set; } = null;
+
+        public string ProxyAccount { get; set; } = null;
+
+        public string ProxyPassword { get; set; } = null;
+
+        #endregion
 
         public WebApiClient()
         {
 
             // Cookie のやり取りをしている場合に、Cookie がキャッシュされないようにする。
-            Client = new HttpClient(new HttpClientHandler() { UseCookies = false });
+            // Proxy はデフォルトでは明示的に OFF にする。
+
+            HttpClientHandler httpClientHandler = new HttpClientHandler() { UseCookies = false };
+
+            if (UseDefaultProxy == false)
+            {
+                if (UseCustomProxy == true)
+                {
+                    httpClientHandler.UseProxy = true;
+                    httpClientHandler.Proxy = new WebProxy(ProxyUrl)
+                    {
+                        Credentials = new NetworkCredential(ProxyAccount, ProxyPassword)
+                    };
+                }
+                else
+                {
+                    // 引数なしの WebProxy は、直接接続を提供する。
+                    httpClientHandler.UseProxy = false;
+                    httpClientHandler.Proxy = new WebProxy();
+                }
+            }
+
+            Client = new HttpClient(httpClientHandler);
 
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

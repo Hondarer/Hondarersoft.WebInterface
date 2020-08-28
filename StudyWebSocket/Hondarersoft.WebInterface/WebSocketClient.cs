@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -8,9 +9,55 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebSocketClient : WebSocketBase
+    public class WebSocketClient : WebSocketBase, IWebInteraceProxySetting
     {
         protected ClientWebSocket websocket = null;
+
+        #region IWebInteraceProxySetting Implements
+
+        private bool _useDefaultProxy = false;
+
+        public bool UseDefaultProxy
+        {
+            get
+            {
+                return _useDefaultProxy;
+            }
+            set
+            {
+                _useDefaultProxy = value;
+                if (value == true)
+                {
+                    UseCustomProxy = false;
+                }
+            }
+        }
+
+        private bool _useCustomProxy = false;
+
+        public bool UseCustomProxy
+        {
+            get
+            {
+                return _useCustomProxy;
+            }
+            set
+            {
+                _useCustomProxy = value;
+                if (value == true)
+                {
+                    UseDefaultProxy = false;
+                }
+            }
+        }
+
+        public string ProxyUrl { get; set; } = null;
+
+        public string ProxyAccount { get; set; } = null;
+
+        public string ProxyPassword { get; set; } = null;
+
+        #endregion
 
         public override async void Start()
         {
@@ -52,6 +99,25 @@ namespace Hondarersoft.WebInterface
                 try
                 {
                     websocket = new ClientWebSocket();
+
+                    ClientWebSocketOptions options = websocket.Options;
+
+                    if (UseDefaultProxy == false)
+                    {
+                        if (UseCustomProxy == true)
+                        {
+                            options.Proxy = new WebProxy(ProxyUrl)
+                            {
+                                Credentials = new NetworkCredential(ProxyAccount, ProxyPassword)
+                            };
+                        }
+                        else
+                        {
+                            // 引数なしの WebProxy は、直接接続を提供する。
+                            options.Proxy = new WebProxy();
+                        }
+                    }
+
                     await websocket.ConnectAsync(uri, CancellationToken.None);
                     break;
                 }
