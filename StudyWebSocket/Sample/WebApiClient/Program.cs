@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Hondarersoft.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -64,6 +65,7 @@ namespace WebApiClient
             .ConfigureServices(services =>
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
+                services.AddSingleton<IExitService, ExitService>();
 
                 // アプリケーションの実装クラスを指定
                 services.AddHostedService<WebApiClientImpl>();

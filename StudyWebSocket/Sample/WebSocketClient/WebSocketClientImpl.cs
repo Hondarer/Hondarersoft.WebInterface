@@ -9,7 +9,7 @@ namespace WebSocketClient
 {
     class WebSocketClientImpl : LifetimeEventsHostedService
     {
-        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration) : base(logger, appLifetime, configration)
+        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService) : base(logger, appLifetime, configration, exitService)
         {
         }
 
@@ -30,7 +30,8 @@ namespace WebSocketClient
 
             Console.WriteLine("Press any key");
             Console.ReadLine();
-            _appLifetime.StopApplication();
+
+            _exitService.Requset(0);
         }
     }
 }

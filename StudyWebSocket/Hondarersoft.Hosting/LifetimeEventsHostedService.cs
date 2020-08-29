@@ -10,15 +10,22 @@ namespace Hondarersoft.Hosting
     public class LifetimeEventsHostedService : IHostedService
     {
         protected readonly ILogger _logger = null;
-        protected readonly IHostApplicationLifetime _appLifetime = null;
+        private readonly IHostApplicationLifetime _appLifetime = null;
         protected readonly IConfiguration _configration = null;
+        protected readonly IExitService _exitService = null;
+
+        /// <summary>
+        /// 明示的に指定されない異常終了の終了コードを取得または設定します。
+        /// </summary>
+        public int ErrorExitCode { get; set; } = 1;
 
         public LifetimeEventsHostedService(
-            ILogger<LifetimeEventsHostedService> logger, IHostApplicationLifetime appLifetime, IConfiguration configration)
+            ILogger<LifetimeEventsHostedService> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService)
         {
             _logger = logger;
             _appLifetime = appLifetime;
             _configration = configration;
+            _exitService = exitService;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -39,6 +46,9 @@ namespace Hondarersoft.Hosting
 
         protected virtual void OnStarting()
         {
+            // このメソッド内の例外は、
+            // Generic Host の外側にスローされる。
+
             _logger.LogInformation("OnStarting has been called.");
 
             // Perform on-startup activities here
@@ -50,14 +60,17 @@ namespace Hondarersoft.Hosting
             {
                 // このメソッド内で例外が発生しても、プログラムは異常終了しないので、
                 // ここでキャッチして終了させる。
+
+                // 本来の Generic Host の考えであれば、他のサービスを巻き込んで
+                // Host 全体を止めるかどうかは設計の問題であり、直ちに決められないが、
+                // 本実装では停止させることとしている。
                 OnStarted();
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("An error occurred starting the application\r\n{0}", ex);
+                _logger.LogCritical("An error occurred starting the application.\r\n{0}", ex);
 
-                Environment.ExitCode = 1;
-                _appLifetime.StopApplication();
+                _exitService.Requset(ErrorExitCode);
             }
         }
 
@@ -70,6 +83,9 @@ namespace Hondarersoft.Hosting
 
         protected virtual void OnStopping()
         {
+            // このメソッド内の例外は、
+            // ログされた上でアプリケーションが終了する。
+
             _logger.LogInformation("OnStopping has been called.");
 
             // Perform on-stopping activities here
@@ -77,6 +93,9 @@ namespace Hondarersoft.Hosting
 
         protected virtual void OnStopped()
         {
+            // このメソッド内の例外は、
+            // ログされた上でアプリケーションが終了する。
+
             _logger.LogInformation("OnStopped has been called.");
 
             // Perform post-stopped activities here

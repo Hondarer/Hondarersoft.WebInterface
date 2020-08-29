@@ -4,6 +4,7 @@
 // [C#]System.Net.WebSocketsを試す。その２。サーバー編。
 // http://kimux.net/?p=956
 
+using Hondarersoft.Hosting;
 using Hondarersoft.WebInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,6 +72,7 @@ namespace WebSocketServer
             .ConfigureServices(services =>
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
+                services.AddSingleton<IExitService, ExitService>();
                 services.AddSingleton<ICommonApiManager, CommonApiManager>();
 
                 // アプリケーションの実装クラスを指定

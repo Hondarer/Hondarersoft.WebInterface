@@ -10,7 +10,7 @@ namespace WebApiServer
     {
         private readonly ICommonApiManager _commonApiManager = null;
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration)
+        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, ICommonApiManager commonApiManager, IExitService exitService) : base(logger, appLifetime, configration, exitService)
         {
             _commonApiManager = commonApiManager;
         }

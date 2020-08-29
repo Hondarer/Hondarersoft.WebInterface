@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Hondarersoft.WebInterface;
+using Hondarersoft.Hosting;
 
 namespace WebApiServer
 {
@@ -65,6 +66,7 @@ namespace WebApiServer
             .ConfigureServices(services =>
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
+                services.AddSingleton<IExitService, ExitService>();
                 services.AddSingleton<ICommonApiManager, CommonApiManager>();
 
                 // アプリケーションの実装クラスを指定

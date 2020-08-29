@@ -19,7 +19,7 @@ namespace WebApiClient
             BasePath="api/v1"
         };
 
-        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration) : base(logger, appLifetime, configration)
+        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService) : base(logger, appLifetime, configration, exitService)
         {
         }
 
@@ -48,8 +48,7 @@ namespace WebApiClient
             Console.WriteLine("Press any key");
             Console.ReadLine();
 
-            //Environment.ExitCode = 123;
-            _appLifetime.StopApplication();
+            _exitService.Requset(0);
         }
 
     }

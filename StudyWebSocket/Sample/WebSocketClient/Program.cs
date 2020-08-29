@@ -1,6 +1,7 @@
 ﻿// C#でWebSocketのサンプルを動かしてみた
 // https://qiita.com/Zumwalt/items/53797b0156ebbdcdbfb1
 
+using Hondarersoft.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -67,6 +68,7 @@ namespace WebSocketClient
             .ConfigureServices(services =>
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
+                services.AddSingleton<IExitService, ExitService>();
 
                 // アプリケーションの実装クラスを指定
                 services.AddHostedService<WebSocketClientImpl>();
