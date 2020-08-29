@@ -42,13 +42,25 @@ namespace Hondarersoft.WebInterface
             this.serviceProvider = serviceProvider;
         }
 
-        protected readonly List<WebInterfaceBase> webInterfaceBasees = new List<WebInterfaceBase>();
+        protected readonly Dictionary<string, IWebInterface> webInterfaces = new Dictionary<string, IWebInterface>();
+
+        protected readonly Dictionary<IWebInterface, string> webInterfaceIdentities = new Dictionary<IWebInterface, string>();
+
+
+        public IReadOnlyList<string> WebInterfaceIdentifies
+        {
+            get
+            {
+                return webInterfaces.Keys.ToList();
+            }
+        }
+
 
         protected readonly List<ICommonApiController> commonApiControllers = new List<ICommonApiController>();
 
         public ICommonApiManager Start()
         {
-            foreach (var webInterfaceBase in webInterfaceBasees)
+            foreach (var webInterfaceBase in webInterfaces.Values)
             {
                 if (webInterfaceBase is IWebInterfaceService)
                 {
@@ -84,7 +96,7 @@ namespace Hondarersoft.WebInterface
             return this;
         }
 
-        public ICommonApiManager RegistInterface(WebInterfaceBase webInterfaceBase)
+        public ICommonApiManager RegistInterface(IWebInterface webInterfaceBase, string webInterfaceIdentify = null)
         {
             if (webInterfaceBase is WebApiService) // TODO: インターフェース化
             {
@@ -95,7 +107,14 @@ namespace Hondarersoft.WebInterface
                 (webInterfaceBase as WebSocketBase).WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
             }
 
-            webInterfaceBasees.Add(webInterfaceBase);
+            if(webInterfaceIdentify == null)
+            {
+                webInterfaceIdentify = Guid.NewGuid().ToString();
+            }
+
+            // TODO: キー重複で例外が発生する。メソッド仕様に明記要。
+            webInterfaces.Add(webInterfaceIdentify, webInterfaceBase);
+            webInterfaceIdentities.Add(webInterfaceBase, webInterfaceIdentify);
 
             return this;
         }
@@ -105,7 +124,7 @@ namespace Hondarersoft.WebInterface
             // TODO: バッチ処理に対応していない(仕様にはあるが必要性は疑問)
             //       受信したデータがいきなり配列の場合はバッチ処理
 
-            WebSocket webSocket = sender as WebSocket;
+            WebSocketBase webSocketBase = sender as WebSocketBase;
             dynamic document;
 
             try
@@ -191,7 +210,7 @@ namespace Hondarersoft.WebInterface
                     {
                         IgnoreNullValues = true
                     };
-                    await WebSocketBase.SendJsonAsync(response, webSocket, options);
+                    await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response, options);
                 }
                 return;
             }
@@ -236,7 +255,7 @@ namespace Hondarersoft.WebInterface
                 };
 
                 // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await WebSocketBase.SendJsonAsync(response, webSocket, options);
+                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response, options);
             }
         }
 
@@ -385,6 +404,5 @@ namespace Hondarersoft.WebInterface
                 apiArgs.SetError(CommonApiArgs.Errors.MethodNotFound);
             }
         }
-
     }
 }

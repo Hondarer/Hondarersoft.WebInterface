@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiService : WebInterfaceBase, IWebInterfaceService
+    public class WebApiService : WebInterface, IWebInterfaceService
     {
         public class WebApiRequestEventArgs: EventArgs
         {

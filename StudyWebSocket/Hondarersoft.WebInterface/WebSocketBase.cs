@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -8,8 +9,19 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebSocketBase : WebInterfaceBase, IWebInterfaceService
+    public class WebSocketBase : WebInterface, IWebInterfaceService
     {
+        protected readonly Dictionary<string, WebSocket> webSockets = new Dictionary<string, WebSocket>();
+        protected readonly Dictionary<WebSocket, string> webSocketIdentities = new Dictionary<WebSocket, string>();
+
+        public IReadOnlyList<string> WebSocketIdentifies
+        {
+            get
+            {
+                return webSockets.Keys.ToList();
+            }
+        }
+
         public WebSocketBase() : base()
         {
             BasePath = "ws";
@@ -21,10 +33,13 @@ namespace Hondarersoft.WebInterface
 
         public class WebSocketRecieveTextEventArgs : EventArgs
         {
+            public string WebSocketIdentify { get; }
+
             public string Message { get; }
 
-            public WebSocketRecieveTextEventArgs(string message)
+            public WebSocketRecieveTextEventArgs(string webSocketIdentify, string message)
             {
+                WebSocketIdentify = webSocketIdentify;
                 Message = message;
             }
         }
@@ -32,34 +47,36 @@ namespace Hondarersoft.WebInterface
         public delegate void WebSocketRecieveTextHandler(object sender, WebSocketRecieveTextEventArgs e);
         public event WebSocketRecieveTextHandler WebSocketRecieveText;
 
-        public static async Task SendTextAsync(string message, WebSocket webSocket)
+        public async Task SendTextAsync(string webSocketIdentify, string message)
         {
             byte[] sendbuffer = Encoding.UTF8.GetBytes(message);
-            await SendBufferAsync(sendbuffer, webSocket);
+            await SendByteArrayAsTextAsync(webSocketIdentify, sendbuffer);
         }
 
-        public static async Task SendJsonAsync(object message, WebSocket webSocket, JsonSerializerOptions options = null)
+        public async Task SendJsonAsync(string webSocketIdentify, object message, JsonSerializerOptions options = null)
         {
             byte[] sendbuffer = JsonSerializer.SerializeToUtf8Bytes(message, options);
+            await SendByteArrayAsTextAsync(webSocketIdentify, sendbuffer);
+        }
+
+        protected async Task SendByteArrayAsTextAsync(string webSocketIdentify, byte[] sendbuffer)
+        {
+            ArraySegment<byte> segment = new ArraySegment<byte>(sendbuffer);
 
             // TODO: 重要:
             // このタイミングでソケットが閉じていると、HttpListenerExceptionが発生するため
             // 各処理は例外のハンドリングをきちんと行う必要がある。現状棚卸未。
-            await SendBufferAsync(sendbuffer, webSocket);
-        }
-
-        protected static async Task SendBufferAsync(byte[] sendbuffer, WebSocket webSocket)
-        {
-            ArraySegment<byte> segment = new ArraySegment<byte>(sendbuffer);
-            await webSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
+            await webSockets[webSocketIdentify].SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
         /// <summary>
         /// WebSocket接続毎の処理
         /// </summary>
-        /// <param name="listenerContext"></param>
-        protected virtual async void ProcessRecieve(WebSocket webSocket)
+        protected virtual async void ProcessRecieve(string webSocketIdentify, WebSocket webSocket)
         {
+            webSockets.Add(webSocketIdentify, webSocket);
+            webSocketIdentities.Add(webSocket, webSocketIdentify);
+
             await OnConnected(webSocket);
 
             try
@@ -109,7 +126,7 @@ namespace Hondarersoft.WebInterface
                     string message = Encoding.UTF8.GetString(buffer, 0, count);
                     Console.WriteLine("> " + message);
 
-                    await OnRecieveText(webSocket, message);
+                    await OnRecieveText(webSocketIdentify, message);
                 }
             }
             catch (Exception ex)
@@ -119,31 +136,59 @@ namespace Hondarersoft.WebInterface
             }
             finally
             {
+                webSockets.Remove(webSocketIdentities[webSocket]);
+                webSocketIdentities.Remove(webSocket);
+
                 await OnClosed(webSocket);
                 Console.WriteLine("{0}:Session End:{1}", DateTime.Now.ToString(), webSocket.CloseStatusDescription);
             }
         }
 
-#pragma warning disable CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます
-        protected virtual async Task OnRecieveText(WebSocket webSocket, string message)
-#pragma warning restore CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます
+        protected virtual Task OnRecieveText(string webSocketIdentify, string message)
         {
             if (WebSocketRecieveText != null)
             {
-                WebSocketRecieveText(webSocket, new WebSocketRecieveTextEventArgs(message));
+                WebSocketRecieveText(this, new WebSocketRecieveTextEventArgs(webSocketIdentify, message));
             }
+
+            return Task.CompletedTask;
         }
 
-#pragma warning disable CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます
-        protected virtual async Task OnConnected(WebSocket webSocket)
-#pragma warning restore CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます
+        protected virtual Task OnConnected(WebSocket webSocket)
         {
+            return Task.CompletedTask;
         }
 
-#pragma warning disable CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます
-        protected virtual async Task OnClosed(WebSocket webSocket)
-#pragma warning restore CS1998 // 非同期メソッドは、'await' 演算子がないため、同期的に実行されます
+        protected virtual Task OnClosed(WebSocket webSocket)
         {
+            webSocket.Dispose();
+            return Task.CompletedTask;
         }
+
+        #region IDisposable Support
+
+        protected override void OnDispose(bool disposing)
+        {
+            if (disposing == true)
+            {
+                // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                Parallel.ForEach(webSockets.Values, ws =>
+                {
+                    if (ws.State == WebSocketState.Open)
+                    {
+                        ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    }
+                });
+
+                Console.WriteLine("{0}:Disposed", DateTime.Now.ToString());
+            }
+
+            // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+            // TODO: 大きなフィールドを null に設定します。
+
+            base.OnDispose(disposing);
+        }
+
+        #endregion
     }
 }

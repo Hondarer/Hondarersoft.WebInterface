@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebInterfaceBase : IDisposable
+    public class WebInterface : IWebInterface, IDisposable
     {
         public string Hostname { get; set; } = null;
 
@@ -40,7 +40,7 @@ namespace Hondarersoft.WebInterface
             }
         }
 
-        ~WebInterfaceBase()
+        ~WebInterface()
         {
             // このコードを変更しないでください。クリーンアップ コードを OnDispose(bool disposing) に記述します。
             Dispose(false);

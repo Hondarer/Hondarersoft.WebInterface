@@ -11,6 +11,6 @@ namespace Hondarersoft.WebInterface
         public ICommonApiManager RegistController(string assemblyName, string classFullName);
 
 
-        public ICommonApiManager RegistInterface(WebInterfaceBase webInterfaceBase);
+        public ICommonApiManager RegistInterface(IWebInterface webInterfaceBase, string identify = null);
     }
 }

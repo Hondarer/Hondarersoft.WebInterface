@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiClient : WebInterfaceBase, IWebInteraceProxySetting
+    public class WebApiClient : WebInterface, IWebInteraceProxySetting
     {
         protected HttpClient Client { get; set; }
 
