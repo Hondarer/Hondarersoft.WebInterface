@@ -8,10 +8,12 @@ namespace WebApiServer
 {
     public class WebApiServerImpl : LifetimeEventsHostedService
     {
+        private readonly IWebApiService _webApiService = null;
         private readonly ICommonApiManager _commonApiManager = null;
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, ICommonApiManager commonApiManager, IExitService exitService) : base(logger, appLifetime, configration, exitService)
+        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebApiService webApiService, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
         {
+            _webApiService = webApiService;
             _commonApiManager = commonApiManager;
         }
 
@@ -19,7 +21,14 @@ namespace WebApiServer
         {
             base.OnStarted();
 
-            _commonApiManager.RegistInterface(new WebApiService() { AllowCORS = true, PortNumber = 8001, BasePath = "api/v1", Hostname = "localhost" }) // Hostname を既定の "+" で実行する場合、管理者権限が必要
+            _webApiService.AllowCORS = true;
+
+            IWebInterface webInterace = _webApiService as IWebInterface;
+            webInterace.Hostname = "localhost"; // Hostname を既定の "+" で実行する場合、管理者権限が必要
+            webInterace.PortNumber = 8001;
+            webInterace.BasePath = "api/v1";
+
+            _commonApiManager.RegistInterface(webInterace)
                 .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
                 .Start();
         }

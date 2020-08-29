@@ -1,4 +1,5 @@
 ﻿using Hondarersoft.Hosting;
+using Hondarersoft.WebInterface;
 using Hondarersoft.WebInterface.Schemas;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -9,27 +10,33 @@ namespace WebSocketClient
 {
     class WebSocketClientImpl : LifetimeEventsHostedService
     {
-        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService) : base(logger, appLifetime, configration, exitService)
+        private readonly IWebSocketClient _webSocketClient = null;
+
+        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketClient webSocketClient) : base(logger, appLifetime, configration, exitService)
         {
+            _webSocketClient = webSocketClient;
         }
 
         protected override async void OnStarted()
         {
             base.OnStarted();
 
-            using (Hondarersoft.WebInterface.WebSocketClient webSocketClient = new Hondarersoft.WebInterface.WebSocketClient() { PortNumber = 8000, Hostname="localhost" })
-            {
-                await webSocketClient.ConnectAsync();
+            IWebInterface webInterace = _webSocketClient as IWebInterface;
+            webInterace.Hostname = "localhost";
+            webInterace.PortNumber = 8000;
 
-                // 統一した要求の形式を設けて、そこに要求したい
+            await _webSocketClient.ConnectAsync();
 
-                await webSocketClient.SendJsonAsync(new JsonRpcRequest() { Method = "api.v1.cpumodes.localhost.get" });
+            // 統一した要求の形式を設けて、そこに要求したい
 
-                // 戻っては来ているが、同期して受け取る処理をまだ書いていない
-            }
+            await _webSocketClient.SendJsonAsync(new JsonRpcRequest() { Method = "api.v1.cpumodes.localhost.get" });
+
+            // 戻っては来ているが、同期して受け取る処理をまだ書いていない
 
             Console.WriteLine("Press any key");
             Console.ReadLine();
+
+            (webInterace as IDisposable).Dispose();
 
             _exitService.Requset(0);
         }

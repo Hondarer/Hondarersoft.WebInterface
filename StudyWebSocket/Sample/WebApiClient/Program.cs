@@ -1,4 +1,5 @@
 ﻿using Hondarersoft.Hosting;
+using Hondarersoft.WebInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -66,6 +67,7 @@ namespace WebApiClient
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
+                services.AddTransient<IWebApiClient, Hondarersoft.WebInterface.WebApiClient>();
 
                 // アプリケーションの実装クラスを指定
                 services.AddHostedService<WebApiClientImpl>();

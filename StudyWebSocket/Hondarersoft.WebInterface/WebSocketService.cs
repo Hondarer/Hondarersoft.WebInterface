@@ -1,6 +1,7 @@
 ﻿// [C#]System.Net.WebSocketsを試す。その２。サーバー編。
 // http://kimux.net/?p=956
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -13,13 +14,13 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebSocketService : WebSocketBase
+    public class WebSocketService : WebSocketBase, IWebSocketService
     {
         private HttpListener httpListener = null; // TODO: Stop対応、稼働中の再スタート、Disopseの対応など
 
         public int MaxClients { get; set; } = int.MaxValue;
 
-        public WebSocketService() : base()
+        public WebSocketService(ILogger<WebSocketService> logger) : base(logger)
         {
             Hostname = "+";
         }
@@ -77,14 +78,16 @@ namespace Hondarersoft.WebInterface
                         listenerContext.Response.Close();
                     }
 
-                    Console.WriteLine("{0}:New Session:{1}", DateTime.Now.ToString(), listenerContext.Request.RemoteEndPoint.Address.ToString());
+                    string webSocketIdentify = Guid.NewGuid().ToString();
+
+                    _logger.LogInformation("WebSocketRequest from {0}, accept. webSocketIdentify = {1}.", listenerContext.Request.RemoteEndPoint.Address.ToString(), webSocketIdentify);
                     WebSocket websocket = (await listenerContext.AcceptWebSocketAsync(subProtocol: null)).WebSocket;
 
-                    ProcessRecieve(Guid.NewGuid().ToString(), websocket);
+                    ProcessRecieve(webSocketIdentify, websocket);
                 }
                 else
                 {
-                    /// httpレスポンスを返す
+                    // httpレスポンスを返す
                     listenerContext.Response.StatusCode = 400;
                     listenerContext.Response.Close();
                 }

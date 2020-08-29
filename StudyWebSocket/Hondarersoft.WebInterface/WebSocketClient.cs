@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebSocketClient : WebSocketBase, IWebInteraceProxySetting
+    public class WebSocketClient : WebSocketBase, IWebSocketClient, IWebInteraceProxySetting
     {
         protected ClientWebSocket websocket = null;
 
@@ -59,6 +60,10 @@ namespace Hondarersoft.WebInterface
         public string ProxyPassword { get; set; } = null;
 
         #endregion
+
+        public WebSocketClient(ILogger<WebSocketClient> logger) : base(logger)
+        {
+        }
 
         public override async void Start()
         {

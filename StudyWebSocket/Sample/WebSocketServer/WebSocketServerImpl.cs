@@ -8,10 +8,12 @@ namespace WebSocketServer
 {
     public class WebSocketServerImpl : LifetimeEventsHostedService
     {
-        private readonly ICommonApiManager _commonApiManager;
+        private readonly IWebSocketService _webSocketService = null;
+        private readonly ICommonApiManager _commonApiManager = null;
 
-        public WebSocketServerImpl(ILogger<WebSocketServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, ICommonApiManager commonApiManager, IExitService exitService) : base(logger, appLifetime, configration, exitService)
+        public WebSocketServerImpl(ILogger<WebSocketServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketService webSocketService, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
         {
+            _webSocketService = webSocketService;
             _commonApiManager = commonApiManager;
         }
 
@@ -19,7 +21,11 @@ namespace WebSocketServer
         {
             base.OnStarted();
 
-            _commonApiManager.RegistInterface(new WebSocketService() { PortNumber = 8000, Hostname="localhost" }) // Hostname を既定の "+" で実行する場合、管理者権限が必要
+            IWebInterface webInterace = _webSocketService as IWebInterface;
+            webInterace.Hostname = "localhost"; // Hostname を既定の "+" で実行する場合、管理者権限が必要
+            webInterace.PortNumber = 8000;
+
+            _commonApiManager.RegistInterface(webInterace)
                 .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
                 .Start();
         }

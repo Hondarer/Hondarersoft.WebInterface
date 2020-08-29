@@ -98,13 +98,13 @@ namespace Hondarersoft.WebInterface
 
         public ICommonApiManager RegistInterface(IWebInterface webInterfaceBase, string webInterfaceIdentify = null)
         {
-            if (webInterfaceBase is WebApiService) // TODO: インターフェース化
+            if (webInterfaceBase is IWebApiService)
             {
-                (webInterfaceBase as WebApiService).WebApiRequest += WebApiService_WebApiRequest;
+                (webInterfaceBase as IWebApiService).WebApiRequest += WebApiService_WebApiRequest;
             }
-            if (webInterfaceBase is WebSocketBase) // TODO: インターフェース化
+            if (webInterfaceBase is IWebSocketBase)
             {
-                (webInterfaceBase as WebSocketBase).WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
+                (webInterfaceBase as IWebSocketBase).WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
             }
 
             if(webInterfaceIdentify == null)
@@ -119,7 +119,7 @@ namespace Hondarersoft.WebInterface
             return this;
         }
 
-        private async void WebSocketService_WebSocketRecieveText(object sender, WebSocketBase.WebSocketRecieveTextEventArgs e)
+        private async void WebSocketService_WebSocketRecieveText(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
         {
             // TODO: バッチ処理に対応していない(仕様にはあるが必要性は疑問)
             //       受信したデータがいきなり配列の場合はバッチ処理
@@ -270,7 +270,7 @@ namespace Hondarersoft.WebInterface
             return path[0];
         }
 
-        private void WebApiService_WebApiRequest(object sender, WebApiService.WebApiRequestEventArgs e)
+        private void WebApiService_WebApiRequest(object sender, IWebApiService.WebApiRequestEventArgs e)
         {
             StreamReader reader = null;
             StreamWriter writer = null;

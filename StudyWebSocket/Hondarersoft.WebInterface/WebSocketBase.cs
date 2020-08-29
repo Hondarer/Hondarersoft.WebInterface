@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebSocketBase : WebInterface, IWebInterfaceService
+    public abstract class WebSocketBase : WebInterface, IWebInterfaceService
     {
         protected readonly Dictionary<string, WebSocket> webSockets = new Dictionary<string, WebSocket>();
         protected readonly Dictionary<WebSocket, string> webSocketIdentities = new Dictionary<WebSocket, string>();
@@ -22,7 +23,7 @@ namespace Hondarersoft.WebInterface
             }
         }
 
-        public WebSocketBase() : base()
+        public WebSocketBase(ILogger<WebSocketBase> logger) : base(logger)
         {
             BasePath = "ws";
         }
@@ -31,20 +32,7 @@ namespace Hondarersoft.WebInterface
         {
         }
 
-        public class WebSocketRecieveTextEventArgs : EventArgs
-        {
-            public string WebSocketIdentify { get; }
-
-            public string Message { get; }
-
-            public WebSocketRecieveTextEventArgs(string webSocketIdentify, string message)
-            {
-                WebSocketIdentify = webSocketIdentify;
-                Message = message;
-            }
-        }
-
-        public delegate void WebSocketRecieveTextHandler(object sender, WebSocketRecieveTextEventArgs e);
+        public delegate void WebSocketRecieveTextHandler(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e);
         public event WebSocketRecieveTextHandler WebSocketRecieveText;
 
         public async Task SendTextAsync(string webSocketIdentify, string message)
@@ -77,6 +65,7 @@ namespace Hondarersoft.WebInterface
             webSockets.Add(webSocketIdentify, webSocket);
             webSocketIdentities.Add(webSocket, webSocketIdentify);
 
+            _logger.LogInformation("Session Started. webSocketIdentify = {0}.", webSocketIdentify);
             await OnConnected(webSocket);
 
             try
@@ -131,16 +120,16 @@ namespace Hondarersoft.WebInterface
             }
             catch (Exception ex)
             {
-                /// 例外 クライアントが異常終了
-                Console.WriteLine("{0}:Session Abort:{1} {2}", DateTime.Now.ToString(), webSocket.CloseStatusDescription, ex.ToString());
+                // 例外 クライアントが異常終了
+                _logger.LogWarning("Session aborted. webSocketIdentify = {0}, Description = {1}.\r\n{2}", webSocketIdentify, webSocket.CloseStatusDescription, ex.ToString());
             }
             finally
             {
                 webSockets.Remove(webSocketIdentities[webSocket]);
                 webSocketIdentities.Remove(webSocket);
 
+                _logger.LogInformation("Session Closed. webSocketIdentify = {0}, Description = {1}.", webSocketIdentify, webSocket.CloseStatusDescription);
                 await OnClosed(webSocket);
-                Console.WriteLine("{0}:Session End:{1}", DateTime.Now.ToString(), webSocket.CloseStatusDescription);
             }
         }
 
@@ -148,7 +137,7 @@ namespace Hondarersoft.WebInterface
         {
             if (WebSocketRecieveText != null)
             {
-                WebSocketRecieveText(this, new WebSocketRecieveTextEventArgs(webSocketIdentify, message));
+                WebSocketRecieveText(this, new IWebSocketBase.WebSocketRecieveTextEventArgs(webSocketIdentify, message));
             }
 
             return Task.CompletedTask;
@@ -179,8 +168,6 @@ namespace Hondarersoft.WebInterface
                         ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                     }
                 });
-
-                Console.WriteLine("{0}:Disposed", DateTime.Now.ToString());
             }
 
             // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。

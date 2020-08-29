@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Net;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiClient : WebInterface, IWebInteraceProxySetting
+    public class WebApiClient : WebInterface, IWebApiClient, IWebInteraceProxySetting
     {
         protected HttpClient Client { get; set; }
 
@@ -60,9 +61,8 @@ namespace Hondarersoft.WebInterface
 
         #endregion
 
-        public WebApiClient()
+        public WebApiClient(ILogger<WebApiClient> logger) : base(logger)
         {
-
             // Cookie のやり取りをしている場合に、Cookie がキャッシュされないようにする。
             // Proxy はデフォルトでは明示的に OFF にする。
 

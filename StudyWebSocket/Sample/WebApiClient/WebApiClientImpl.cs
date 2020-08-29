@@ -12,22 +12,23 @@ namespace WebApiClient
 {
     class WebApiClientImpl : LifetimeEventsHostedService
     {
-        static Hondarersoft.WebInterface.WebApiClient _client = new Hondarersoft.WebInterface.WebApiClient()
-        {
-            Hostname="localhost",
-            PortNumber=8001,
-            BasePath="api/v1"
-        };
+        private readonly IWebApiClient _webApiClient = null;
 
-        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService) : base(logger, appLifetime, configration, exitService)
+        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebApiClient webApiClient) : base(logger, appLifetime, configration, exitService)
         {
+            _webApiClient = webApiClient;
         }
 
         protected override async void OnStarted()
         {
             base.OnStarted();
 
-            HttpResponseMessage response = await _client.GetAsync("cpumodes/localhost");
+            IWebInterface webInterace = _webApiClient as IWebInterface;
+            webInterace.Hostname = "localhost";
+            webInterace.PortNumber = 8001;
+            webInterace.BasePath = "api/v1";
+
+            HttpResponseMessage response = await _webApiClient.GetAsync("cpumodes/localhost");
 
             if (response.IsSuccessStatusCode)
             {

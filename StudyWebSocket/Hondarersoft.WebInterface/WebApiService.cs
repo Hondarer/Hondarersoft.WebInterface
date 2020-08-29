@@ -1,5 +1,6 @@
 ﻿// https://github.com/yunbow/CSharp-WebAPI
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,29 +12,16 @@ using System.Text.RegularExpressions;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiService : WebInterface, IWebInterfaceService
+    public class WebApiService : WebInterface, IWebApiService, IWebInterfaceService
     {
-        public class WebApiRequestEventArgs: EventArgs
-        {
-            public HttpListenerRequest Request { get; }
-            public HttpListenerResponse Response { get; }
-
-            public WebApiRequestEventArgs(HttpListenerRequest request, HttpListenerResponse response)
-            {
-                Request = request;
-                Response = response;
-            }
-        }
-
-        public delegate void WebApiRequestHandler(object sender, WebApiRequestEventArgs e);
-        public event WebApiRequestHandler WebApiRequest;
+        public event IWebApiService.WebApiRequestHandler WebApiRequest;
 
         //private static Logger log = Logger.GetInstance();
         private HttpListener listener;
 
         public bool AllowCORS { get; set; } = false;
 
-        public WebApiService():base()
+        public WebApiService(ILogger<WebApiService> logger) : base(logger)
         {
             Hostname = "+";
         }
@@ -119,7 +107,7 @@ namespace Hondarersoft.WebInterface
                     // TODO: 例外を処理したほうがいい
                     if (WebApiRequest != null)
                     {
-                        WebApiRequest(this, new WebApiRequestEventArgs(req, res));
+                        WebApiRequest(this, new IWebApiService.WebApiRequestEventArgs(req, res));
                     }
                 }
                 finally

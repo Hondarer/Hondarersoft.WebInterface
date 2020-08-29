@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -7,6 +8,8 @@ namespace Hondarersoft.WebInterface
 {
     public class WebInterface : IWebInterface, IDisposable
     {
+        protected readonly ILogger _logger = null;
+
         public string Hostname { get; set; } = null;
 
         public int PortNumber { get; set; } = 0;
@@ -14,6 +17,11 @@ namespace Hondarersoft.WebInterface
         public string BasePath { get; set; } = null;
 
         public bool UseSSL { get; set; } = false;
+
+        public WebInterface(ILogger<WebInterface> logger)
+        {
+            _logger = logger;
+        }
 
         #region IDisposable Support
 
