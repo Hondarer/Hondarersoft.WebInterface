@@ -532,8 +532,49 @@ namespace Hondarersoft.WebInterface
 
                 string path = GetApiPath(e.Request.RawUrl);
 
-                // TODO: QueryString も渡せるようにしたほうがいい
-                //Console.WriteLine(req.QueryString.Get("hhh"));
+                dynamic document = null;
+                try
+                {
+                    if (string.IsNullOrEmpty(reqBody) == true)
+                    {
+                        document = new ExpandoObject();
+                    }
+                    else
+                    {
+                        document = JsonSerializer.Deserialize<ExpandoObject>(reqBody);
+                    }
+
+                    // QueryString を、データに注入する
+                    // 受信側は、json をデシリアライズすることで QueryString を受信可能
+                    // QueryString の仕様上、パラメーターは配列になりうるので
+                    // デシリアライズ先では string[] で受けること。
+                    foreach (string key in e.Request.QueryString.AllKeys)
+                    {
+                        // json にキーが存在しない場合にのみ処理
+                        if (DynamicHelper.IsPropertyExist(document, key) == false)
+                        {
+                            string[] queryValues = e.Request.QueryString.GetValues(key);
+
+                            if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
+                            {
+                                // (1) url?aaa=bbb,ccc ※(1)の処理で長さ 1 かつカンマが含まれている場合の処理。
+                                DynamicHelper.AddProperty(document, key, queryValues.First().Split(","));
+                            }
+                            else
+                            {
+                                // (2) url?aaa=bbb&aaa=ccc ※この形式でカンマが含まれている場合は、そのままとする。
+                                DynamicHelper.AddProperty(document, key, queryValues);
+                            }
+                        }
+
+                        reqBody = JsonSerializer.Serialize(document);
+                    }
+                }
+                catch
+                {
+                    // リクエストに何かしら格納されており、型が json ではなかった
+                    // NOP(QueryString の注入はあきあめて処理続行)
+                }
 
                 CommonApiArgs commonApiArgs =
                     new CommonApiArgs(e.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.Request.HttpMethod), path, reqBody);
@@ -543,7 +584,11 @@ namespace Hondarersoft.WebInterface
                 if (commonApiArgs.Error == CommonApiArgs.Errors.None)
                 {
                     e.Response.StatusCode = (int)HttpStatusCode.OK;
-                    writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(commonApiArgs.ResponseBody));
+
+                    if (commonApiArgs.ResponseBody != null)
+                    {
+                        writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(commonApiArgs.ResponseBody));
+                    }
                 }
                 else
                 {
