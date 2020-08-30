@@ -26,6 +26,19 @@ namespace Hondarersoft.Hosting
             _appLifetime = appLifetime;
             _configration = configration;
             _exitService = exitService;
+
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        }
+
+        private void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            // Task.Run によりハンドルされない例外があった場合、それが GC された際に発生する。
+            // GC のタイミングなので、この処理が確実に動作するかどうかは保証できない。
+            // 基本的には各処理で正しく try - catch を行うこと。
+            _logger.LogCritical("UnobservedTaskException has occurred.\r\n{0}", e.Exception.ToString());
+
+            // プロセスを終了させる。
+            _exitService.Requset(ErrorExitCode);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
