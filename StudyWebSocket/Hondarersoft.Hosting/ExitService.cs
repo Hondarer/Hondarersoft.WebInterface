@@ -27,7 +27,7 @@ namespace Hondarersoft.Hosting
 
         public bool Requset(int exitCode)
         {
-            // 複数スレッからの呼び出しに対応できるよう、
+            // 複数スレッドからの呼び出しに対応できるよう、
             // ダブル チェック ロッキング パターンを取る。
 
             if (ExitCode != null)

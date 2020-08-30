@@ -26,6 +26,21 @@ namespace Hondarersoft.Hosting
             _appLifetime = appLifetime;
             _configration = configration;
             _exitService = exitService;
+
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        }
+
+        private void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            // Task.Run によりハンドルされない例外があった場合、それが GC された際に発生する。
+            // GC のタイミングなので、この処理が確実に動作するかどうかは保証できない。
+            // 基本的には各処理で正しく try - catch を行うこと。
+            _logger.LogCritical("UnobservedTaskException has occurred.\r\n{0}", e.Exception.ToString());
+
+            // 本来の Generic Host の考えであれば、他のサービスを巻き込んで
+            // Host 全体を止めるかどうかは設計の問題であり、直ちに決められないが、
+            // 本実装では安全のため停止させることとしている。
+            _exitService.Requset(ErrorExitCode);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -48,6 +63,7 @@ namespace Hondarersoft.Hosting
         {
             // このメソッド内の例外は、
             // Generic Host の外側にスローされる。
+            // Started へと進めるべきでないので、ここで catch しない。
 
             _logger.LogInformation("OnStarting has been called.");
 
@@ -63,7 +79,7 @@ namespace Hondarersoft.Hosting
 
                 // 本来の Generic Host の考えであれば、他のサービスを巻き込んで
                 // Host 全体を止めるかどうかは設計の問題であり、直ちに決められないが、
-                // 本実装では停止させることとしている。
+                // 本実装では安全のため停止させることとしている。
                 OnStarted();
             }
             catch (Exception ex)
