@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class CommonApiManager : ICommonApiManager // TODO: IDisposable 化
+    public class CommonApiService : ICommonApiService // TODO: IDisposable 化
     {
         private const string CONTENT_TYPE_JSON = "application/json";
 
@@ -34,7 +34,7 @@ namespace Hondarersoft.WebInterface
         private readonly ILogger _logger = null;
         private readonly IServiceProvider _serviceProvider = null;
 
-        public CommonApiManager(IServiceProvider serviceProvider, ILogger<CommonApiManager> logger)
+        public CommonApiService(IServiceProvider serviceProvider, ILogger<CommonApiService> logger)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -55,7 +55,7 @@ namespace Hondarersoft.WebInterface
 
         protected readonly List<ICommonApiController> commonApiControllers = new List<ICommonApiController>();
 
-        public async Task<ICommonApiManager> StartAsync()
+        public async Task<ICommonApiService> StartAsync()
         {
             foreach (var webInterfaceBase in webInterfaces.Values)
             {
@@ -68,7 +68,7 @@ namespace Hondarersoft.WebInterface
             return this;
         }
 
-        public ICommonApiManager RegistController(string assemblyName, string classFullName)
+        public ICommonApiService RegistController(string assemblyName, string classFullName)
         {
             Assembly asm = Assembly.Load(assemblyName);
             Type commonApiControllerType = asm.GetType(classFullName);
@@ -93,7 +93,7 @@ namespace Hondarersoft.WebInterface
             return this;
         }
 
-        public ICommonApiManager RegistInterface(IWebInterface webInterfaceBase, string webInterfaceIdentify = null)
+        public ICommonApiService RegistInterface(IWebInterface webInterfaceBase, string webInterfaceIdentify = null)
         {
             if (webInterfaceBase is IWebApiService)
             {

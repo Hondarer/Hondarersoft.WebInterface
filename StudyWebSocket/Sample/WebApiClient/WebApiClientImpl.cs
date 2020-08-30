@@ -12,12 +12,12 @@ namespace WebApiClient
     class WebApiClientImpl : LifetimeEventsHostedService
     {
         private readonly IWebApiClient _webApiClient = null;
-        private readonly ICommonApiManager _commonApiManager = null;
+        private readonly ICommonApiService _commonApiService = null;
 
-        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiClient webApiClient, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
+        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiClient webApiClient, ICommonApiService commonApiService) : base(logger, appLifetime, configration, exitService)
         {
             _webApiClient = webApiClient;
-            _commonApiManager = commonApiManager;
+            _commonApiService = commonApiService;
         }
 
         protected override async Task OnStartedAsync()
@@ -28,7 +28,7 @@ namespace WebApiClient
             webInterace.Hostname = "localhost";
             webInterace.PortNumber = 8001;
 
-            await _commonApiManager.RegistInterface(webInterace).StartAsync();
+            await _commonApiService.RegistInterface(webInterace).StartAsync();
 
             CommonApiRequest request = new CommonApiRequest()
             {
@@ -36,7 +36,7 @@ namespace WebApiClient
                 Path = "/api/v1/cpumodes/localhost"
             };
 
-            CommonApiResponse response = await _commonApiManager.SendRequestAsync<CpuMode>(request);
+            CommonApiResponse response = await _commonApiService.SendRequestAsync<CpuMode>(request);
 
             if (response.IsSuccess == true)
             {

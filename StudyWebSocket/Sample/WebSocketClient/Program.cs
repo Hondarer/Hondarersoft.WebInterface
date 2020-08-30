@@ -71,7 +71,7 @@ namespace WebSocketClient
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
                 services.AddTransient<IWebSocketClient, Hondarersoft.WebInterface.WebSocketClient>();
-                services.AddSingleton<ICommonApiManager, CommonApiManager>();
+                services.AddSingleton<ICommonApiService, CommonApiService>();
 
                 // アプリケーションの実装クラスを指定
                 services.AddHostedService<WebSocketClientImpl>();

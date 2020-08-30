@@ -12,12 +12,12 @@ namespace WebSocketClient
     class WebSocketClientImpl : LifetimeEventsHostedService
     {
         private readonly IWebSocketClient _webSocketClient = null;
-        private readonly ICommonApiManager _commonApiManager = null;
+        private readonly ICommonApiService _commonApiService = null;
 
-        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketClient webSocketClient, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
+        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketClient webSocketClient, ICommonApiService commonApiService) : base(logger, appLifetime, configration, exitService)
         {
             _webSocketClient = webSocketClient;
-            _commonApiManager = commonApiManager;
+            _commonApiService = commonApiService;
         }
 
         protected override async Task OnStartedAsync()
@@ -28,7 +28,7 @@ namespace WebSocketClient
             webInterace.Hostname = "localhost";
             webInterace.PortNumber = 8000;
 
-            await _commonApiManager.RegistInterface(webInterace).StartAsync();
+            await _commonApiService.RegistInterface(webInterace).StartAsync();
 
             CommonApiRequest request = new CommonApiRequest()
             {
@@ -36,7 +36,7 @@ namespace WebSocketClient
                 Path = "/api/v1/cpumodes/localhost"
             };
 
-            CommonApiResponse response = await _commonApiManager.SendRequestAsync<CpuMode>(request);
+            CommonApiResponse response = await _commonApiService.SendRequestAsync<CpuMode>(request);
 
             if (response.IsSuccess == true)
             {

@@ -11,12 +11,12 @@ namespace WebApiServer
     public class WebApiServerImpl : LifetimeEventsHostedService
     {
         private readonly IWebApiService _webApiService = null;
-        private readonly ICommonApiManager _commonApiManager = null;
+        private readonly ICommonApiService _commonApiService = null;
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiService webApiService, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
+        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiService webApiService, ICommonApiService commonApiService) : base(logger, appLifetime, configration, exitService)
         {
             _webApiService = webApiService;
-            _commonApiManager = commonApiManager;
+            _commonApiService = commonApiService;
         }
 
         protected override async Task OnStartedAsync()
@@ -30,7 +30,7 @@ namespace WebApiServer
             webInterace.PortNumber = 8001;
             webInterace.BasePath = "api/v1";
 
-            await _commonApiManager.RegistInterface(webInterace)
+            await _commonApiService.RegistInterface(webInterace)
                 .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
                 .StartAsync();
         }

@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface ICommonApiManager
+    public interface ICommonApiService
     {
-        public Task<ICommonApiManager> StartAsync();
+        public Task<ICommonApiService> StartAsync();
 
-        public ICommonApiManager RegistController(string assemblyName, string classFullName);
+        public ICommonApiService RegistController(string assemblyName, string classFullName);
 
-        public ICommonApiManager RegistInterface(IWebInterface webInterfaceBase, string identify = null);
+        public ICommonApiService RegistInterface(IWebInterface webInterfaceBase, string identify = null);
 
         public Task<CommonApiResponse> SendRequestAsync(CommonApiRequest request, string interfaceIdentify = null, string sessionIdentify = null);
 
