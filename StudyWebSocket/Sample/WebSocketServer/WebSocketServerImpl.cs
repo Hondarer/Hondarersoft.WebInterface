@@ -17,7 +17,7 @@ namespace WebSocketServer
             _commonApiManager = commonApiManager;
         }
 
-        protected override void OnStarted()
+        protected override async void OnStarted()
         {
             base.OnStarted();
 
@@ -25,9 +25,9 @@ namespace WebSocketServer
             webInterace.Hostname = "localhost"; // Hostname を既定の "+" で実行する場合、管理者権限が必要
             webInterace.PortNumber = 8000;
 
-            _commonApiManager.RegistInterface(webInterace)
+            await _commonApiManager.RegistInterface(webInterace)
                 .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
-                .Start();
+                .StartAsync();
         }
     }
 }

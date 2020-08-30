@@ -28,8 +28,9 @@ namespace Hondarersoft.WebInterface
             BasePath = "ws";
         }
 
-        public virtual async void Start()
+        public virtual Task StartAsync()
         {
+            return Task.CompletedTask;
         }
 
         public delegate void WebSocketRecieveTextHandler(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e);

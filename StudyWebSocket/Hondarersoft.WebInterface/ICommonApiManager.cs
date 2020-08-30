@@ -7,7 +7,7 @@ namespace Hondarersoft.WebInterface
 {
     public interface ICommonApiManager
     {
-        public ICommonApiManager Start();
+        public Task<ICommonApiManager> StartAsync();
 
         public ICommonApiManager RegistController(string assemblyName, string classFullName);
 

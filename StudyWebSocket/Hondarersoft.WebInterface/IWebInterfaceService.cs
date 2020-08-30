@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
@@ -14,6 +15,6 @@ namespace Hondarersoft.WebInterface
 
         public bool UseSSL { get; set; }
 
-        public void Start();
+        public Task StartAsync();
     }
 }

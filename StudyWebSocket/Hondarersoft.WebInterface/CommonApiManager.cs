@@ -57,13 +57,13 @@ namespace Hondarersoft.WebInterface
 
         protected readonly List<ICommonApiController> commonApiControllers = new List<ICommonApiController>();
 
-        public ICommonApiManager Start()
+        public async Task<ICommonApiManager> StartAsync()
         {
             foreach (var webInterfaceBase in webInterfaces.Values)
             {
                 if (webInterfaceBase is IWebInterfaceService)
                 {
-                    (webInterfaceBase as IWebInterfaceService).Start();
+                    await (webInterfaceBase as IWebInterfaceService).StartAsync();
                 }
             }
 

@@ -28,9 +28,9 @@ namespace Hondarersoft.WebInterface
         /// <summary>
         /// WebSocketサーバースタート
         /// </summary>
-        public override void Start()
+        public override async Task StartAsync()
         {
-            base.Start();
+            await base.StartAsync();
 
             if ((string.IsNullOrEmpty(Hostname) == true) ||
                 (PortNumber == 0) ||

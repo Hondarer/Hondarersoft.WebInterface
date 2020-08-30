@@ -17,7 +17,7 @@ namespace WebApiServer
             _commonApiManager = commonApiManager;
         }
 
-        protected override void OnStarted()
+        protected override async void OnStarted()
         {
             base.OnStarted();
 
@@ -28,9 +28,9 @@ namespace WebApiServer
             webInterace.PortNumber = 8001;
             webInterace.BasePath = "api/v1";
 
-            _commonApiManager.RegistInterface(webInterace)
+            await _commonApiManager.RegistInterface(webInterace)
                 .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
-                .Start();
+                .StartAsync();
         }
     }
 }

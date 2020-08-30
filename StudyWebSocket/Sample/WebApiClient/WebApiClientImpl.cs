@@ -27,7 +27,7 @@ namespace WebApiClient
             webInterace.Hostname = "localhost";
             webInterace.PortNumber = 8001;
 
-            _commonApiManager.RegistInterface(webInterace).Start();
+            await _commonApiManager.RegistInterface(webInterace).StartAsync();
 
             CommonApiRequest request = new CommonApiRequest()
             {

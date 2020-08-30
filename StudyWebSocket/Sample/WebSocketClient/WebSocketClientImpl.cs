@@ -27,7 +27,7 @@ namespace WebSocketClient
             webInterace.Hostname = "localhost";
             webInterace.PortNumber = 8000;
 
-            _commonApiManager.RegistInterface(webInterace).Start();
+            await _commonApiManager.RegistInterface(webInterace).StartAsync();
 
             CommonApiRequest request = new CommonApiRequest()
             {

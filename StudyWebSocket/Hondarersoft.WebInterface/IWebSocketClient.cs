@@ -8,8 +8,6 @@ namespace Hondarersoft.WebInterface
 {
     public interface IWebSocketClient
     {
-        public void Start();
-
         public Task ConnectAsync();
 
         public Task CloseAsync();

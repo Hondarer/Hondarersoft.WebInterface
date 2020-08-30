@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
@@ -17,7 +18,7 @@ namespace Hondarersoft.WebInterface
         public event IWebApiService.WebApiRequestHandler WebApiRequest;
 
         //private static Logger log = Logger.GetInstance();
-        private HttpListener listener;
+        private HttpListener _listener = null;
 
         public bool AllowCORS { get; set; } = false;
 
@@ -29,7 +30,7 @@ namespace Hondarersoft.WebInterface
         /// <summary>
         /// APIサービスを起動する
         /// </summary>
-        public void Start()
+        public Task StartAsync()
         {
             if ((string.IsNullOrEmpty(Hostname) == true) ||
                 (PortNumber == 0))
@@ -37,56 +38,34 @@ namespace Hondarersoft.WebInterface
                 throw new Exception("invalid endpoint parameter");
             }
 
-            //Assembly asm = Assembly.GetExecutingAssembly();
-            //string strSystemName = asm.GetName().Name;
+            // HTTPサーバーを起動する
+            _listener = new HttpListener();
 
-            //log.Info("########## HTTP Server [start] ##########");
-            //log.Info(">> System Name: " + strSystemName);
-            //log.Info(">> System Version: " + asm.GetName().Version);
-
-            try
+            string ssl = string.Empty;
+            if (UseSSL == true)
             {
-                // HTTPサーバーを起動する
-                this.listener = new HttpListener();
-                //this.listener.Prefixes.Add(String.Format("http://+:{0}/{1}/", Settings.Default.API_PORT, Settings.Default.API_PATH));
-                string ssl = string.Empty;
-                if (UseSSL == true)
-                {
-                    ssl = "s";
-                }
-
-                string tail = string.Empty;
-                if (string.IsNullOrEmpty(BasePath) != true)
-                {
-                    tail = "/";
-                }
-
-                this.listener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}");
-                this.listener.Start();
-
-                //log.Info(Resources.StartServer);
-                //EventLog.WriteEntry(GetSystemName(), Resources.StartServer, EventLogEntryType.Information, (int)ErrorCode.SUCCESS);
-
-                ProcessHttpRequest(this.listener);
-
-                //while (this.listener.IsListening)
-                //{
-                //    IAsyncResult result = this.listener.BeginGetContext(OnRequested, this.listener);
-                //    result.AsyncWaitHandle.WaitOne();
-                //}
+                ssl = "s";
             }
-            catch (Exception ex)
+
+            string tail = string.Empty;
+            if (string.IsNullOrEmpty(BasePath) != true)
             {
-                //log.Error(ex.ToString());
-                //EventLog.WriteEntry(GetSystemName(), ex.ToString(), EventLogEntryType.Error, (int)ErrorCode.ERROR_START);
+                tail = "/";
             }
+
+            _listener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}");
+            _listener.Start();
+
+            ProcessHttpRequest(_listener);
+
+            return Task.CompletedTask;
         }
 
         protected async void ProcessHttpRequest(HttpListener httpListener)
         {
             while (httpListener.IsListening == true)
             {
-                /// 接続待機
+                // 接続待機
                 HttpListenerContext context = await httpListener.GetContextAsync();
 
                 if (httpListener.IsListening == false)
@@ -110,7 +89,7 @@ namespace Hondarersoft.WebInterface
 
                 try
                 {
-                    _logger.LogInformation("Request : {0} {1} {2}", req.RequestTraceIdentifier.ToString(), req.HttpMethod, req.RawUrl);
+                    _logger.LogInformation("Request: {0} {1} {2}", req.RequestTraceIdentifier.ToString(), req.HttpMethod, req.RawUrl);
 
                     // TODO: 例外を処理したほうがいい
                     if (WebApiRequest != null)
@@ -118,7 +97,7 @@ namespace Hondarersoft.WebInterface
                         WebApiRequest(this, new IWebApiService.WebApiRequestEventArgs(req, res));
                     }
 
-                    _logger.LogInformation("Response : {0} {1} {2}", req.RequestTraceIdentifier.ToString(), res.StatusCode, res.StatusDescription);
+                    _logger.LogInformation("Response: {0} {1} {2}", req.RequestTraceIdentifier.ToString(), res.StatusCode, res.StatusDescription);
                 }
                 finally
                 {
@@ -138,8 +117,8 @@ namespace Hondarersoft.WebInterface
             try
             {
                 // HTTPサーバーを停止する
-                this.listener.Stop();
-                this.listener.Close();
+                this._listener.Stop();
+                this._listener.Close();
 
                 //log.Info(Resources.StopServer);
                 //EventLog.WriteEntry(GetSystemName(), Resources.StopServer, EventLogEntryType.Information, (int)ErrorCode.SUCCESS);
