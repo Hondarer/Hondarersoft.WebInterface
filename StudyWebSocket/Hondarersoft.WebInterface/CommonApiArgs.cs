@@ -10,18 +10,9 @@ namespace Hondarersoft.WebInterface
     // 統一したインターフェースでAPIを実装するための引数。
     public class CommonApiArgs : EventArgs
     {
-        public enum Methods
-        {
-            UNKNOWN,
-            GET,
-            POST,
-            PUT,
-            DELETE
-        }
-
         public object Identifier { get; }
 
-        public Methods Method { get; }
+        public CommonApiMethods Method { get; }
 
         public enum Errors : int
         {
@@ -118,7 +109,7 @@ namespace Hondarersoft.WebInterface
         /// </summary>
         public bool Handled { get; set; } = false;
 
-        public CommonApiArgs(object identifier, Methods method, string path, string requestBody = null)
+        public CommonApiArgs(object identifier, CommonApiMethods method, string path, string requestBody = null)
         {
             Identifier = identifier;
             Method = method;

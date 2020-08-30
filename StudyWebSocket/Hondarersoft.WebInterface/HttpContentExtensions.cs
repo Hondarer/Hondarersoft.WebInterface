@@ -9,7 +9,7 @@ namespace Hondarersoft.WebInterface
 {
     public static class HttpContentExtensions
     {
-        public static async Task<Tout> ReadAsAsync<Tout>(this HttpContent content)
+        public static async Task<Tout> ReadAsJsonAsync<Tout>(this HttpContent content)
         {
             return await JsonSerializer.DeserializeAsync<Tout>(await content.ReadAsStreamAsync());
         }

@@ -8,7 +8,7 @@ namespace Hondarersoft.WebInterface.Schemas
     public class JsonRpcRequest : JsonRpcNotify
     {
         [JsonPropertyName("id")]
-        public object Id { get; set; }
+        public object Id { get; }
 
         public JsonRpcRequest()
         {

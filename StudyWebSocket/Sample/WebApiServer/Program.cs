@@ -67,7 +67,7 @@ namespace WebApiServer
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
-                services.AddTransient<IWebApiService, Hondarersoft.WebInterface.IWebApiService>();
+                services.AddTransient<IWebApiService, Hondarersoft.WebInterface.WebApiService>();
                 services.AddSingleton<ICommonApiManager, CommonApiManager>();
 
                 // アプリケーションの実装クラスを指定

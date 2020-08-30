@@ -11,10 +11,12 @@ namespace WebSocketClient
     class WebSocketClientImpl : LifetimeEventsHostedService
     {
         private readonly IWebSocketClient _webSocketClient = null;
+        private readonly ICommonApiManager _commonApiManager = null;
 
-        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketClient webSocketClient) : base(logger, appLifetime, configration, exitService)
+        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketClient webSocketClient, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
         {
             _webSocketClient = webSocketClient;
+            _commonApiManager = commonApiManager;
         }
 
         protected override async void OnStarted()
@@ -25,18 +27,34 @@ namespace WebSocketClient
             webInterace.Hostname = "localhost";
             webInterace.PortNumber = 8000;
 
-            await _webSocketClient.ConnectAsync();
+            string webInterfaceIdentify = Guid.NewGuid().ToString();
 
-            // 統一した要求の形式を設けて、そこに要求したい
+            _commonApiManager.RegistInterface(webInterace, webInterfaceIdentify)
+                .Start();
 
-            await _webSocketClient.SendJsonAsync(new JsonRpcRequest() { Method = "api.v1.cpumodes.localhost.get" });
+            CommonApiRequest request = new CommonApiRequest()
+            {
+                InterfaceIdentify = webInterfaceIdentify,
+                Method = CommonApiMethods.GET,
+                Path = "/api/v1/cpumodes/localhodst"
+            };
 
-            // 戻っては来ているが、同期して受け取る処理をまだ書いていない
+            CommonApiResponse response = await _commonApiManager.SendRequestAsync(request);
 
-            Console.WriteLine("Press any key");
+            if (response.IsSuccess == true)
+            {
+                _logger.LogInformation("Success. response = {0}", response.Result);
+            }
+            if (response.Error != null)
+            {
+                _logger.LogError("Error. error.code = {0}, error.message = {1}", response.Error.Code, response.Error.Message);
+            }
+            else
+            {
+                _logger.LogError("Error. No error information.");
+            }
+
             Console.ReadLine();
-
-            (webInterace as IDisposable).Dispose();
 
             _exitService.Requset(0);
         }

@@ -13,10 +13,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Net.Http;
 
 namespace Hondarersoft.WebInterface
 {
-    public class CommonApiManager : ICommonApiManager
+    public class CommonApiManager : ICommonApiManager // TODO: IDisposable 化
     {
         private const string CONTENT_TYPE_JSON = "application/json";
 
@@ -30,16 +33,13 @@ namespace Hondarersoft.WebInterface
             {CommonApiArgs.Errors.InternalError,-32603},
         };
 
-        // 各サーバー、クライアントを登録可能にする
-        // 登録されたときに受信イベントをハンドリングする
-        // 受信イベントに応じた応答を返却する
-        // 送信イベントも同様にここで握る
+        private readonly ILogger _logger = null;
+        private readonly IServiceProvider _serviceProvider = null;
 
-        private readonly IServiceProvider serviceProvider;
-
-        public CommonApiManager(IServiceProvider serviceProvider)
+        public CommonApiManager(IServiceProvider serviceProvider, ILogger logger)
         {
-            this.serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected readonly Dictionary<string, IWebInterface> webInterfaces = new Dictionary<string, IWebInterface>();
@@ -54,7 +54,6 @@ namespace Hondarersoft.WebInterface
                 return webInterfaces.Keys.ToList();
             }
         }
-
 
         protected readonly List<ICommonApiController> commonApiControllers = new List<ICommonApiController>();
 
@@ -86,7 +85,7 @@ namespace Hondarersoft.WebInterface
             foreach (ParameterInfo parameter in commonApiControllerType.GetConstructors().FirstOrDefault().GetParameters())
             {
                 types.Add(parameter.ParameterType);
-                objects.Add(serviceProvider.GetService(parameter.ParameterType));
+                objects.Add(_serviceProvider.GetService(parameter.ParameterType));
             }
             ConstructorInfo constructor = commonApiControllerType.GetConstructor(types.ToArray());
             ICommonApiController commonApiController = constructor.Invoke(objects.ToArray()) as ICommonApiController;
@@ -117,6 +116,176 @@ namespace Hondarersoft.WebInterface
             webInterfaceIdentities.Add(webInterfaceBase, webInterfaceIdentify);
 
             return this;
+        }
+
+        protected readonly Dictionary<string, CountdownEvent> _waitingReplyEvent = new Dictionary<string, CountdownEvent>();
+        protected readonly Dictionary<string, CommonApiResponse> _waitingReplyData = new Dictionary<string, CommonApiResponse>();
+
+        public async Task<CommonApiResponse> SendRequestAsync(CommonApiRequest request)
+        {
+            CommonApiResponse response = new CommonApiResponse();
+
+            // TODO: 辞書にない場合は適切な例外にする
+            IWebInterface webInterface = webInterfaces[request.InterfaceIdentify];
+
+            if (webInterface is IWebApiClient)
+            {
+                HttpResponseMessage httpResponse = null;
+                try
+                {
+                    switch(request.Method)
+                    {
+                        case CommonApiMethods.GET:
+                            httpResponse = await (webInterface as IWebApiClient).GetAsync(request.Path, request.Timeout);
+                            break;
+                        default:
+                            // 未実装
+                            break;
+                    }
+                    if(httpResponse == null)
+                    {
+                        // 未実装メソッドの指定がなされた
+                        return response;
+                    }
+                }
+                catch
+                {
+                    // 接続できなかった
+                    // ex) タイムアウトのとき: TaskCanceledException
+                    return response;
+                }
+
+                if (httpResponse.IsSuccessStatusCode == true)
+                {
+                    // API 呼び出しに成功
+                    string result;
+                    try
+                    {
+                        result = await httpResponse.Content.ReadAsStringAsync();
+                    }
+                    catch
+                    {
+                        // Bodyの取得に失敗
+                        return response;
+                    }
+
+                    response.Result = result;
+                    response.IsSuccess = true;
+                }
+                else
+                {
+                    // API呼び出しに失敗
+                    Error result;
+                    try
+                    {
+                        result = await httpResponse.Content.ReadAsJsonAsync<Error>();
+                    }
+                    catch
+                    {
+                        // Bodyのデシリアライズに失敗
+                        return response;
+                    }
+
+                    response.Error = result;
+                }
+            }
+            else if (webInterface is IWebSocketBase)
+            {
+                string methodsName = request.Path.Replace("/", ".");
+                methodsName += "." + request.Method.ToString().ToLower();
+                if (methodsName.StartsWith(".") == true)
+                {
+                    methodsName = methodsName.Substring(1);
+                }
+
+                string requestId = null;
+                CountdownEvent waitingEvent = null;
+
+                JsonRpcNotify jsonRpcNotify;
+                if (request.NotifyOnly != true)
+                {
+                    jsonRpcNotify = new JsonRpcRequest() { Method = methodsName };
+                    requestId = (jsonRpcNotify as JsonRpcRequest).Id.ToString();
+
+                    waitingEvent = new CountdownEvent(1);
+                    lock (this)
+                    {
+                        _waitingReplyEvent.Add(requestId, waitingEvent);
+                    }
+                }
+                else
+                {
+                    jsonRpcNotify = new JsonRpcNotify() { Method = methodsName };
+                }
+
+                try
+                {
+                    if (webInterface is IWebSocketClient)
+                    {
+                        await (webInterface as IWebSocketClient).SendJsonAsync(jsonRpcNotify);
+                    }
+                    else
+                    {
+                        await (webInterface as IWebSocketBase).SendJsonAsync(request.SessionIdentify, jsonRpcNotify);
+                    }
+                }
+                catch
+                {
+                    // 送信エラー
+                    if (request.NotifyOnly != true)
+                    {
+                        lock (this)
+                        {
+                            if (_waitingReplyEvent.ContainsKey(requestId) == true)
+                            {
+                                _waitingReplyEvent.Remove(requestId);
+                            }
+                            if (_waitingReplyData.ContainsKey(requestId) == true)
+                            {
+                                _waitingReplyData.Remove(requestId);
+                            }
+                        }
+                    }
+                    return response;
+                }
+
+                if (request.NotifyOnly == true)
+                {
+                    response.IsSuccess = true;
+                    return response;
+                }
+
+                try
+                {
+                    waitingEvent.Wait(request.Timeout); // TODO: タイムアウト時は例外出るか確認
+                }
+                finally
+                {
+                    lock (this)
+                    {
+                        if (_waitingReplyEvent.ContainsKey(requestId) == true)
+                        {
+                            _waitingReplyEvent.Remove(requestId);
+                        }
+                        if (_waitingReplyData.ContainsKey(requestId) == true)
+                        {
+                            response = _waitingReplyData[requestId];
+                            _waitingReplyData.Remove(requestId);
+                        }
+                        else
+                        {
+                            // 応答タイムアウト
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // リクエストに対応しないインターフェースへの要求
+                throw new InvalidOperationException();
+            }
+
+            return response;
         }
 
         private async void WebSocketService_WebSocketRecieveText(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
@@ -180,7 +349,40 @@ namespace Hondarersoft.WebInterface
             {
                 // 応答電文の処理
 
-                // TODO: 処理未実装
+                CommonApiResponse commonApiResponse = new CommonApiResponse();
+
+                if (DynamicHelper.IsPropertyExist(document, "result") == true)
+                {
+                    commonApiResponse.Result = DynamicHelper.GetProperty(document, "result").ToString();
+
+                    commonApiResponse.IsSuccess = true;
+                }
+                else if (DynamicHelper.IsPropertyExist(document, "error") == true)
+                {
+                    try
+                    {
+                        commonApiResponse.Error = JsonSerializer.Deserialize<Error>(DynamicHelper.GetProperty(document, "error").ToString());
+                    }
+                    catch
+                    {
+                        // Errorのパース失敗
+                    }
+                }
+                else
+                {
+                    // 想定外
+                }
+
+                string idString = id.ToString();
+                lock (this)
+                {
+                    if (_waitingReplyEvent.ContainsKey(idString) == true)
+                    {
+                        _waitingReplyData.Add(idString, commonApiResponse);
+                        _waitingReplyEvent[idString].Signal();
+                    }
+                }
+
                 return;
             }
 
@@ -188,20 +390,20 @@ namespace Hondarersoft.WebInterface
             // JSON-RPC メソッド名の末尾を HTTP メソッドとして取り出し、
             // ドット結合をピリオド結合にし、ルート記号を付加する
             string jsonrpcMethod = document.method.ToString();
-            CommonApiArgs.Methods method = CommonApiArgs.Methods.UNKNOWN;
+            CommonApiMethods method = CommonApiMethods.UNKNOWN;
             string path = string.Empty;
-            foreach (string methodEnum in Enum.GetNames(typeof(CommonApiArgs.Methods)))
+            foreach (string methodEnum in Enum.GetNames(typeof(CommonApiMethods)))
             {
                 if (jsonrpcMethod.EndsWith("." + methodEnum.ToLower()) == true)
                 {
-                    method = (CommonApiArgs.Methods)Enum.Parse(typeof(CommonApiArgs.Methods), methodEnum);
+                    method = (CommonApiMethods)Enum.Parse(typeof(CommonApiMethods), methodEnum);
                     path = "/" + jsonrpcMethod.Substring(0, jsonrpcMethod.Length - methodEnum.Length - 1).Replace('.', '/');
                     break;
                 }
             }
 
             // HTTP メソッド名で終わっていない JSON-RPC メソッド名は、エラーとして扱う
-            if (method == CommonApiArgs.Methods.UNKNOWN)
+            if (method == CommonApiMethods.UNKNOWN)
             {
                 if (id != null)
                 {
@@ -290,7 +492,7 @@ namespace Hondarersoft.WebInterface
                 //Console.WriteLine(req.QueryString.Get("hhh"));
 
                 CommonApiArgs commonApiArgs =
-                    new CommonApiArgs(e.Request.RequestTraceIdentifier, Enum.Parse<CommonApiArgs.Methods>(e.Request.HttpMethod), path, reqBody);
+                    new CommonApiArgs(e.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.Request.HttpMethod), path, reqBody);
 
                 OnRequest(commonApiArgs);
 
@@ -374,16 +576,16 @@ namespace Hondarersoft.WebInterface
                     // TODO: 例外を拾って、例外の場合はエラーを設定する。
                     switch (apiArgs.Method)
                     {
-                        case CommonApiArgs.Methods.GET:
+                        case CommonApiMethods.GET:
                             commonApiController.Get(apiArgs);
                             break;
-                        case CommonApiArgs.Methods.POST:
+                        case CommonApiMethods.POST:
                             commonApiController.Post(apiArgs);
                             break;
-                        case CommonApiArgs.Methods.PUT:
+                        case CommonApiMethods.PUT:
                             commonApiController.Put(apiArgs);
                             break;
-                        case CommonApiArgs.Methods.DELETE:
+                        case CommonApiMethods.DELETE:
                             commonApiController.Delete(apiArgs);
                             break;
                         default:

@@ -119,8 +119,7 @@ namespace Hondarersoft.WebInterface
         public Task<HttpResponseMessage> GetAsync(string requestUri)
         {
             if ((string.IsNullOrEmpty(Hostname) == true) ||
-                (PortNumber == 0) ||
-                (string.IsNullOrEmpty(BasePath) == true))
+                (PortNumber == 0))
             {
                 throw new Exception("invalid endpoint parameter");
             }
@@ -131,9 +130,22 @@ namespace Hondarersoft.WebInterface
                 ssl = "s";
             }
 
-            BaseAddress = $"http{ssl}://{Hostname}:{PortNumber}/{BasePath}/";
+            string tail = string.Empty;
+            if (string.IsNullOrEmpty(BasePath) != true)
+            {
+                tail = "/";
+            }
+
+            BaseAddress = $"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}";
 
             return Client.GetAsync(requestUri);
+        }
+
+        public Task<HttpResponseMessage> GetAsync(string requestUri, TimeSpan timeOut)
+        {
+            Client.Timeout = timeOut;
+
+            return GetAsync(requestUri);
         }
     }
 }

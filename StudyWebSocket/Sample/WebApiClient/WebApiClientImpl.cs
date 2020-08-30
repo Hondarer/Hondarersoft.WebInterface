@@ -13,10 +13,12 @@ namespace WebApiClient
     class WebApiClientImpl : LifetimeEventsHostedService
     {
         private readonly IWebApiClient _webApiClient = null;
+        private readonly ICommonApiManager _commonApiManager = null;
 
-        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebApiClient webApiClient) : base(logger, appLifetime, configration, exitService)
+        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebApiClient webApiClient, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
         {
             _webApiClient = webApiClient;
+            _commonApiManager = commonApiManager;
         }
 
         protected override async void OnStarted()
@@ -26,27 +28,34 @@ namespace WebApiClient
             IWebInterface webInterace = _webApiClient as IWebInterface;
             webInterace.Hostname = "localhost";
             webInterace.PortNumber = 8001;
-            webInterace.BasePath = "api/v1";
 
-            HttpResponseMessage response = await _webApiClient.GetAsync("cpumodes/localhost");
+            string webInterfaceIdentify = Guid.NewGuid().ToString();
 
-            if (response.IsSuccessStatusCode)
+            _commonApiManager.RegistInterface(webInterace, webInterfaceIdentify)
+                .Start();
+
+            CommonApiRequest request = new CommonApiRequest()
             {
-                CpuMode result = await response.Content.ReadAsAsync<CpuMode>();
+                InterfaceIdentify = webInterfaceIdentify,
+                Method = CommonApiMethods.GET,
+                Path = "/api/v1/cpumodes/localhodst"
+            };
 
-                Console.WriteLine($"target={result.Hostname}, mode={result.Modecode}");
+            CommonApiResponse response = await _commonApiManager.SendRequestAsync(request);
+
+            if (response.IsSuccess == true)
+            {
+                _logger.LogInformation("Success. response = {0}", response.Result);
+            }
+            if (response.Error != null)
+            {
+                _logger.LogError("Error. error.code = {0}, error.message = {1}", response.Error.Code, response.Error.Message);
             }
             else
             {
-                // TODO: 例外のハンドリングが甘い
-                // (中まで行って帰ってきたら Error 型になるが、503とか、行きつかないエラーだとjsonになっていないとか)
-
-                Error error = await response.Content.ReadAsAsync<Error>();
-
-                Console.WriteLine(error.Message);
+                _logger.LogError("Error. No error information.");
             }
 
-            Console.WriteLine("Press any key");
             Console.ReadLine();
 
             _exitService.Requset(0);

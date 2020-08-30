@@ -32,8 +32,7 @@ namespace Hondarersoft.WebInterface
         public void Start()
         {
             if ((string.IsNullOrEmpty(Hostname) == true) ||
-                (PortNumber == 0) ||
-                (string.IsNullOrEmpty(BasePath) == true))
+                (PortNumber == 0))
             {
                 throw new Exception("invalid endpoint parameter");
             }
@@ -55,7 +54,14 @@ namespace Hondarersoft.WebInterface
                 {
                     ssl = "s";
                 }
-                this.listener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}/");
+
+                string tail = string.Empty;
+                if (string.IsNullOrEmpty(BasePath) != true)
+                {
+                    tail = "/";
+                }
+
+                this.listener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}");
                 this.listener.Start();
 
                 //log.Info(Resources.StartServer);

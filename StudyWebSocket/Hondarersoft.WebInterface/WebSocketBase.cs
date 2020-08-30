@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public abstract class WebSocketBase : WebInterface, IWebInterfaceService
+    public abstract class WebSocketBase : WebInterface, IWebSocketBase, IWebInterfaceService
     {
         protected readonly Dictionary<string, WebSocket> webSockets = new Dictionary<string, WebSocket>();
         protected readonly Dictionary<WebSocket, string> webSocketIdentities = new Dictionary<WebSocket, string>();
@@ -33,7 +33,7 @@ namespace Hondarersoft.WebInterface
         }
 
         public delegate void WebSocketRecieveTextHandler(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e);
-        public event WebSocketRecieveTextHandler WebSocketRecieveText;
+        public event IWebSocketBase.WebSocketRecieveTextHandler WebSocketRecieveText;
 
         public async Task SendTextAsync(string webSocketIdentify, string message)
         {
@@ -113,7 +113,6 @@ namespace Hondarersoft.WebInterface
 
                     //メッセージを取得
                     string message = Encoding.UTF8.GetString(buffer, 0, count);
-                    Console.WriteLine("> " + message);
 
                     await OnRecieveText(webSocketIdentify, message);
                 }

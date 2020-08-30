@@ -65,11 +65,11 @@ namespace Hondarersoft.WebInterface
         {
         }
 
-        public override async void Start()
+        public override void Start()
         {
             base.Start();
 
-            await ConnectAsync();
+            ConnectAsync().Wait();
         }
 
         public async Task ConnectAsync()
