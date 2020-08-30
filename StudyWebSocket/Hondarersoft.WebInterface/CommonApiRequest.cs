@@ -12,9 +12,9 @@ namespace Hondarersoft.WebInterface
 
         public CommonApiMethods Method { get; set; }
 
-        public string Path { get; set; }
+        public string Path { get; set; } // TODO: Get のときは原則 URL だけ。クエリー ストリングと API 仕様のマッピングを検討する必要がある。
 
-        public string Params { get; set; }
+        public object RequestBody { get; set; }
 
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(3);
 

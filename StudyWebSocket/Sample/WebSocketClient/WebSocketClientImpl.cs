@@ -1,6 +1,6 @@
 ﻿using Hondarersoft.Hosting;
 using Hondarersoft.WebInterface;
-using Hondarersoft.WebInterface.Schemas;
+using Hondarersoft.WebInterface.Sample.Schemas;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -36,22 +36,26 @@ namespace WebSocketClient
             {
                 InterfaceIdentify = webInterfaceIdentify,
                 Method = CommonApiMethods.GET,
-                Path = "/api/v1/cpumodes/localhodst"
+                Path = "/api/v1/cpumodes/localhost"
             };
 
-            CommonApiResponse response = await _commonApiManager.SendRequestAsync(request);
+            CommonApiResponse response = await _commonApiManager.SendRequestAsync<CpuMode>(request);
 
             if (response.IsSuccess == true)
             {
-                _logger.LogInformation("Success. response = {0}", response.Result);
-            }
-            if (response.Error != null)
-            {
-                _logger.LogError("Error. error.code = {0}, error.message = {1}", response.Error.Code, response.Error.Message);
+                CpuMode cpuMode = response.ResponseBody as CpuMode;
+                _logger.LogInformation("Success. response = {0}, {1}", cpuMode.Hostname, cpuMode.Modecode);
             }
             else
             {
-                _logger.LogError("Error. No error information.");
+                if (response.Error != null)
+                {
+                    _logger.LogError("Error. error.code = {0}, error.message = {1}", response.Error.Code, response.Error.Message);
+                }
+                else
+                {
+                    _logger.LogError("Error. No error information.");
+                }
             }
 
             Console.ReadLine();

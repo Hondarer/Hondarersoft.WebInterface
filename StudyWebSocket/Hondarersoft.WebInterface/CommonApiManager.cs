@@ -36,7 +36,7 @@ namespace Hondarersoft.WebInterface
         private readonly ILogger _logger = null;
         private readonly IServiceProvider _serviceProvider = null;
 
-        public CommonApiManager(IServiceProvider serviceProvider, ILogger logger)
+        public CommonApiManager(IServiceProvider serviceProvider, ILogger<CommonApiManager> logger)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -169,7 +169,7 @@ namespace Hondarersoft.WebInterface
                         return response;
                     }
 
-                    response.Result = result;
+                    response.ResponseBody = result;
                     response.IsSuccess = true;
                 }
                 else
@@ -204,7 +204,7 @@ namespace Hondarersoft.WebInterface
                 JsonRpcNotify jsonRpcNotify;
                 if (request.NotifyOnly != true)
                 {
-                    jsonRpcNotify = new JsonRpcRequest() { Method = methodsName };
+                    jsonRpcNotify = new JsonRpcRequest() { Method = methodsName, Params = request.RequestBody };
                     requestId = (jsonRpcNotify as JsonRpcRequest).Id.ToString();
 
                     waitingEvent = new CountdownEvent(1);
@@ -215,18 +215,23 @@ namespace Hondarersoft.WebInterface
                 }
                 else
                 {
-                    jsonRpcNotify = new JsonRpcNotify() { Method = methodsName };
+                    jsonRpcNotify = new JsonRpcNotify() { Method = methodsName, Params = request.RequestBody };
                 }
 
                 try
                 {
+                    JsonSerializerOptions options = new JsonSerializerOptions
+                    {
+                        IgnoreNullValues = true
+                    };
+
                     if (webInterface is IWebSocketClient)
                     {
-                        await (webInterface as IWebSocketClient).SendJsonAsync(jsonRpcNotify);
+                        await (webInterface as IWebSocketClient).SendJsonAsync(jsonRpcNotify, options);
                     }
                     else
                     {
-                        await (webInterface as IWebSocketBase).SendJsonAsync(request.SessionIdentify, jsonRpcNotify);
+                        await (webInterface as IWebSocketBase).SendJsonAsync(request.SessionIdentify, jsonRpcNotify, options);
                     }
                 }
                 catch
@@ -283,6 +288,26 @@ namespace Hondarersoft.WebInterface
             {
                 // リクエストに対応しないインターフェースへの要求
                 throw new InvalidOperationException();
+            }
+
+            return response;
+        }
+
+        public async Task<CommonApiResponse> SendRequestAsync<T>(CommonApiRequest request)
+        {
+            CommonApiResponse response = await SendRequestAsync(request);
+
+            if((response.IsSuccess == true) && (response.ResponseBody != null))
+            {
+                try
+                {
+                    response.ResponseBody = JsonSerializer.Deserialize<T>(response.ResponseBody.ToString());
+                }
+                catch
+                {
+                    // Result のデシリアライズに失敗
+                    response.IsSuccess = false;
+                }
             }
 
             return response;
@@ -353,7 +378,7 @@ namespace Hondarersoft.WebInterface
 
                 if (DynamicHelper.IsPropertyExist(document, "result") == true)
                 {
-                    commonApiResponse.Result = DynamicHelper.GetProperty(document, "result").ToString();
+                    commonApiResponse.ResponseBody = DynamicHelper.GetProperty(document, "result").ToString();
 
                     commonApiResponse.IsSuccess = true;
                 }

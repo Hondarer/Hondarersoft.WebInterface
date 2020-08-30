@@ -14,5 +14,7 @@ namespace Hondarersoft.WebInterface
         public ICommonApiManager RegistInterface(IWebInterface webInterfaceBase, string identify = null);
 
         public Task<CommonApiResponse> SendRequestAsync(CommonApiRequest request);
+
+        public Task<CommonApiResponse> SendRequestAsync<T>(CommonApiRequest request);
     }
 }

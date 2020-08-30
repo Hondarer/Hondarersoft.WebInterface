@@ -113,6 +113,8 @@ namespace Hondarersoft.WebInterface
                     // TODO: 例外を処理したほうがいい
                     if (WebApiRequest != null)
                     {
+                        //_logger.LogInformation("Recieve : {0} {1}", req.HttpMethod, req.RawUrl);
+
                         WebApiRequest(this, new IWebApiService.WebApiRequestEventArgs(req, res));
                     }
                 }

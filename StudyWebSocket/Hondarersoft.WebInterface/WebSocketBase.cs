@@ -54,6 +54,9 @@ namespace Hondarersoft.WebInterface
             // TODO: 重要:
             // このタイミングでソケットが閉じていると、HttpListenerExceptionが発生するため
             // 各処理は例外のハンドリングをきちんと行う必要がある。現状棚卸未。
+
+            _logger.LogInformation("Send to {0}: {1}", webSocketIdentify, Encoding.UTF8.GetString(sendbuffer));
+
             await webSockets[webSocketIdentify].SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
@@ -113,6 +116,8 @@ namespace Hondarersoft.WebInterface
 
                     //メッセージを取得
                     string message = Encoding.UTF8.GetString(buffer, 0, count);
+
+                    _logger.LogInformation("Recieve from {0}: {1}", webSocketIdentify, message);
 
                     await OnRecieveText(webSocketIdentify, message);
                 }

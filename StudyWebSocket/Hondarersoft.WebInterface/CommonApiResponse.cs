@@ -9,7 +9,7 @@ namespace Hondarersoft.WebInterface
     {
         public bool IsSuccess { get; set; }
 
-        public string Result { get; set; }
+        public object ResponseBody { get; set; }
 
         public Error Error { get; set; }
     }
