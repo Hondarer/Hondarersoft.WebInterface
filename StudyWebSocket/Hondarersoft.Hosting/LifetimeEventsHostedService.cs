@@ -27,6 +27,10 @@ namespace Hondarersoft.Hosting
             _configration = configration;
             _exitService = exitService;
 
+            // 注: 下記のイベントは static イベントなので、複数フックしないようにすること。
+            Utility.TaskExtensions.UnobservedTaskException += OnUnobservedTaskException;
+
+            // Utility.TaskExtensions を利用しなかったケースでの最終救済策
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
         }
 
@@ -43,15 +47,13 @@ namespace Hondarersoft.Hosting
             _exitService.Requset(ErrorExitCode);
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            OnStarting();
+            await OnStartingAsync();
 
             _appLifetime.ApplicationStarted.Register(Started);
-            _appLifetime.ApplicationStopping.Register(OnStopping);
-            _appLifetime.ApplicationStopped.Register(OnStopped);
-
-            return Task.CompletedTask;
+            _appLifetime.ApplicationStopping.Register(Stopping);
+            _appLifetime.ApplicationStopped.Register(Stopped);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -59,7 +61,7 @@ namespace Hondarersoft.Hosting
             return Task.CompletedTask;
         }
 
-        protected virtual void OnStarting()
+        protected virtual Task OnStartingAsync()
         {
             // このメソッド内の例外は、
             // Generic Host の外側にスローされる。
@@ -68,6 +70,8 @@ namespace Hondarersoft.Hosting
             _logger.LogInformation("OnStarting has been called.");
 
             // Perform on-startup activities here
+
+            return Task.CompletedTask;
         }
 
         private void Started()
@@ -80,7 +84,7 @@ namespace Hondarersoft.Hosting
                 // 本来の Generic Host の考えであれば、他のサービスを巻き込んで
                 // Host 全体を止めるかどうかは設計の問題であり、直ちに決められないが、
                 // 本実装では安全のため停止させることとしている。
-                OnStarted();
+                OnStartedAsync().Wait();
             }
             catch (Exception ex)
             {
@@ -90,14 +94,30 @@ namespace Hondarersoft.Hosting
             }
         }
 
-        protected virtual void OnStarted()
+        protected virtual Task OnStartedAsync()
         {
             _logger.LogInformation("OnStarted has been called.");
 
             // Perform post-startup activities here
+
+            return Task.CompletedTask;
         }
 
-        protected virtual void OnStopping()
+        private void Stopping()
+        {
+            try
+            {
+                OnStoppingAsync().Wait();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("An error occurred stopping the application.\r\n{0}", ex);
+
+                _exitService.Requset(ErrorExitCode);
+            }
+        }
+
+        protected virtual Task OnStoppingAsync()
         {
             // このメソッド内の例外は、
             // ログされた上でアプリケーションが終了する。
@@ -105,9 +125,25 @@ namespace Hondarersoft.Hosting
             _logger.LogInformation("OnStopping has been called.");
 
             // Perform on-stopping activities here
+
+            return Task.CompletedTask;
         }
 
-        protected virtual void OnStopped()
+        private void Stopped()
+        {
+            try
+            {
+                OnStoppedAsync().Wait();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("An error occurred stopping the application.\r\n{0}", ex);
+
+                _exitService.Requset(ErrorExitCode);
+            }
+        }
+
+        protected virtual Task OnStoppedAsync()
         {
             // このメソッド内の例外は、
             // ログされた上でアプリケーションが終了する。
@@ -115,6 +151,8 @@ namespace Hondarersoft.Hosting
             _logger.LogInformation("OnStopped has been called.");
 
             // Perform post-stopped activities here
+
+            return Task.CompletedTask;
         }
     }
 }

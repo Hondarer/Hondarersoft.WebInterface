@@ -3,6 +3,8 @@ using Hondarersoft.WebInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace WebSocketServer
 {
@@ -17,9 +19,9 @@ namespace WebSocketServer
             _commonApiManager = commonApiManager;
         }
 
-        protected override async void OnStarted()
+        protected override async Task OnStartedAsync()
         {
-            base.OnStarted();
+            await base.OnStartedAsync();
 
             IWebInterface webInterace = _webSocketService as IWebInterface;
             webInterace.Hostname = "localhost"; // Hostname を既定の "+" で実行する場合、管理者権限が必要

@@ -3,6 +3,8 @@ using Hondarersoft.WebInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace WebApiServer
 {
@@ -11,15 +13,15 @@ namespace WebApiServer
         private readonly IWebApiService _webApiService = null;
         private readonly ICommonApiManager _commonApiManager = null;
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebApiService webApiService, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
+        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiService webApiService, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
         {
             _webApiService = webApiService;
             _commonApiManager = commonApiManager;
         }
 
-        protected override async void OnStarted()
+        protected override async Task OnStartedAsync()
         {
-            base.OnStarted();
+            await base.OnStartedAsync();
 
             _webApiService.AllowCORS = true;
 

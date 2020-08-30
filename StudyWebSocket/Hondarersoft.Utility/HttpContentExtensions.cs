@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
+﻿using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Hondarersoft.WebInterface
+namespace Hondarersoft.Utility
 {
     public static class HttpContentExtensions
     {

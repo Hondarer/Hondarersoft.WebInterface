@@ -17,11 +17,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.WebInterface.T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{DB837136-E1D5-49F8-899B-F9EC62AB4721}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.Hosting", "Hondarersoft.Hosting\Hondarersoft.Hosting.csproj", "{2B1F5B50-A7AF-476B-8D2B-1612831A9718}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.Hosting", "Hondarersoft.Hosting\Hondarersoft.Hosting.csproj", "{2B1F5B50-A7AF-476B-8D2B-1612831A9718}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.WebInterface.Sample", "Sample\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj", "{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.WebInterface.Sample", "Sample\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj", "{53AB0791-57EB-4F66-8FC5-8ADE262BFBDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.WebInterface.Sample.Test", "Sample\Hondarersoft.WebInterface.Sample.Test\Hondarersoft.WebInterface.Sample.Test.csproj", "{A3352D5D-7536-4604-AC65-AD03EE384B00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.WebInterface.Sample.Test", "Sample\Hondarersoft.WebInterface.Sample.Test\Hondarersoft.WebInterface.Sample.Test.csproj", "{A3352D5D-7536-4604-AC65-AD03EE384B00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.Utility", "Hondarersoft.Utility\Hondarersoft.Utility.csproj", "{7BEB37EA-AA31-4508-8B13-4F9BB1BDD02E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{A3352D5D-7536-4604-AC65-AD03EE384B00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3352D5D-7536-4604-AC65-AD03EE384B00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3352D5D-7536-4604-AC65-AD03EE384B00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BEB37EA-AA31-4508-8B13-4F9BB1BDD02E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BEB37EA-AA31-4508-8B13-4F9BB1BDD02E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BEB37EA-AA31-4508-8B13-4F9BB1BDD02E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BEB37EA-AA31-4508-8B13-4F9BB1BDD02E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

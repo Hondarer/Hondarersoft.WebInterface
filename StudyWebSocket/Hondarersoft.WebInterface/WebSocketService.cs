@@ -1,6 +1,7 @@
 ﻿// [C#]System.Net.WebSocketsを試す。その２。サーバー編。
 // http://kimux.net/?p=956
 
+using Hondarersoft.Utility;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -52,10 +53,10 @@ namespace Hondarersoft.WebInterface
             //httpListener.Prefixes.Add("http://+:8000/ws/");
             httpListener.Start();
 
-            ProcessHttpRequest();
+            ProcessHttpRequest().FireAndForget();
         }
 
-        protected async void ProcessHttpRequest()
+        protected async Task ProcessHttpRequest()
         {
             while (httpListener.IsListening == true)
             {
@@ -83,7 +84,7 @@ namespace Hondarersoft.WebInterface
                     _logger.LogInformation("WebSocketRequest from {0}, accept. webSocketIdentify = {1}.", listenerContext.Request.RemoteEndPoint.Address.ToString(), webSocketIdentify);
                     WebSocket websocket = (await listenerContext.AcceptWebSocketAsync(subProtocol: null)).WebSocket;
 
-                    ProcessRecieve(webSocketIdentify, websocket);
+                    ProcessRecieve(webSocketIdentify, websocket).FireAndForget();
                 }
                 else
                 {

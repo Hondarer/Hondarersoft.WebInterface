@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Hondarersoft.Utility;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -136,16 +137,16 @@ namespace Hondarersoft.WebInterface
 
                     Console.WriteLine($"Unable to connect {retry}/3 time(s). Retry after 3000 milliseconds."); // TODO: ILogger & Const
 
-                    if (retry >= 3) // TODO: メソッド引数に
+                    if (retry >= 3) // TODO: クラスのプロパティに
                     {
                         throw;
                     }
 
-                    Thread.Sleep(3000);
+                    Thread.Sleep(3000); // TODO: クラスのプロパティに
                 }
             }
 
-            ProcessRecieve(Guid.NewGuid().ToString(), websocket);
+            ProcessRecieve(Guid.NewGuid().ToString(), websocket).FireAndForget();
         }
 
         public async Task CloseAsync()

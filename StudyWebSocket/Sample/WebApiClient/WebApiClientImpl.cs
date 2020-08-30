@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace WebApiClient
 {
@@ -13,15 +14,15 @@ namespace WebApiClient
         private readonly IWebApiClient _webApiClient = null;
         private readonly ICommonApiManager _commonApiManager = null;
 
-        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebApiClient webApiClient, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
+        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiClient webApiClient, ICommonApiManager commonApiManager) : base(logger, appLifetime, configration, exitService)
         {
             _webApiClient = webApiClient;
             _commonApiManager = commonApiManager;
         }
 
-        protected override async void OnStarted()
+        protected override async Task OnStartedAsync()
         {
-            base.OnStarted();
+            await base.OnStartedAsync();
 
             IWebInterface webInterace = _webApiClient as IWebInterface;
             webInterace.Hostname = "localhost";
@@ -58,6 +59,5 @@ namespace WebApiClient
 
             _exitService.Requset(0);
         }
-
     }
 }

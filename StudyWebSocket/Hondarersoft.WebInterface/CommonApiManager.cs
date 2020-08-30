@@ -1,21 +1,19 @@
-﻿using Hondarersoft.WebInterface.Controllers;
+﻿using Hondarersoft.Utility;
+using Hondarersoft.WebInterface.Controllers;
 using Hondarersoft.WebInterface.Schemas;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Net.WebSockets;
+using System.Net.Http;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
@@ -329,7 +327,12 @@ namespace Hondarersoft.WebInterface
             return response;
         }
 
-        private async void WebSocketService_WebSocketRecieveText(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
+        private void WebSocketService_WebSocketRecieveText(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
+        {
+            WebSocketService_WebSocketRecieveTextImpl(sender, e).FireAndForget();
+        }
+
+        private async Task WebSocketService_WebSocketRecieveTextImpl(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
         {
             // TODO: バッチ処理に対応していない(仕様にはあるが必要性は疑問)
             //       受信したデータがいきなり配列の場合はバッチ処理

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace WebSocketClient
 {
@@ -19,9 +20,9 @@ namespace WebSocketClient
             _commonApiManager = commonApiManager;
         }
 
-        protected override async void OnStarted()
+        protected override async Task OnStartedAsync()
         {
-            base.OnStarted();
+            await base.OnStartedAsync();
 
             IWebInterface webInterace = _webSocketClient as IWebInterface;
             webInterace.Hostname = "localhost";
