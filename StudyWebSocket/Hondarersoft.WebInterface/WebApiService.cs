@@ -110,13 +110,15 @@ namespace Hondarersoft.WebInterface
 
                 try
                 {
+                    _logger.LogInformation("Request : {0} {1} {2}", req.RequestTraceIdentifier.ToString(), req.HttpMethod, req.RawUrl);
+
                     // TODO: 例外を処理したほうがいい
                     if (WebApiRequest != null)
                     {
-                        //_logger.LogInformation("Recieve : {0} {1}", req.HttpMethod, req.RawUrl);
-
                         WebApiRequest(this, new IWebApiService.WebApiRequestEventArgs(req, res));
                     }
+
+                    _logger.LogInformation("Response : {0} {1} {2}", req.RequestTraceIdentifier.ToString(), res.StatusCode, res.StatusDescription);
                 }
                 finally
                 {

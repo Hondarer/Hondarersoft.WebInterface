@@ -121,12 +121,20 @@ namespace Hondarersoft.WebInterface
         protected readonly Dictionary<string, CountdownEvent> _waitingReplyEvent = new Dictionary<string, CountdownEvent>();
         protected readonly Dictionary<string, CommonApiResponse> _waitingReplyData = new Dictionary<string, CommonApiResponse>();
 
-        public async Task<CommonApiResponse> SendRequestAsync(CommonApiRequest request)
+        public async Task<CommonApiResponse> SendRequestAsync(CommonApiRequest request, string interfaceIdentify = null, string sessionIdentify = null)
         {
             CommonApiResponse response = new CommonApiResponse();
 
+            if (string.IsNullOrEmpty(interfaceIdentify) == true)
+            {
+                if (webInterfaces.Count == 1)
+                {
+                    interfaceIdentify = webInterfaces.First().Key;
+                }
+            }
+
             // TODO: 辞書にない場合は適切な例外にする
-            IWebInterface webInterface = webInterfaces[request.InterfaceIdentify];
+            IWebInterface webInterface = webInterfaces[interfaceIdentify];
 
             if (webInterface is IWebApiClient)
             {
@@ -231,7 +239,15 @@ namespace Hondarersoft.WebInterface
                     }
                     else
                     {
-                        await (webInterface as IWebSocketBase).SendJsonAsync(request.SessionIdentify, jsonRpcNotify, options);
+                        if (string.IsNullOrEmpty(sessionIdentify) == true)
+                        {
+                            if ((webInterface as IWebSocketBase).WebSocketIdentifies.Count == 1)
+                            {
+                                sessionIdentify = (webInterface as IWebSocketBase).WebSocketIdentifies.First();
+                            }
+                        }
+
+                        await (webInterface as IWebSocketBase).SendJsonAsync(sessionIdentify, jsonRpcNotify, options);
                     }
                 }
                 catch
@@ -293,9 +309,9 @@ namespace Hondarersoft.WebInterface
             return response;
         }
 
-        public async Task<CommonApiResponse> SendRequestAsync<T>(CommonApiRequest request)
+        public async Task<CommonApiResponse> SendRequestAsync<T>(CommonApiRequest request, string interfaceIdentify = null, string sessionIdentify = null)
         {
-            CommonApiResponse response = await SendRequestAsync(request);
+            CommonApiResponse response = await SendRequestAsync(request, interfaceIdentify, sessionIdentify);
 
             if((response.IsSuccess == true) && (response.ResponseBody != null))
             {

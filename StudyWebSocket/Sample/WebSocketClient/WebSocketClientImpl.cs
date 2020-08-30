@@ -27,14 +27,10 @@ namespace WebSocketClient
             webInterace.Hostname = "localhost";
             webInterace.PortNumber = 8000;
 
-            string webInterfaceIdentify = Guid.NewGuid().ToString();
-
-            _commonApiManager.RegistInterface(webInterace, webInterfaceIdentify)
-                .Start();
+            _commonApiManager.RegistInterface(webInterace).Start();
 
             CommonApiRequest request = new CommonApiRequest()
             {
-                InterfaceIdentify = webInterfaceIdentify,
                 Method = CommonApiMethods.GET,
                 Path = "/api/v1/cpumodes/localhost"
             };
