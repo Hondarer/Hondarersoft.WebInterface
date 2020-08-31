@@ -57,7 +57,7 @@ namespace Hondarersoft.WebInterface
             _listener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}");
             _listener.Start();
 
-            ProcessHttpRequest(_listener).FireAndForget();
+            ProcessHttpRequest(_listener).NoWait();
 
             return Task.CompletedTask;
         }

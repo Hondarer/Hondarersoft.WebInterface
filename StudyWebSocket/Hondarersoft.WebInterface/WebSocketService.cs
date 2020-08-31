@@ -53,7 +53,7 @@ namespace Hondarersoft.WebInterface
             //httpListener.Prefixes.Add("http://+:8000/ws/");
             httpListener.Start();
 
-            ProcessHttpRequest().FireAndForget();
+            ProcessHttpRequest().NoWait();
         }
 
         protected async Task ProcessHttpRequest()
@@ -84,7 +84,7 @@ namespace Hondarersoft.WebInterface
                     _logger.LogInformation("WebSocketRequest from {0}, accept. webSocketIdentify = {1}.", listenerContext.Request.RemoteEndPoint.Address.ToString(), webSocketIdentify);
                     WebSocket websocket = (await listenerContext.AcceptWebSocketAsync(subProtocol: null)).WebSocket;
 
-                    ProcessRecieve(webSocketIdentify, websocket).FireAndForget();
+                    ProcessRecieve(webSocketIdentify, websocket).NoWait();
                 }
                 else
                 {

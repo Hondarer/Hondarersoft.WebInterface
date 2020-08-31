@@ -146,7 +146,7 @@ namespace Hondarersoft.WebInterface
                 }
             }
 
-            ProcessRecieve(Guid.NewGuid().ToString(), websocket).FireAndForget();
+            ProcessRecieve(Guid.NewGuid().ToString(), websocket).NoWait();
         }
 
         public async Task CloseAsync()

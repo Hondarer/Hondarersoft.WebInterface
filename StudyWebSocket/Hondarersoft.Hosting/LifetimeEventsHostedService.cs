@@ -68,6 +68,7 @@ namespace Hondarersoft.Hosting
         {
             try
             {
+                _logger.LogInformation("OnStarting has been called.");
                 OnStartingAsync().Wait();
             }
             catch (Exception ex)
@@ -80,10 +81,6 @@ namespace Hondarersoft.Hosting
 
         protected virtual Task OnStartingAsync()
         {
-            _logger.LogInformation("OnStarting has been called.");
-
-            // Perform on-startup activities here
-
             return Task.CompletedTask;
         }
 
@@ -91,6 +88,7 @@ namespace Hondarersoft.Hosting
         {
             try
             {
+                _logger.LogInformation("OnStarted has been called.");
                 OnStartedAsync().Wait();
             }
             catch (Exception ex)
@@ -103,10 +101,6 @@ namespace Hondarersoft.Hosting
 
         protected virtual Task OnStartedAsync()
         {
-            _logger.LogInformation("OnStarted has been called.");
-
-            // Perform post-startup activities here
-
             return Task.CompletedTask;
         }
 
@@ -114,6 +108,7 @@ namespace Hondarersoft.Hosting
         {
             try
             {
+                _logger.LogInformation("OnStopping has been called.");
                 OnStoppingAsync().Wait();
             }
             catch (Exception ex)
@@ -126,10 +121,6 @@ namespace Hondarersoft.Hosting
 
         protected virtual Task OnStoppingAsync()
         {
-            _logger.LogInformation("OnStopping has been called.");
-
-            // Perform on-stopping activities here
-
             return Task.CompletedTask;
         }
 
@@ -137,6 +128,7 @@ namespace Hondarersoft.Hosting
         {
             try
             {
+                _logger.LogInformation("OnStopped has been called.");
                 OnStoppedAsync().Wait();
             }
             catch (Exception ex)
@@ -149,10 +141,6 @@ namespace Hondarersoft.Hosting
 
         protected virtual Task OnStoppedAsync()
         {
-            _logger.LogInformation("OnStopped has been called.");
-
-            // Perform post-stopped activities here
-
             return Task.CompletedTask;
         }
     }

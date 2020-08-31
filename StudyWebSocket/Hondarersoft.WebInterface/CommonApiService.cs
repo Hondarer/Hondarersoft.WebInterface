@@ -329,7 +329,7 @@ namespace Hondarersoft.WebInterface
 
         private void WebSocketService_WebSocketRecieveText(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
         {
-            WebSocketService_WebSocketRecieveTextImpl(sender, e).FireAndForget();
+            WebSocketService_WebSocketRecieveTextImpl(sender, e).NoWait();
         }
 
         private async Task WebSocketService_WebSocketRecieveTextImpl(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
