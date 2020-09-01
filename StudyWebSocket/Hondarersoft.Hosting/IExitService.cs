@@ -10,6 +10,6 @@ namespace Hondarersoft.Hosting
 
         public bool IsExiting { get; }
 
-        public bool Requset(int exitCode);
+        public bool Request(int exitCode);
     }
 }

@@ -25,7 +25,7 @@ namespace Hondarersoft.Hosting
             _appLifetime = appLifetime;
         }
 
-        public bool Requset(int exitCode)
+        public bool Request(int exitCode)
         {
             // 複数スレッドからの呼び出しに対応できるよう、
             // ダブル チェック ロッキング パターンを取る。

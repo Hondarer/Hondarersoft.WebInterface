@@ -45,7 +45,7 @@ namespace Hondarersoft.Hosting
             // 本来の Generic Host の考えであれば、他のサービスを巻き込んで
             // Host 全体を止めるかどうかは設計の問題であり、直ちに決められないが、
             // 本実装では安全のため停止させることとしている。
-            _exitService.Requset(ErrorExitCode);
+            _exitService.Request(ErrorExitCode);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -75,7 +75,7 @@ namespace Hondarersoft.Hosting
             {
                 _logger.LogCritical("An error occurred starting the application.\r\n{0}", ex);
 
-                _exitService.Requset(ErrorExitCode);
+                _exitService.Request(ErrorExitCode);
             }
         }
 
@@ -95,7 +95,7 @@ namespace Hondarersoft.Hosting
             {
                 _logger.LogCritical("An error occurred starting the application.\r\n{0}", ex);
 
-                _exitService.Requset(ErrorExitCode);
+                _exitService.Request(ErrorExitCode);
             }
         }
 
@@ -115,7 +115,7 @@ namespace Hondarersoft.Hosting
             {
                 _logger.LogCritical("An error occurred stopping the application.\r\n{0}", ex);
 
-                _exitService.Requset(ErrorExitCode);
+                _exitService.Request(ErrorExitCode);
             }
         }
 
@@ -135,7 +135,7 @@ namespace Hondarersoft.Hosting
             {
                 _logger.LogCritical("An error occurred stopping the application.\r\n{0}", ex);
 
-                _exitService.Requset(ErrorExitCode);
+                _exitService.Request(ErrorExitCode);
             }
         }
 

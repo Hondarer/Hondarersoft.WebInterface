@@ -57,7 +57,7 @@ namespace WebSocketClient
 
             Console.ReadLine();
 
-            _exitService.Requset(0);
+            _exitService.Request(0);
         }
     }
 }
