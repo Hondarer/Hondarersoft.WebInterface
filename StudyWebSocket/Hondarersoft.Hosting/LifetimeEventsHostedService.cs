@@ -27,13 +27,13 @@ namespace Hondarersoft.Hosting
             _configration = configration;
             _exitService = exitService;
 
-            // Task.FireAndForget() による戻り値を管理しない Task の例外を補足する。
+            // Task.NoWait() による戻り値を管理しない Task の例外を補足する。
             Utility.TaskExtensions.UnobservedTaskException += OnUnobservedTaskException;
 
             // TaskExtensions を利用しなかったケースでの最終救済策。
             // Task.Run や async void によりハンドルされない例外があった場合、それが GC された際に発生する。
             // GC のタイミングなので、この処理が確実に動作するかどうかは保証できない。
-            // 基本的には各処理で正しく try - catch を行い、Task.FireAndForget() を用いて
+            // 基本的には各処理で正しく try - catch を行い、Task.NoWait() を用いて
             // 処理を行うこと。
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
         }

@@ -70,24 +70,10 @@ namespace Hondarersoft.WebInterface
 
         public ICommonApiService RegistController(string assemblyName, string classFullName)
         {
-            Assembly asm = Assembly.Load(assemblyName);
-            Type commonApiControllerType = asm.GetType(classFullName);
-
-            // 各インターフェースは DI コンテナから払い出したいので、ここで払い出し処理を行う。
             // TODO: 各種例外への対応ができていない。
-            // TODO: 処理を別クラスに切り出したほうがいい。
 
-            List<Type> types = new List<Type>();
-            List<object> objects = new List<object>();
-
-            foreach (ParameterInfo parameter in commonApiControllerType.GetConstructors().FirstOrDefault().GetParameters())
-            {
-                types.Add(parameter.ParameterType);
-                objects.Add(_serviceProvider.GetService(parameter.ParameterType));
-            }
-            ConstructorInfo constructor = commonApiControllerType.GetConstructor(types.ToArray());
-            ICommonApiController commonApiController = constructor.Invoke(objects.ToArray()) as ICommonApiController;
-
+            // TODO: 型があっていないと null になるのでチェック要
+            ICommonApiController commonApiController = _serviceProvider.GetService(assemblyName, classFullName, true) as ICommonApiController;
             commonApiControllers.Add(commonApiController);
 
             return this;
