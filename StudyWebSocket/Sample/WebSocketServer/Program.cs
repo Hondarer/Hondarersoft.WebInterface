@@ -29,6 +29,8 @@ namespace WebSocketServer
         /// <returns>待機する <see cref="Task"/>。</returns>
         static async Task Main(string[] args)
         {
+            IConfiguration configuration = null;
+
             await new HostBuilder()
             .ConfigureAppConfiguration((hostContext, configBuilder) =>
             {
@@ -58,6 +60,8 @@ namespace WebSocketServer
                 {
                     configBuilder.AddJsonFile(jsonFilePath);
                 }
+
+                configuration = configBuilder.Build();
             })
             .ConfigureLogging((hostContext, loggingBuilder) =>
             {
@@ -81,6 +85,11 @@ namespace WebSocketServer
                 services.AddSingleton<IExitService, ExitService>();
                 services.AddTransient<IWebSocketService, Hondarersoft.WebInterface.WebSocketService>();
                 services.AddSingleton<ICommonApiService, CommonApiService>();
+
+                // コントローラーの動作に必要となる追加のサービス処理の紐づけ
+                // (コントローラー自体を動的に読み込むようにしているため、
+                //  コントローラーが依存する追加サービスも動的に読み込めるようにしている)
+                services.AddServiceFromConfigration(configuration);
 
                 // アプリケーションの実装クラスを指定
                 services.AddHostedService<WebSocketServerImpl>();

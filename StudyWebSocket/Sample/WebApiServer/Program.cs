@@ -8,6 +8,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Hondarersoft.WebInterface;
 using Hondarersoft.Hosting;
+using Microsoft.Extensions.Configuration.Json;
+using System.Text.Json;
 
 namespace WebApiServer
 {
@@ -23,6 +25,8 @@ namespace WebApiServer
         /// <returns>待機する <see cref="Task"/>。</returns>
         static async Task Main(string[] args)
         {
+            IConfiguration configuration = null;
+
             await new HostBuilder()
             .ConfigureAppConfiguration((hostContext, configBuilder) =>
             {
@@ -52,6 +56,8 @@ namespace WebApiServer
                 {
                     configBuilder.AddJsonFile(jsonFilePath);
                 }
+
+                configuration = configBuilder.Build();
             })
             .ConfigureLogging((hostContext, loggingBuilder) =>
             {
@@ -71,10 +77,15 @@ namespace WebApiServer
             })
             .ConfigureServices(services =>
             {
-                // サービス処理の紐づけ(AddTransient, AddSingleton)
+                // 基本のサービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
                 services.AddTransient<IWebApiService, Hondarersoft.WebInterface.WebApiService>();
                 services.AddSingleton<ICommonApiService, CommonApiService>();
+
+                // コントローラーの動作に必要となる追加のサービス処理の紐づけ
+                // (コントローラー自体を動的に読み込むようにしているため、
+                //  コントローラーが依存する追加サービスも動的に読み込めるようにしている)
+                services.AddServiceFromConfigration(configuration);
 
                 // アプリケーションの実装クラスを指定
                 services.AddHostedService<WebApiServerImpl>();

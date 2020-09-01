@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Hondarersoft.Hosting;
 
 namespace Hondarersoft.WebInterface
 {
@@ -72,6 +73,11 @@ namespace Hondarersoft.WebInterface
         public ICommonApiService RegistController(IConfiguration configurationRoot)
         {
             CommonApiControllerConfigEntry[] controllerConfig = configurationRoot.GetSection("CommonApiControllers").Get<CommonApiControllerConfigEntry[]>();
+
+            if (controllerConfig == null)
+            {
+                return this;
+            }
 
             foreach (CommonApiControllerConfigEntry entry in controllerConfig)
             {

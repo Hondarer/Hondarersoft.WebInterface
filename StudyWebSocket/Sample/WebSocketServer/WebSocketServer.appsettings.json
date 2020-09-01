@@ -3,6 +3,15 @@
     "Hostname": "localhost",
     "PortNumber": 8000,
 
+    //"AddServices": [
+    //    {
+    //        "AssemblyName": "{AssemblyName}",
+    //        "InterfaceFullName": "{InterfaceFullName}",
+    //        "ClassFullName": "{ClassFullName}",
+    //        "IsSingleton": true
+    //    }
+    //],
+
     "CommonApiControllers": [
         {
             "AssemblyName": "Hondarersoft.WebInterface.Sample",

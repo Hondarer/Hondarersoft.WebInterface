@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Hondarersoft.Utility
+namespace Hondarersoft.Hosting
 {
-    public static class ServiceProviderExtensions
+    public static class IServiceProviderExtensions
     {
         private static Dictionary<Tuple<string, string>, object> singletonCache = new Dictionary<Tuple<string, string>, object>();
 

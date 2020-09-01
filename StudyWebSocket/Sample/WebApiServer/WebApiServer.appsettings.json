@@ -4,6 +4,15 @@
     "PortNumber": 8001,
     "BasePath": "api/v1",
 
+    //"AddServices": [
+    //    {
+    //        "AssemblyName": "{AssemblyName}",
+    //        "InterfaceFullName": "{InterfaceFullName}",
+    //        "ClassFullName": "{ClassFullName}",
+    //        "IsSingleton": true
+    //    }
+    //],
+
     "CommonApiControllers": [
         {
             "AssemblyName": "Hondarersoft.WebInterface.Sample",
