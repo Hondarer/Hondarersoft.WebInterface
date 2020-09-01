@@ -14,7 +14,7 @@ namespace WebApiClient
         private readonly IWebApiClient _webApiClient = null;
         private readonly ICommonApiService _commonApiService = null;
 
-        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiClient webApiClient, ICommonApiService commonApiService) : base(logger, appLifetime, configration, exitService)
+        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IWebApiClient webApiClient, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
         {
             _webApiClient = webApiClient;
             _commonApiService = commonApiService;

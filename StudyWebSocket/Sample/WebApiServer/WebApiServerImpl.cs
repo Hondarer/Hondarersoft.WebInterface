@@ -13,7 +13,7 @@ namespace WebApiServer
         private readonly IWebApiService _webApiService = null;
         private readonly ICommonApiService _commonApiService = null;
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IServiceProvider serviceProvider, IWebApiService webApiService, ICommonApiService commonApiService) : base(logger, appLifetime, configration, exitService)
+        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IWebApiService webApiService, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
         {
             _webApiService = webApiService;
             _commonApiService = commonApiService;
@@ -31,7 +31,7 @@ namespace WebApiServer
             webInterace.BasePath = "api/v1";
 
             await _commonApiService.RegistInterface(webInterace)
-                .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
+                .RegistController(_configuration)
                 .StartAsync();
         }
     }

@@ -11,7 +11,7 @@ namespace Hondarersoft.Hosting
     {
         protected readonly ILogger _logger = null;
         private readonly IHostApplicationLifetime _appLifetime = null;
-        protected readonly IConfiguration _configration = null;
+        protected readonly IConfiguration _configuration = null;
         protected readonly IExitService _exitService = null;
 
         /// <summary>
@@ -20,11 +20,11 @@ namespace Hondarersoft.Hosting
         public int ErrorExitCode { get; set; } = 1;
 
         public LifetimeEventsHostedService(
-            ILogger<LifetimeEventsHostedService> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService)
+            ILogger<LifetimeEventsHostedService> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService)
         {
             _logger = logger;
             _appLifetime = appLifetime;
-            _configration = configration;
+            _configuration = configuration;
             _exitService = exitService;
 
             // Task.NoWait() による戻り値を管理しない Task の例外を補足する。

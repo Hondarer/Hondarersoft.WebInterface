@@ -14,7 +14,7 @@ namespace WebSocketClient
         private readonly IWebSocketClient _webSocketClient = null;
         private readonly ICommonApiService _commonApiService = null;
 
-        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketClient webSocketClient, ICommonApiService commonApiService) : base(logger, appLifetime, configration, exitService)
+        public WebSocketClientImpl(ILogger<WebSocketClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IWebSocketClient webSocketClient, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
         {
             _webSocketClient = webSocketClient;
             _commonApiService = commonApiService;

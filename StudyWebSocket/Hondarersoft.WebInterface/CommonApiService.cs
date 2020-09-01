@@ -1,6 +1,7 @@
 ﻿using Hondarersoft.Utility;
 using Hondarersoft.WebInterface.Controllers;
 using Hondarersoft.WebInterface.Schemas;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -31,8 +32,8 @@ namespace Hondarersoft.WebInterface
             {CommonApiArgs.Errors.InternalError,-32603},
         };
 
-        private readonly ILogger _logger = null;
         private readonly IServiceProvider _serviceProvider = null;
+        private readonly ILogger _logger = null;
 
         public CommonApiService(IServiceProvider serviceProvider, ILogger<CommonApiService> logger)
         {
@@ -68,13 +69,17 @@ namespace Hondarersoft.WebInterface
             return this;
         }
 
-        public ICommonApiService RegistController(string assemblyName, string classFullName)
+        public ICommonApiService RegistController(IConfiguration configurationRoot)
         {
-            // TODO: 各種例外への対応ができていない。
+            CommonApiControllerConfigEntry[] controllerConfig = configurationRoot.GetSection("CommonApiControllers").Get<CommonApiControllerConfigEntry[]>();
 
-            // TODO: 型があっていないと null になるのでチェック要
-            ICommonApiController commonApiController = _serviceProvider.GetService(assemblyName, classFullName, true) as ICommonApiController;
-            commonApiControllers.Add(commonApiController);
+            foreach (CommonApiControllerConfigEntry entry in controllerConfig)
+            {
+                // TODO: 各種例外への対応ができていない。
+                // TODO: 型があっていないと null になるのでチェック要
+                ICommonApiController commonApiController = _serviceProvider.GetService(entry.AssemblyName, entry.ClassFullName, entry.IsSingleton) as ICommonApiController;
+                commonApiControllers.Add(commonApiController);
+            }
 
             return this;
         }

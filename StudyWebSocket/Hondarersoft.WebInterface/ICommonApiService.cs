@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace Hondarersoft.WebInterface
     {
         public Task<ICommonApiService> StartAsync();
 
-        public ICommonApiService RegistController(string assemblyName, string classFullName);
+        public ICommonApiService RegistController(IConfiguration configurationRoot);
 
         public ICommonApiService RegistInterface(IWebInterface webInterfaceBase, string identify = null);
 

@@ -13,7 +13,7 @@ namespace WebSocketServer
         private readonly IWebSocketService _webSocketService = null;
         private readonly ICommonApiService _commonApiService = null;
 
-        public WebSocketServerImpl(ILogger<WebSocketServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configration, IExitService exitService, IWebSocketService webSocketService, ICommonApiService commonApiService) : base(logger, appLifetime, configration, exitService)
+        public WebSocketServerImpl(ILogger<WebSocketServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IWebSocketService webSocketService, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
         {
             _webSocketService = webSocketService;
             _commonApiService = commonApiService;
@@ -28,7 +28,7 @@ namespace WebSocketServer
             webInterace.PortNumber = 8000;
 
             await _commonApiService.RegistInterface(webInterace)
-                .RegistController("Hondarersoft.WebInterface.Sample", "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController") // TODO: 定義ファイルから設定する
+                .RegistController(_configuration)
                 .StartAsync();
         }
     }
