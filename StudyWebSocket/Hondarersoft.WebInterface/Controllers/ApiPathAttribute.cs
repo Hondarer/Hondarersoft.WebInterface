@@ -9,9 +9,12 @@ namespace Hondarersoft.WebInterface.Controllers
     {
         public string ApiPath { get; protected set; }
 
-        public ApiPathAttribute(string apiPath)
+        public bool UseRegEx { get; protected set; }
+
+        public ApiPathAttribute(string apiPath, bool useRegex = false)
         {
-            this.ApiPath = apiPath;
+            ApiPath = apiPath;
+            UseRegEx = useRegex;
         }
     }
 }
