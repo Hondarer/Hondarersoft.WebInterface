@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,6 +22,30 @@ namespace Hondarersoft.WebInterface
         public WebInterface(ILogger<WebInterface> logger)
         {
             _logger = logger;
+        }
+
+        public IWebInterface LoadConfiguration(IConfiguration configurationRoot)
+        {
+            WebInterfaceConfigEntry webInterfaceConfig = configurationRoot.Get<WebInterfaceConfigEntry>();
+
+            if (string.IsNullOrWhiteSpace(webInterfaceConfig.Hostname) != true)
+            {
+                Hostname = webInterfaceConfig.Hostname;
+            }
+            if (webInterfaceConfig.PortNumber != 0)
+            {
+                PortNumber = webInterfaceConfig.PortNumber;
+            }
+            if (string.IsNullOrWhiteSpace(webInterfaceConfig.BasePath) != true)
+            {
+                BasePath = webInterfaceConfig.BasePath;
+            }
+            if (webInterfaceConfig.UseSSL != null)
+            {
+                UseSSL = (bool)webInterfaceConfig.UseSSL;
+            }
+
+            return this;
         }
 
         #region IDisposable Support

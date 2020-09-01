@@ -1,4 +1,8 @@
 {
+    // Hostname を "+" で実行する場合、管理者権限が必要
+    "Hostname": "localhost",
+    "PortNumber": 8000,
+
     "CommonApiControllers": [
         {
             "AssemblyName": "Hondarersoft.WebInterface.Sample",

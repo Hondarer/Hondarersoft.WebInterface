@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="appsettings.production.json" />
+    <None Remove="WebApiServer.appsettings.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.production.json">
+    <Content Include="WebApiServer.appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

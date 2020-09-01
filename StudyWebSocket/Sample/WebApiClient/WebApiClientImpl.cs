@@ -24,9 +24,7 @@ namespace WebApiClient
         {
             await base.OnStartedAsync();
 
-            IWebInterface webInterace = _webApiClient as IWebInterface;
-            webInterace.Hostname = "localhost";
-            webInterace.PortNumber = 8001;
+            IWebInterface webInterace = (_webApiClient as IWebInterface).LoadConfiguration(_configuration);
 
             await _commonApiService.RegistInterface(webInterace).StartAsync();
 

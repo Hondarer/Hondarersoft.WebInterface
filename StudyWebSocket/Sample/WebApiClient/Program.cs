@@ -34,6 +34,12 @@ namespace WebApiClient
                 }
                 hostContext.HostingEnvironment.EnvironmentName = environmentName;
 
+                string settingsSubName = null;
+                if (environmentName.ToLower() != "production")
+                {
+                    settingsSubName = environmentName.ToLower() + ".";
+                }
+
                 // 基底パスの設定
                 configBuilder.SetBasePath(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
 
@@ -41,7 +47,7 @@ namespace WebApiClient
                 configBuilder.AddCommandLine(args);
 
                 // 設定ファイルの読込
-                string jsonFilePath = $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json";
+                string jsonFilePath = $"{Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.ModuleName)}.appsettings.{settingsSubName}json";
                 if (File.Exists(jsonFilePath) == true)
                 {
                     configBuilder.AddJsonFile(jsonFilePath);

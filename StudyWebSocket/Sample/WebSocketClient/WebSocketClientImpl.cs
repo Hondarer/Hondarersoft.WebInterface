@@ -24,9 +24,7 @@ namespace WebSocketClient
         {
             await base.OnStartedAsync();
 
-            IWebInterface webInterace = _webSocketClient as IWebInterface;
-            webInterace.Hostname = "localhost";
-            webInterace.PortNumber = 8000;
+            IWebInterface webInterace = (_webSocketClient as IWebInterface).LoadConfiguration(_configuration);
 
             await _commonApiService.RegistInterface(webInterace).StartAsync();
 

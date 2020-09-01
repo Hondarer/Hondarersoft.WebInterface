@@ -25,10 +25,7 @@ namespace WebApiServer
 
             _webApiService.AllowCORS = true;
 
-            IWebInterface webInterace = _webApiService as IWebInterface;
-            webInterace.Hostname = "localhost"; // Hostname を既定の "+" で実行する場合、管理者権限が必要
-            webInterace.PortNumber = 8001;
-            webInterace.BasePath = "api/v1";
+            IWebInterface webInterace = (_webApiService as IWebInterface).LoadConfiguration(_configuration);
 
             await _commonApiService.RegistInterface(webInterace)
                 .RegistController(_configuration)

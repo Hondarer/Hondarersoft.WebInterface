@@ -1,11 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface IWebInterface
+    public class WebInterfaceConfigEntry
     {
         public string Hostname { get; set; }
 
@@ -13,8 +12,7 @@ namespace Hondarersoft.WebInterface
 
         public string BasePath { get; set; }
 
-        public bool UseSSL { get; set; }
+        public bool? UseSSL { get; set; }
 
-        public IWebInterface LoadConfiguration(IConfiguration configurationRoot);
     }
 }

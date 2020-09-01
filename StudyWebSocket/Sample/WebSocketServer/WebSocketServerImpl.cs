@@ -23,9 +23,7 @@ namespace WebSocketServer
         {
             await base.OnStartedAsync();
 
-            IWebInterface webInterace = _webSocketService as IWebInterface;
-            webInterace.Hostname = "localhost"; // Hostname を既定の "+" で実行する場合、管理者権限が必要
-            webInterace.PortNumber = 8000;
+            IWebInterface webInterace = (_webSocketService as IWebInterface).LoadConfiguration(_configuration);
 
             await _commonApiService.RegistInterface(webInterace)
                 .RegistController(_configuration)
