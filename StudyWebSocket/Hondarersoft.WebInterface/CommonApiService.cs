@@ -16,6 +16,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Hondarersoft.Hosting;
+using System.Text.RegularExpressions;
 
 namespace Hondarersoft.WebInterface
 {
@@ -528,48 +529,51 @@ namespace Hondarersoft.WebInterface
 
                 string path = GetApiPath(e.Request.RawUrl);
 
-                dynamic document = null;
-                try
+                if (e.Request.QueryString.Count > 0)
                 {
-                    if (string.IsNullOrEmpty(reqBody) == true)
+                    dynamic document = null;
+                    try
                     {
-                        document = new ExpandoObject();
-                    }
-                    else
-                    {
-                        document = JsonSerializer.Deserialize<ExpandoObject>(reqBody);
-                    }
-
-                    // QueryString を、データに注入する
-                    // 受信側は、json をデシリアライズすることで QueryString を受信可能
-                    // QueryString の仕様上、パラメーターは配列になりうるので
-                    // デシリアライズ先では string[] で受けること。
-                    foreach (string key in e.Request.QueryString.AllKeys)
-                    {
-                        // json にキーが存在しない場合にのみ処理
-                        if (DynamicHelper.IsPropertyExist(document, key) == false)
+                        if (string.IsNullOrEmpty(reqBody) == true)
                         {
-                            string[] queryValues = e.Request.QueryString.GetValues(key);
-
-                            if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
-                            {
-                                // (1) url?aaa=bbb,ccc ※(1)の処理で長さ 1 かつカンマが含まれている場合の処理。
-                                DynamicHelper.AddProperty(document, key, queryValues.First().Split(","));
-                            }
-                            else
-                            {
-                                // (2) url?aaa=bbb&aaa=ccc ※この形式でカンマが含まれている場合は、そのままとする。
-                                DynamicHelper.AddProperty(document, key, queryValues);
-                            }
+                            document = new ExpandoObject();
+                        }
+                        else
+                        {
+                            document = JsonSerializer.Deserialize<ExpandoObject>(reqBody);
                         }
 
-                        reqBody = JsonSerializer.Serialize(document);
+                        // QueryString を、データに注入する
+                        // 受信側は、json をデシリアライズすることで QueryString を受信可能
+                        // QueryString の仕様上、パラメーターは配列になりうるので
+                        // デシリアライズ先では string[] で受けること。
+                        foreach (string key in e.Request.QueryString.AllKeys)
+                        {
+                            // json にキーが存在しない場合にのみ処理
+                            if (DynamicHelper.IsPropertyExist(document, key) == false)
+                            {
+                                string[] queryValues = e.Request.QueryString.GetValues(key);
+
+                                if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
+                                {
+                                    // (1) url?aaa=bbb,ccc ※(1)の処理で長さ 1 かつカンマが含まれている場合の処理。
+                                    DynamicHelper.AddProperty(document, key, queryValues.First().Split(","));
+                                }
+                                else
+                                {
+                                    // (2) url?aaa=bbb&aaa=ccc ※この形式でカンマが含まれている場合は、そのままとする。
+                                    DynamicHelper.AddProperty(document, key, queryValues);
+                                }
+                            }
+
+                            reqBody = JsonSerializer.Serialize(document);
+                        }
                     }
-                }
-                catch
-                {
-                    // リクエストに何かしら格納されており、型が json ではなかった
-                    // NOP(QueryString の注入はあきあめて処理続行)
+                    catch
+                    {
+                        // リクエストに何かしら格納されており、型が json ではなかった
+                        // NOP(QueryString の注入はあきあめて処理続行)
+                    }
                 }
 
                 CommonApiArgs commonApiArgs =
@@ -657,26 +661,69 @@ namespace Hondarersoft.WebInterface
             // 登録されているコントローラーでループする。
             foreach (var commonApiController in commonApiControllers)
             {
-                // パスが前方一致したコントローラーの指定したメソッドを呼び出す。
-                if (apiArgs.Path.StartsWith(commonApiController.ApiPath) == true)
+                // 検索ルールを加味して判定する。
+                bool isMatch = false;
+                switch(commonApiController.MatchingMethod)
                 {
-                    // TODO: 例外を拾って、例外の場合はエラーを設定する。
-                    switch (apiArgs.Method)
+                    case MatchingMethod.StartsWith:
+                        if (apiArgs.Path.StartsWith(commonApiController.ApiPath) == true)
+                        {
+                            isMatch = true;
+                        }
+                        break;
+                    case MatchingMethod.Equals:
+                        if (apiArgs.Path == commonApiController.ApiPath)
+                        {
+                            isMatch = true;
+                        }
+                        break;
+                    case MatchingMethod.RegEx:
+                        Regex regex = new Regex(commonApiController.ApiPath, RegexOptions.Singleline);
+                        Match match = regex.Match(apiArgs.Path);
+                        if (match.Success == true)
+                        {
+                            // 正規表現でグループ指定がされていた場合は、グループの値を apiArgs に設定する。
+                            apiArgs.RegExMatchGroups = new Dictionary<string, string>();
+                            foreach (Group group in match.Groups.Skip(1))
+                            {
+                                apiArgs.RegExMatchGroups.Add(group.Name, group.Value);
+                            }
+                            isMatch = true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                // パスが一致したコントローラーの指定したメソッドを呼び出す。
+                if (isMatch == true)
+                {
+                    // API の実処理内で発生する例外は、ここで処理する。
+                    // 各 API の中で個別の例外を細かく拾う必要なない。
+                    try
                     {
-                        case CommonApiMethods.GET:
-                            commonApiController.Get(apiArgs);
-                            break;
-                        case CommonApiMethods.POST:
-                            commonApiController.Post(apiArgs);
-                            break;
-                        case CommonApiMethods.PUT:
-                            commonApiController.Put(apiArgs);
-                            break;
-                        case CommonApiMethods.DELETE:
-                            commonApiController.Delete(apiArgs);
-                            break;
-                        default:
-                            break;
+                        switch (apiArgs.Method)
+                        {
+                            case CommonApiMethods.GET:
+                                commonApiController.ProcGet(apiArgs);
+                                break;
+                            case CommonApiMethods.POST:
+                                commonApiController.ProcPost(apiArgs);
+                                break;
+                            case CommonApiMethods.PUT:
+                                commonApiController.ProcPut(apiArgs);
+                                break;
+                            case CommonApiMethods.DELETE:
+                                commonApiController.ProcDelete(apiArgs);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        apiArgs.ResponseBody = null;
+                        apiArgs.SetException(ex);
                     }
 
                     // 処理完了していたら、他のコントローラーのチェックは行わない。

@@ -14,6 +14,8 @@ namespace Hondarersoft.WebInterface
 
         public CommonApiMethods Method { get; }
 
+        public Dictionary<string, string> RegExMatchGroups { get; internal set; } = null;
+
         public enum Errors : int
         {
             /// <summary>

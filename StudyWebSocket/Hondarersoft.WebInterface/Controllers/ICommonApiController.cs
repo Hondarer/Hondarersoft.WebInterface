@@ -8,12 +8,14 @@ namespace Hondarersoft.WebInterface.Controllers
     {
         public string ApiPath { get; }
 
-        public void Get(CommonApiArgs apiArgs);
+        public MatchingMethod MatchingMethod { get; }
 
-        public void Post(CommonApiArgs apiArgs);
+        public void ProcGet(CommonApiArgs apiArgs);
 
-        public void Put(CommonApiArgs apiArgs);
+        public void ProcPost(CommonApiArgs apiArgs);
 
-        public void Delete(CommonApiArgs apiArgs);
+        public void ProcPut(CommonApiArgs apiArgs);
+
+        public void ProcDelete(CommonApiArgs apiArgs);
     }
 }
