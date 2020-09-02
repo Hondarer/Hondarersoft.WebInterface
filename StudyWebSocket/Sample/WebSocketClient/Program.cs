@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace WebSocketClient
@@ -50,7 +51,7 @@ namespace WebSocketClient
                 configBuilder.AddCommandLine(args);
 
                 // 設定ファイルの読込
-                string jsonFilePath = $"{Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.ModuleName)}.appsettings.{settingsSubName}json";
+                string jsonFilePath = $"{Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location))}.appsettings.{settingsSubName}json";
                 if (File.Exists(jsonFilePath) == true)
                 {
                     configBuilder.AddJsonFile(jsonFilePath);
