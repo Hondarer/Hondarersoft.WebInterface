@@ -520,7 +520,6 @@ namespace Hondarersoft.WebInterface
 
             try
             {
-                e.Response.ContentType = CONTENT_TYPE_JSON;
                 e.Response.ContentEncoding = Encoding.UTF8;
 
                 reader = new StreamReader(e.Request.InputStream);
@@ -584,6 +583,7 @@ namespace Hondarersoft.WebInterface
 
                     if (commonApiArgs.ResponseBody != null)
                     {
+                        e.Response.ContentType = CONTENT_TYPE_JSON;
                         writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(commonApiArgs.ResponseBody));
                     }
                 }
@@ -619,6 +619,7 @@ namespace Hondarersoft.WebInterface
                             break;
                     }
 
+                    e.Response.ContentType = CONTENT_TYPE_JSON;
                     writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(new Error() { Code = code, Message = commonApiArgs.ErrorMessage }));
                 }
             }
