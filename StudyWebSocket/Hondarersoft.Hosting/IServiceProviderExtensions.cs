@@ -45,6 +45,8 @@ namespace Hondarersoft.Hosting
             List<Type> types = new List<Type>();
             List<object> objects = new List<object>();
 
+            // TODO: 厳密な DI ルールは、InjectionConstructor のあるものを優先、引数の多いもの優先、引数の多いものが複数あったら例外
+
             foreach (ParameterInfo parameter in commonApiControllerType.GetConstructors().First().GetParameters())
             {
                 types.Add(parameter.ParameterType);
