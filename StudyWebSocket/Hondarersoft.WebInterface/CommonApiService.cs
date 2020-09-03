@@ -480,7 +480,14 @@ namespace Hondarersoft.WebInterface
 
                 if (apiArgs.Error == CommonApiArgs.Errors.None)
                 {
-                    response = new JsonRpcResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
+                    if (apiArgs.ResponseBody == null)
+                    {
+                        response = new JsonRpcResponse() { Id = apiArgs.Identifier, Result = new object() };
+                    }
+                    else
+                    {
+                        response = new JsonRpcResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
+                    }
                 }
                 else
                 {
