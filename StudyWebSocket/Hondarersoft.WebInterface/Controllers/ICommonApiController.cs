@@ -10,12 +10,6 @@ namespace Hondarersoft.WebInterface.Controllers
 
         public MatchingMethod MatchingMethod { get; }
 
-        public void ProcGet(CommonApiArgs apiArgs);
-
-        public void ProcPost(CommonApiArgs apiArgs);
-
-        public void ProcPut(CommonApiArgs apiArgs);
-
-        public void ProcDelete(CommonApiArgs apiArgs);
+        public void Proc(CommonApiArgs apiArgs);
     }
 }

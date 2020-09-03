@@ -668,76 +668,24 @@ namespace Hondarersoft.WebInterface
             // 登録されているコントローラーでループする。
             foreach (var commonApiController in commonApiControllers)
             {
-                // 検索ルールを加味して判定する。
-                bool isMatch = false;
-                switch(commonApiController.MatchingMethod)
+                // API の実処理内で発生する例外は、ここで処理する。
+                // 各 API の中で個別の例外を細かく拾う必要なない。
+                try
                 {
-                    case MatchingMethod.StartsWith:
-                        if (apiArgs.Path.StartsWith(commonApiController.ApiPath) == true)
-                        {
-                            isMatch = true;
-                        }
-                        break;
-                    case MatchingMethod.Equals:
-                        if (apiArgs.Path == commonApiController.ApiPath)
-                        {
-                            isMatch = true;
-                        }
-                        break;
-                    case MatchingMethod.RegEx:
-                        Regex regex = new Regex(commonApiController.ApiPath, RegexOptions.Singleline);
-                        Match match = regex.Match(apiArgs.Path);
-                        if (match.Success == true)
-                        {
-                            // 正規表現でグループ指定がされていた場合は、グループの値を apiArgs に設定する。
-                            apiArgs.RegExMatchGroups = new Dictionary<string, string>();
-                            foreach (Group group in match.Groups.Skip(1))
-                            {
-                                apiArgs.RegExMatchGroups.Add(group.Name, group.Value);
-                            }
-                            isMatch = true;
-                        }
-                        break;
-                    default:
-                        break;
+                    // 各 API の処理を呼び出す。
+                    // 内部で対象判定、処理の呼び出しが行われる。
+                    commonApiController.Proc(apiArgs);
+                }
+                catch (Exception ex)
+                {
+                    apiArgs.ResponseBody = null;
+                    apiArgs.SetException(ex);
                 }
 
-                // パスが一致したコントローラーの指定したメソッドを呼び出す。
-                if (isMatch == true)
+                // 処理完了していたら、他のコントローラーのチェックは行わない。
+                if (apiArgs.Handled == true)
                 {
-                    // API の実処理内で発生する例外は、ここで処理する。
-                    // 各 API の中で個別の例外を細かく拾う必要なない。
-                    try
-                    {
-                        switch (apiArgs.Method)
-                        {
-                            case CommonApiMethods.GET:
-                                commonApiController.ProcGet(apiArgs);
-                                break;
-                            case CommonApiMethods.POST:
-                                commonApiController.ProcPost(apiArgs);
-                                break;
-                            case CommonApiMethods.PUT:
-                                commonApiController.ProcPut(apiArgs);
-                                break;
-                            case CommonApiMethods.DELETE:
-                                commonApiController.ProcDelete(apiArgs);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        apiArgs.ResponseBody = null;
-                        apiArgs.SetException(ex);
-                    }
-
-                    // 処理完了していたら、他のコントローラーのチェックは行わない。
-                    if (apiArgs.Handled == true)
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
 

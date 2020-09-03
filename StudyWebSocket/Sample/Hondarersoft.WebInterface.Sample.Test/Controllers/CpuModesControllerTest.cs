@@ -16,7 +16,7 @@ namespace Hondarersoft.WebInterface.Sample.Test.Controllers
 
             CommonApiArgs apiArgs = new CommonApiArgs("TestID", CommonApiMethods.GET, "/api/v1/cpumodes/localhost");
 
-            CpuModesController.ProcGet(apiArgs);
+            CpuModesController.Proc(apiArgs);
 
             Assert.True(apiArgs.Handled);
             Assert.True(apiArgs.ResponseBody is CpuMode);

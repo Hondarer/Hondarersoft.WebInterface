@@ -11,7 +11,7 @@ namespace Hondarersoft.WebInterface.Sample.Controllers
         {
         }
 
-        public override void ProcGet(CommonApiArgs apiArgs)
+        protected override void ProcGet(CommonApiArgs apiArgs)
         {
             base.ProcGet(apiArgs);
 

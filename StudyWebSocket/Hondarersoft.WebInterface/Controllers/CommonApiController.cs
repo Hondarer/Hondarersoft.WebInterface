@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Hondarersoft.WebInterface.Controllers
 {
@@ -28,22 +30,79 @@ namespace Hondarersoft.WebInterface.Controllers
             MatchingMethod = apiPathAttribute.MatchingMethod;
         }
 
-        public virtual void ProcGet(CommonApiArgs apiArgs)
+        public void Proc(CommonApiArgs apiArgs)
+        {
+            bool isMatch = false;
+            switch (MatchingMethod)
+            {
+                case MatchingMethod.StartsWith:
+                    if (apiArgs.Path.StartsWith(ApiPath) == true)
+                    {
+                        isMatch = true;
+                    }
+                    break;
+                case MatchingMethod.Equals:
+                    if (apiArgs.Path == ApiPath)
+                    {
+                        isMatch = true;
+                    }
+                    break;
+                case MatchingMethod.RegEx:
+                    Regex regex = new Regex(ApiPath, RegexOptions.Singleline);
+                    Match match = regex.Match(apiArgs.Path);
+                    if (match.Success == true)
+                    {
+                        // 正規表現でグループ指定がされていた場合は、グループの値を apiArgs に設定する。
+                        apiArgs.RegExMatchGroups = new Dictionary<string, string>();
+                        foreach (Group group in match.Groups.Skip(1))
+                        {
+                            apiArgs.RegExMatchGroups.Add(group.Name, group.Value);
+                        }
+                        isMatch = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            if (isMatch == true)
+            {
+                switch (apiArgs.Method)
+                {
+                    case CommonApiMethods.GET:
+                        ProcGet(apiArgs);
+                        break;
+                    case CommonApiMethods.POST:
+                        ProcPost(apiArgs);
+                        break;
+                    case CommonApiMethods.PUT:
+                        ProcPut(apiArgs);
+                        break;
+                    case CommonApiMethods.DELETE:
+                        ProcDelete(apiArgs);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        protected virtual void ProcGet(CommonApiArgs apiArgs)
         {
             logger.LogInformation("Get: apiArgs: {0}", apiArgs);
         }
 
-        public virtual void ProcPost(CommonApiArgs apiArgs)
+        protected virtual void ProcPost(CommonApiArgs apiArgs)
         {
             logger.LogInformation("Post: apiArgs: {0}", apiArgs);
         }
 
-        public virtual void ProcPut(CommonApiArgs apiArgs)
+        protected virtual void ProcPut(CommonApiArgs apiArgs)
         {
             logger.LogInformation("Put: apiArgs: {0}", apiArgs);
         }
 
-        public virtual void ProcDelete(CommonApiArgs apiArgs)
+        protected virtual void ProcDelete(CommonApiArgs apiArgs)
         {
             logger.LogInformation("Delete: apiArgs: {0}", apiArgs);
         }
