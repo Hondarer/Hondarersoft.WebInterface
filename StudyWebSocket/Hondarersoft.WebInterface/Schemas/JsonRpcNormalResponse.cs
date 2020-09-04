@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Hondarersoft.WebInterface.Schemas
 {
-    public class JsonRpcResponse : JsonRpc
+    public class JsonRpcNormalResponse : JsonRpc
     {
         [JsonPropertyName("id")]
         public object Id { get; set; }
@@ -13,9 +13,5 @@ namespace Hondarersoft.WebInterface.Schemas
         [JsonPropertyName("result")]
 
         public object Result { get; set; } = null;
-
-        [JsonPropertyName("error")]
-
-        public Error Error { get; set; } = null;
     }
 }

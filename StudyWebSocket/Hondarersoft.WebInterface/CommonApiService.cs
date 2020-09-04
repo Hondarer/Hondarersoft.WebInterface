@@ -449,12 +449,8 @@ namespace Hondarersoft.WebInterface
             {
                 if (id != null)
                 {
-                    response = new JsonRpcResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.MethodNotFound], Message = CommonApiArgs.Errors.MethodNotFound.ToString() } };
-                    JsonSerializerOptions options = new JsonSerializerOptions
-                    {
-                        IgnoreNullValues = true
-                    };
-                    await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response, options);
+                    response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.MethodNotFound], Message = CommonApiArgs.Errors.MethodNotFound.ToString() } };
+                    await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
                 }
                 return;
             }
@@ -480,14 +476,7 @@ namespace Hondarersoft.WebInterface
 
                 if (apiArgs.Error == CommonApiArgs.Errors.None)
                 {
-                    if (apiArgs.ResponseBody == null)
-                    {
-                        response = new JsonRpcResponse() { Id = apiArgs.Identifier, Result = new object() };
-                    }
-                    else
-                    {
-                        response = new JsonRpcResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
-                    }
+                    response = new JsonRpcNormalResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
                 }
                 else
                 {
@@ -497,16 +486,11 @@ namespace Hondarersoft.WebInterface
                         code = ErrorsToCode[apiArgs.Error];
                     }
 
-                    response = new JsonRpcResponse() { Id = apiArgs.Identifier, Error = new Error() { Code = code, Message = apiArgs.ErrorMessage } };
+                    response = new JsonRpcErrorResponse() { Id = apiArgs.Identifier, Error = new Error() { Code = code, Message = apiArgs.ErrorMessage } };
                 }
 
-                JsonSerializerOptions options = new JsonSerializerOptions
-                {
-                    IgnoreNullValues = true
-                };
-
                 // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response, options);
+                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
             }
         }
 
@@ -629,7 +613,7 @@ namespace Hondarersoft.WebInterface
                             e.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                             break;
                     }
-
+                    
                     e.Response.ContentType = CONTENT_TYPE_JSON;
                     writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(new Error() { Code = code, Message = commonApiArgs.ErrorMessage }));
                 }
