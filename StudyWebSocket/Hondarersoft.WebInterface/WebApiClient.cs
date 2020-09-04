@@ -141,9 +141,9 @@ namespace Hondarersoft.WebInterface
             return Client.GetAsync(requestUri);
         }
 
-        public Task<HttpResponseMessage> GetAsync(string requestUri, TimeSpan timeOut)
+        public Task<HttpResponseMessage> GetAsync(string requestUri, TimeSpan timeout)
         {
-            Client.Timeout = timeOut;
+            Client.Timeout = timeout;
 
             return GetAsync(requestUri);
         }

@@ -28,7 +28,7 @@ namespace Hondarersoft.Hosting
             _exitService = exitService;
 
             // Task.NoWait() による戻り値を管理しない Task の例外を補足する。
-            Utility.TaskExtensions.UnobservedTaskException += OnUnobservedTaskException;
+            Utility.Extensions.TaskExtensions.UnobservedTaskException += OnUnobservedTaskException;
 
             // TaskExtensions を利用しなかったケースでの最終救済策。
             // Task.Run や async void によりハンドルされない例外があった場合、それが GC された際に発生する。

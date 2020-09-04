@@ -1,4 +1,5 @@
 ﻿using Hondarersoft.Utility;
+using Hondarersoft.Utility.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -125,20 +126,10 @@ namespace Hondarersoft.WebInterface
                         }
                     }
 
-                    // TODO: 拡張メソッドにする。
-
-                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-
-                    // 3秒後に中止命令を発行する。
-                    Task.Run(async () =>
-                    {
-                        await Task.Delay(3000);
-                        cancellationTokenSource.Cancel();
-                    }).NoWait();
-
                     // ConnectAsync は、手続きの途中で処理が滞ると制御が帰ってこないため、
                     // タイムアウトの設定が必須。
-                    await websocket.ConnectAsync(uri, cancellationTokenSource.Token);
+                    await websocket.ConnectAsync(uri, 3000);
+
                     break;
                 }
                 catch (Exception)
@@ -162,7 +153,7 @@ namespace Hondarersoft.WebInterface
                 }
             }
 
-            ProcessRecieve(Guid.NewGuid().ToString(), websocket).NoWait();
+            ProcessRecieve(Guid.NewGuid().ToString(), websocket).NoWaitAndWatchException();
         }
 
         public async Task CloseAsync()

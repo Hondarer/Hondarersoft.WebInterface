@@ -2,6 +2,7 @@
 // http://kimux.net/?p=956
 
 using Hondarersoft.Utility;
+using Hondarersoft.Utility.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace Hondarersoft.WebInterface
 
             httpListener.Start();
 
-            ProcessHttpRequest().NoWait();
+            ProcessHttpRequest().NoWaitAndWatchException();
         }
 
         protected async Task ProcessHttpRequest()
@@ -93,7 +94,7 @@ namespace Hondarersoft.WebInterface
                     // 他の部分でも、ステップ実行しながら例外の要因をつぶしておく必要がある。
                     WebSocket websocket = (await listenerContext.AcceptWebSocketAsync(subProtocol: null)).WebSocket;
 
-                    ProcessRecieve(webSocketIdentify, websocket).NoWait();
+                    ProcessRecieve(webSocketIdentify, websocket).NoWaitAndWatchException();
                 }
                 else
                 {

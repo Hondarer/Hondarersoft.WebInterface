@@ -1,6 +1,7 @@
 ﻿// https://github.com/yunbow/CSharp-WebAPI
 
 using Hondarersoft.Utility;
+using Hondarersoft.Utility.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ namespace Hondarersoft.WebInterface
             _listener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}");
             _listener.Start();
 
-            ProcessHttpRequest(_listener).NoWait();
+            ProcessHttpRequest(_listener).NoWaitAndWatchException();
 
             return Task.CompletedTask;
         }

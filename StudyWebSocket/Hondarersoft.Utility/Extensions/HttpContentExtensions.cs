@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Hondarersoft.Utility
+namespace Hondarersoft.Utility.Extensions
 {
     public static class HttpContentExtensions
     {

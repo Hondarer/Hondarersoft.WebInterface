@@ -1,4 +1,5 @@
 ﻿using Hondarersoft.Utility;
+using Hondarersoft.Utility.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -176,7 +177,7 @@ namespace Hondarersoft.WebInterface
                 {
                     if (ws.State == WebSocketState.Open)
                     {
-                        ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "The socket was closed via the OnDispose method.", CancellationToken.None).NoWait();
+                        ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "The socket was closed via the OnDispose method.", CancellationToken.None).NoWaitAndWatchException();
                     }
                 });
             }

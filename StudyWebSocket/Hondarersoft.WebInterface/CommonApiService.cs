@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hondarersoft.Hosting;
 using System.Text.RegularExpressions;
+using Hondarersoft.Utility.Extensions;
 
 namespace Hondarersoft.WebInterface
 {
@@ -327,7 +328,7 @@ namespace Hondarersoft.WebInterface
 
         private void WebSocketService_WebSocketRecieveText(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
         {
-            WebSocketService_WebSocketRecieveTextImpl(sender, e).NoWait();
+            WebSocketService_WebSocketRecieveTextImpl(sender, e).NoWaitAndWatchException();
         }
 
         private async Task WebSocketService_WebSocketRecieveTextImpl(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
@@ -494,17 +495,6 @@ namespace Hondarersoft.WebInterface
             }
         }
 
-        /// <summary>
-        /// APIパスを取得する
-        /// </summary>
-        /// <param name="srcPath">URLパス</param>
-        /// <returns>APIパス</returns>
-        private string GetApiPath(string srcPath)
-        {
-            string[] path = srcPath.Split('?');
-            return path[0];
-        }
-
         private void WebApiService_WebApiRequest(object sender, IWebApiService.WebApiRequestEventArgs e)
         {
             StreamReader reader = null;
@@ -518,53 +508,32 @@ namespace Hondarersoft.WebInterface
                 writer = new StreamWriter(e.Response.OutputStream);
                 string reqBody = reader.ReadToEnd();
 
-                string path = GetApiPath(e.Request.RawUrl);
+                // クエリストリングを除いたパスの取得
+                string path = e.Request.RawUrl.Split('?').First();
 
-                if (e.Request.QueryString.Count > 0)
+                // GET で クエリストリングが存在する場合に、
+                // 内部処理では body に書かれたものとしてパラメーターを処理するため詰め替える。
+                // パラメーターはキー名がメンバ名となり、値は常に string[] となる。
+                if ((e.Request.HttpMethod == "GET") && (e.Request.QueryString.Count > 0))
                 {
-                    dynamic document = null;
-                    try
+                    dynamic document = new ExpandoObject();
+
+                    foreach (string key in e.Request.QueryString.AllKeys)
                     {
-                        if (string.IsNullOrEmpty(reqBody) == true)
+                        string[] queryValues = e.Request.QueryString.GetValues(key);
+
+                        // 引数が 1 津の場合でカンマ区切りの場合は、カンマを Split する。
+                        if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
                         {
-                            document = new ExpandoObject();
+                            DynamicHelper.AddProperty(document, key, queryValues.First().Split(","));
                         }
                         else
                         {
-                            document = JsonSerializer.Deserialize<ExpandoObject>(reqBody);
-                        }
-
-                        // QueryString を、データに注入する
-                        // 受信側は、json をデシリアライズすることで QueryString を受信可能
-                        // QueryString の仕様上、パラメーターは配列になりうるので
-                        // デシリアライズ先では string[] で受けること。
-                        foreach (string key in e.Request.QueryString.AllKeys)
-                        {
-                            // json にキーが存在しない場合にのみ処理
-                            if (DynamicHelper.IsPropertyExist(document, key) == false)
-                            {
-                                string[] queryValues = e.Request.QueryString.GetValues(key);
-
-                                if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
-                                {
-                                    // (1) url?aaa=bbb,ccc ※(1)の処理で長さ 1 かつカンマが含まれている場合の処理。
-                                    DynamicHelper.AddProperty(document, key, queryValues.First().Split(","));
-                                }
-                                else
-                                {
-                                    // (2) url?aaa=bbb&aaa=ccc ※この形式でカンマが含まれている場合は、そのままとする。
-                                    DynamicHelper.AddProperty(document, key, queryValues);
-                                }
-                            }
-
-                            reqBody = JsonSerializer.Serialize(document);
+                            DynamicHelper.AddProperty(document, key, queryValues);
                         }
                     }
-                    catch
-                    {
-                        // リクエストに何かしら格納されており、型が json ではなかった
-                        // NOP(QueryString の注入はあきあめて処理続行)
-                    }
+
+                    reqBody = JsonSerializer.Serialize(document);
                 }
 
                 CommonApiArgs commonApiArgs =
