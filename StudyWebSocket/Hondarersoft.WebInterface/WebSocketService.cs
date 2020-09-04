@@ -48,9 +48,8 @@ namespace Hondarersoft.WebInterface
             {
                 ssl = "s";
             }
-            httpListener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}/");
+            httpListener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}");
 
-            //httpListener.Prefixes.Add("http://+:8000/ws/");
             httpListener.Start();
 
             ProcessHttpRequest().NoWait();

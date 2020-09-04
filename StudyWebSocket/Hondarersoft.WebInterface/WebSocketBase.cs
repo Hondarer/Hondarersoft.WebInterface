@@ -25,6 +25,7 @@ namespace Hondarersoft.WebInterface
 
         public WebSocketBase(ILogger<WebSocketBase> logger) : base(logger)
         {
+            // 既定のエンドポイントは /ws とする。
             BasePath = "ws";
         }
 

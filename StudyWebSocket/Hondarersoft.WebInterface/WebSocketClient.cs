@@ -95,7 +95,7 @@ namespace Hondarersoft.WebInterface
             {
                 ssl = "s";
             }
-            Uri uri = new Uri($"ws{ssl}://{Hostname}:{PortNumber}/{BasePath}/");
+            Uri uri = new Uri($"ws{ssl}://{Hostname}:{PortNumber}/{BasePath}");
 
             //サーバに対し、接続を開始
 
