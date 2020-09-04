@@ -125,12 +125,27 @@ namespace Hondarersoft.WebInterface
                         }
                     }
 
-                    // TODO: 手続きの途中で処理が滞ると戻ってこないようだ。タイムアウトの実装が必要な気がする。
-                    await websocket.ConnectAsync(uri, CancellationToken.None);
+                    // TODO: 拡張メソッドにする。
+
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+                    // 3秒後に中止命令を発行する。
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(3000);
+                        cancellationTokenSource.Cancel();
+                    }).NoWait();
+
+                    // ConnectAsync は、手続きの途中で処理が滞ると制御が帰ってこないため、
+                    // タイムアウトの設定が必須。
+                    await websocket.ConnectAsync(uri, cancellationTokenSource.Token);
                     break;
                 }
-                catch (WebSocketException)
+                catch (Exception)
                 {
+                    // WebSocketException ... 接続エラー
+                    // TaskCanceledException ... タイムアウト
+
                     websocket.Dispose();
                     websocket = null;
 
