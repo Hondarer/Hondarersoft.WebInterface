@@ -522,14 +522,32 @@ namespace Hondarersoft.WebInterface
                     {
                         string[] queryValues = e.Request.QueryString.GetValues(key);
 
-                        // 引数が 1 津の場合でカンマ区切りの場合は、カンマを Split する。
-                        if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
+                        string _key;
+                        if (key == null)
                         {
-                            DynamicHelper.AddProperty(document, key, queryValues.First().Split(","));
+                            // キーなしは null キーになるが、json で表せないのでキーを与える。
+                            _key = "_defaultKey";
+                        }
+                        else if (key == "_defaultKey")
+                        {
+                            // 上記の処理との都合で、要求自体に "_defaultKey" キーが含まれている場合は、
+                            // キー重複になってしなうので、当該キーの処理は行わない。
+                            // API 仕様策定時、"_defaultKey" キーを規定しないこと。
+                            continue;
                         }
                         else
                         {
-                            DynamicHelper.AddProperty(document, key, queryValues);
+                            _key = key;
+                        }
+
+                        // 引数が 1 つの場合でカンマ区切りの場合は、カンマを Split する。
+                        if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
+                        {
+                            DynamicHelper.AddProperty(document, _key, queryValues.First().Split(","));
+                        }
+                        else
+                        {
+                            DynamicHelper.AddProperty(document, _key, queryValues);
                         }
                     }
 
