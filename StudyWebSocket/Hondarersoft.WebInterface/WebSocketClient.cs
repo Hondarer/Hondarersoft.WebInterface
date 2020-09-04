@@ -125,6 +125,7 @@ namespace Hondarersoft.WebInterface
                         }
                     }
 
+                    // TODO: 手続きの途中で処理が滞ると戻ってこないようだ。タイムアウトの実装が必要な気がする。
                     await websocket.ConnectAsync(uri, CancellationToken.None);
                     break;
                 }
