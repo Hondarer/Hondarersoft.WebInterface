@@ -81,6 +81,9 @@ namespace Hondarersoft.WebInterface
                     string webSocketIdentify = Guid.NewGuid().ToString();
 
                     _logger.LogInformation("WebSocketRequest from {0}, accept. webSocketIdentify = {1}.", listenerContext.Request.RemoteEndPoint.Address.ToString(), webSocketIdentify);
+
+                    // TODO: この時点でクライアントが切れていると、WebSocketException
+                    // 他の部分でも、ステップ実行しながら例外の要因をつぶしておく必要がある。
                     WebSocket websocket = (await listenerContext.AcceptWebSocketAsync(subProtocol: null)).WebSocket;
 
                     ProcessRecieve(webSocketIdentify, websocket).NoWait();

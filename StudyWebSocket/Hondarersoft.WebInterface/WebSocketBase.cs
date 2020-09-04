@@ -25,8 +25,10 @@ namespace Hondarersoft.WebInterface
 
         public WebSocketBase(ILogger<WebSocketBase> logger) : base(logger)
         {
-            // 既定のエンドポイントは /ws とする。
-            BasePath = "ws";
+            // 既定のエンドポイントは /ws/ とする。
+            // HttpListener の仕様で、待ち受けURLの最後には "/" が必要。
+            // (要求側としては、URLの最後に "/" をつけなくても接続できる。)
+            BasePath = "ws/";
         }
 
         public virtual Task StartAsync()
