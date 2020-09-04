@@ -48,7 +48,14 @@ namespace Hondarersoft.WebInterface
             {
                 ssl = "s";
             }
-            httpListener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}");
+
+            string tail = string.Empty;
+            if (string.IsNullOrEmpty(BasePath) != true)
+            {
+                tail = "/";
+            }
+
+            httpListener.Prefixes.Add($"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}");
 
             httpListener.Start();
 
