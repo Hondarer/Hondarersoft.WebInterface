@@ -8,17 +8,17 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace WebApiServer
+namespace RestServer
 {
-    public class WebApiServerImpl : LifetimeEventsHostedService
+    public class RestServerImpl : LifetimeEventsHostedService
     {
-        private readonly IWebApiService _webApiService = null;
+        private readonly IHttpService _httpService = null;
         private readonly ISwaggerServerService _swaggerService = null;
         private readonly ICommonApiService _commonApiService = null;
 
-        public WebApiServerImpl(ILogger<WebApiServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IWebApiService webApiService, ISwaggerServerService swaggerService, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
+        public RestServerImpl(ILogger<RestServerImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IHttpService httpService, ISwaggerServerService swaggerService, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
         {
-            _webApiService = webApiService;
+            _httpService = httpService;
             _swaggerService = swaggerService;
             _commonApiService = commonApiService;
         }
@@ -27,15 +27,15 @@ namespace WebApiServer
         {
             await base.OnStartedAsync();
 
-            await _commonApiService.RegistInterface(_webApiService.LoadConfiguration(_configuration))
+            await _commonApiService.RegistInterface(_httpService.LoadConfiguration(_configuration))
                 .RegistController(_configuration)
                 .StartAsync();
 
             await _swaggerService.LoadConfiguration(_configuration.GetSection("SwaggerService"))
                 .SetSwaggerYamlResolver(() =>
                 {
-                    var myAssembly = typeof(WebApiServerImpl).GetTypeInfo().Assembly;
-                    return myAssembly.GetManifestResourceStream("WebApiServer.Swagger.WebApiServer.yaml");
+                    var myAssembly = typeof(RestServerImpl).GetTypeInfo().Assembly;
+                    return myAssembly.GetManifestResourceStream("RestServer.Swagger.RestServer.yaml");
                 })
                 .StartAsync();
         }

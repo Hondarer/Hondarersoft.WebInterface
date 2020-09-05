@@ -7,16 +7,16 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace WebApiClient
+namespace RestClient
 {
-    class WebApiClientImpl : LifetimeEventsHostedService
+    class RestClientImpl : LifetimeEventsHostedService
     {
-        private readonly IWebApiClient _webApiClient = null;
+        private readonly IHttpClient _httpClient = null;
         private readonly ICommonApiService _commonApiService = null;
 
-        public WebApiClientImpl(ILogger<WebApiClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IWebApiClient webApiClient, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
+        public RestClientImpl(ILogger<RestClientImpl> logger, IHostApplicationLifetime appLifetime, IConfiguration configuration, IExitService exitService, IHttpClient httpClient, ICommonApiService commonApiService) : base(logger, appLifetime, configuration, exitService)
         {
-            _webApiClient = webApiClient;
+            _httpClient = httpClient;
             _commonApiService = commonApiService;
         }
 
@@ -24,7 +24,7 @@ namespace WebApiClient
         {
             await base.OnStartedAsync();
 
-            await _commonApiService.RegistInterface(_webApiClient.LoadConfiguration(_configuration))
+            await _commonApiService.RegistInterface(_httpClient.LoadConfiguration(_configuration))
                 .StartAsync();
 
             CommonApiRequest request = new CommonApiRequest()

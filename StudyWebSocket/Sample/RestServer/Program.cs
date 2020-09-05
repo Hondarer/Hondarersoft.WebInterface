@@ -13,7 +13,7 @@ using System.Text.Json;
 using System.Reflection;
 using Hondarersoft.WebInterface.Swagger;
 
-namespace WebApiServer
+namespace RestServer
 {
     /// <summary>
     /// REST サーバーの動作確認を行うコマンドを提供します。
@@ -81,7 +81,7 @@ namespace WebApiServer
             {
                 // 基本のサービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
-                services.AddTransient<IWebApiService, Hondarersoft.WebInterface.WebApiService>();
+                services.AddTransient<IHttpService, Hondarersoft.WebInterface.HttpService>();
                 services.AddTransient<ISwaggerServerService, SwaggerServerService>();
                 services.AddSingleton<ICommonApiService, CommonApiService>();
 
@@ -91,7 +91,7 @@ namespace WebApiServer
                 services.AddServiceFromConfigration(configuration);
 
                 // アプリケーションの実装クラスを指定
-                services.AddHostedService<WebApiServerImpl>();
+                services.AddHostedService<RestServerImpl>();
             })
             .RunConsoleAsync();
         }

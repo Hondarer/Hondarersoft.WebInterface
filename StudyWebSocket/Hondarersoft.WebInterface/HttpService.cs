@@ -16,30 +16,30 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiService : WebInterface, IWebApiService, IWebInterfaceService
+    public class HttpService : WebInterface, IHttpService, IWebInterfaceService
     {
-        public event IWebApiService.WebApiRequestHandler WebApiRequest;
+        public event IHttpService.HttpRequestHandler HttpRequest;
 
         //private static Logger log = Logger.GetInstance();
         private HttpListener _listener = null;
 
         public bool AllowCORS { get; set; } = false;
 
-        public WebApiService(ILogger<WebApiService> logger) : base(logger)
+        public HttpService(ILogger<HttpService> logger) : base(logger)
         {
             Hostname = "+";
         }
 
-        public new IWebApiService LoadConfiguration(IConfiguration configurationRoot)
+        public new IHttpService LoadConfiguration(IConfiguration configurationRoot)
         {
-            WebApiServiceConfigEntry webApiServiceConfig = configurationRoot.Get<WebApiServiceConfigEntry>();
+            HttpServiceConfigEntry httpServiceConfig = configurationRoot.Get<HttpServiceConfigEntry>();
 
-            if (webApiServiceConfig.AllowCORS != null)
+            if (httpServiceConfig.AllowCORS != null)
             {
-                AllowCORS = (bool)webApiServiceConfig.AllowCORS;
+                AllowCORS = (bool)httpServiceConfig.AllowCORS;
             }
 
-            return base.LoadConfiguration(webApiServiceConfig) as IWebApiService;
+            return base.LoadConfiguration(httpServiceConfig) as IHttpService;
         }
 
         /// <summary>
@@ -133,9 +133,9 @@ namespace Hondarersoft.WebInterface
         {
             _logger.LogInformation("Request: {0} {1} {2}", httpListenerContext.Request.RequestTraceIdentifier.ToString(), httpListenerContext.Request.HttpMethod, httpListenerContext.Request.RawUrl);
 
-            if (WebApiRequest != null)
+            if (HttpRequest != null)
             {
-                WebApiRequest(this, new IWebApiService.WebApiRequestEventArgs(httpListenerContext));
+                HttpRequest(this, new IHttpService.HttpRequestEventArgs(httpListenerContext));
             }
         }
 

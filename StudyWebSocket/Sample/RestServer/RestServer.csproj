@@ -7,18 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Swagger\WebApiServer.yaml" />
-    <None Remove="WebApiServer.appsettings.json" />
+    <None Remove="RestServer.appsettings.json" />
+    <None Remove="Swagger\RestServer.yaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="WebApiServer.appsettings.json">
+    <Content Include="RestServer.appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Swagger\WebApiServer.yaml" />
+    <EmbeddedResource Include="Swagger\RestServer.yaml" />
   </ItemGroup>
 
   <ItemGroup>

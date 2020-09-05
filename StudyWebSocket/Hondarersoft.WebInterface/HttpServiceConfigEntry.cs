@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiServiceConfigEntry : WebInterfaceConfigEntry
+    public class HttpServiceConfigEntry : WebInterfaceConfigEntry
     {
         public bool? AllowCORS { get; set; }
     }

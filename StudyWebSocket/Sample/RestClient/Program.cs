@@ -10,7 +10,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace WebApiClient
+namespace RestClient
 {
     /// <summary>
     /// REST クライアントの動作確認を行うコマンドを提供します。
@@ -74,11 +74,11 @@ namespace WebApiClient
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
-                services.AddTransient<IWebApiClient, Hondarersoft.WebInterface.WebApiClient>();
+                services.AddTransient<IHttpClient, Hondarersoft.WebInterface.HttpClient>();
                 services.AddSingleton<ICommonApiService, CommonApiService>();
 
                 // アプリケーションの実装クラスを指定
-                services.AddHostedService<WebApiClientImpl>();
+                services.AddHostedService<RestClientImpl>();
             })
             .RunConsoleAsync();
         }

@@ -94,9 +94,9 @@ namespace Hondarersoft.WebInterface
 
         public ICommonApiService RegistInterface(IWebInterface webInterfaceBase, string webInterfaceIdentify = null)
         {
-            if (webInterfaceBase is IWebApiService)
+            if (webInterfaceBase is IHttpService)
             {
-                (webInterfaceBase as IWebApiService).WebApiRequest += WebApiService_WebApiRequest;
+                (webInterfaceBase as IHttpService).HttpRequest += HttpService_HttpRequest;
             }
             if (webInterfaceBase is IWebSocketBase)
             {
@@ -133,7 +133,7 @@ namespace Hondarersoft.WebInterface
             // TODO: 辞書にない場合は適切な例外にする
             IWebInterface webInterface = webInterfaces[interfaceIdentify];
 
-            if (webInterface is IWebApiClient)
+            if (webInterface is IHttpClient)
             {
                 HttpResponseMessage httpResponse = null;
                 try
@@ -141,7 +141,7 @@ namespace Hondarersoft.WebInterface
                     switch(request.Method)
                     {
                         case CommonApiMethods.GET:
-                            httpResponse = await (webInterface as IWebApiClient).GetAsync(request.Path, request.Timeout);
+                            httpResponse = await (webInterface as IHttpClient).GetAsync(request.Path, request.Timeout);
                             break;
                         default:
                             // 未実装
@@ -495,7 +495,7 @@ namespace Hondarersoft.WebInterface
             }
         }
 
-        private void WebApiService_WebApiRequest(object sender, IWebApiService.WebApiRequestEventArgs e)
+        private void HttpService_HttpRequest(object sender, IHttpService.HttpRequestEventArgs e)
         {
             StreamReader reader = null;
             StreamWriter writer = null;

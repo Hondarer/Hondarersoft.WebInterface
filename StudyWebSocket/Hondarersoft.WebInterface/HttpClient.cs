@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebApiClient : WebInterface, IWebApiClient, IWebInteraceProxySetting
+    public class HttpClient : WebInterface, IHttpClient, IWebInteraceProxySetting
     {
-        protected HttpClient Client { get; set; }
+        protected System.Net.Http.HttpClient Client { get; set; }
 
         #region IWebInteraceProxySetting Implements
 
@@ -61,7 +61,7 @@ namespace Hondarersoft.WebInterface
 
         #endregion
 
-        public WebApiClient(ILogger<WebApiClient> logger) : base(logger)
+        public HttpClient(ILogger<HttpClient> logger) : base(logger)
         {
             // Cookie のやり取りをしている場合に、Cookie がキャッシュされないようにする。
             // Proxy はデフォルトでは明示的に OFF にする。
@@ -86,7 +86,7 @@ namespace Hondarersoft.WebInterface
                 }
             }
 
-            Client = new HttpClient(httpClientHandler);
+            Client = new System.Net.Http.HttpClient(httpClientHandler);
 
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

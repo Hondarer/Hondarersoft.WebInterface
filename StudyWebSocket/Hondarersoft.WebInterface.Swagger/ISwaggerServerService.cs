@@ -7,7 +7,7 @@ namespace Hondarersoft.WebInterface.Swagger
     /// <summary>
     /// Swagger UI を HTTP で提供するサービスを提供します。
     /// </summary>
-    public interface ISwaggerServerService : IWebApiService
+    public interface ISwaggerServerService : IHttpService
     {
         /// <summary>
         /// Swagger UI に表示する <see cref="Stream"/> を返す <see cref="Func{Stream}"/> を取得または設定します。
