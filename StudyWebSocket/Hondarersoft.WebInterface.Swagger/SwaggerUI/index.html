@@ -22,18 +22,19 @@
         box-sizing: inherit;
       }
 
-      /* swagger ファイルへのリンクを非表示にする */
-      .swagger-ui .info hgroup.main a {
-        display: none
-      }
+        /* swagger ファイルへのリンクを非表示にする */
+        .swagger-ui .info hgroup.main a {
+            display: none
+        }
 
-      /* サーバー選択のインターフェースを非表示にする */
-      .swagger-ui .scheme-container {
-        display: none
-      }
+        /* サーバー選択のインターフェースを非表示にする */
+        .swagger-ui .scheme-container {
+            display: none
+        }
 
-      body {
-        margin: 0;
+      body
+      {
+        margin:0;
         background: #fafafa;
       }
     </style>
@@ -42,8 +43,8 @@
   <body>
     <div id="swagger-ui"></div>
 
-    <script src="./swagger-ui-bundle.js"> </script>
-    <script src="./swagger-ui-standalone-preset.js"> </script>
+    <script src="./swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="./swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
     <script>
     window.onload = function() {
       // Begin Swagger UI call region
