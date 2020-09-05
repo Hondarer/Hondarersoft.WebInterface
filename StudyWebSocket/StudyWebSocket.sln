@@ -25,7 +25,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.WebInterface.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.Utility", "Hondarersoft.Utility\Hondarersoft.Utility.csproj", "{7BEB37EA-AA31-4508-8B13-4F9BB1BDD02E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hondarersoft.WebInterface.Swagger", "Hondarersoft.WebInterface.Swagger\Hondarersoft.WebInterface.Swagger.csproj", "{54E588D1-3A65-45A2-B106-73F332BED73B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hondarersoft.WebInterface.Swagger", "Hondarersoft.WebInterface.Swagger\Hondarersoft.WebInterface.Swagger.csproj", "{54E588D1-3A65-45A2-B106-73F332BED73B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D8408293-D365-46AF-94DA-D35A12F87A2A}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

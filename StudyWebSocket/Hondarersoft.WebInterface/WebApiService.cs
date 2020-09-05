@@ -30,7 +30,7 @@ namespace Hondarersoft.WebInterface
             Hostname = "+";
         }
 
-        public IWebApiService LoadConfiguration(IConfiguration configurationRoot)
+        public new IWebApiService LoadConfiguration(IConfiguration configurationRoot)
         {
             WebApiServiceConfigEntry webApiServiceConfig = configurationRoot.Get<WebApiServiceConfigEntry>();
 

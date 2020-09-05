@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# IDE0066: switch ステートメントを式に変換します
+csharp_style_prefer_switch_expression = true:none
+
+# IDE1005: デリゲート呼び出しを簡略化できます。
+csharp_style_conditional_delegate_call = true:none
+
+# IDE0063: 単純な 'using' ステートメントを使用する
+csharp_prefer_simple_using_statement = true:none

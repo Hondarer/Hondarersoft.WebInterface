@@ -23,6 +23,6 @@ namespace Hondarersoft.WebInterface
 
         public bool AllowCORS { get; set; }
 
-        public IWebApiService LoadConfiguration(IConfiguration configurationRoot);
+        public new IWebApiService LoadConfiguration(IConfiguration configurationRoot);
     }
 }
