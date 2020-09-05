@@ -36,8 +36,7 @@ namespace Hondarersoft.WebInterface
             return Task.CompletedTask;
         }
 
-        public delegate void WebSocketRecieveTextHandler(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e);
-        public event IWebSocketBase.WebSocketRecieveTextHandler WebSocketRecieveText;
+        public event EventHandler<IWebSocketBase.WebSocketRecieveTextEventArgs> WebSocketRecieveText;
 
         public async Task SendTextAsync(string webSocketIdentify, string message)
         {

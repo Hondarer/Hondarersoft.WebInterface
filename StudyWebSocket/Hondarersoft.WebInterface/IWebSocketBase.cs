@@ -21,8 +21,7 @@ namespace Hondarersoft.WebInterface
             }
         }
 
-        public delegate void WebSocketRecieveTextHandler(object sender, WebSocketRecieveTextEventArgs e);
-        public event WebSocketRecieveTextHandler WebSocketRecieveText;
+        public event EventHandler<WebSocketRecieveTextEventArgs> WebSocketRecieveText;
 
         public IReadOnlyList<string> WebSocketIdentifies { get; }
 

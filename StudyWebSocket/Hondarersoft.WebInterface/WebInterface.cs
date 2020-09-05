@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebInterface : IWebInterface, IDisposable
+    public abstract class WebInterface : IWebInterface, IDisposable
     {
         protected readonly ILogger _logger = null;
 
