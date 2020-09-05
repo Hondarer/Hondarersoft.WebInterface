@@ -27,15 +27,11 @@ namespace WebApiServer
         {
             await base.OnStartedAsync();
 
-            _webApiService.AllowCORS = true;
-
-            _webApiService.LoadConfiguration(_configuration);
-            await _commonApiService.RegistInterface(_webApiService)
+            await _commonApiService.RegistInterface(_webApiService.LoadConfiguration(_configuration))
                 .RegistController(_configuration)
                 .StartAsync();
 
-            _swaggerService.LoadConfiguration(_configuration.GetSection("SwaggerService"));
-            await _swaggerService
+            await _swaggerService.LoadConfiguration(_configuration.GetSection("SwaggerService"))
                 .SetSwaggerYamlResolver(() =>
                 {
                     var myAssembly = typeof(WebApiServerImpl).GetTypeInfo().Assembly;

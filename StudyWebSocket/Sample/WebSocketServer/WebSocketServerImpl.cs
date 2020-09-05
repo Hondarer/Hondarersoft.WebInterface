@@ -23,9 +23,7 @@ namespace WebSocketServer
         {
             await base.OnStartedAsync();
 
-            _webSocketService.LoadConfiguration(_configuration);
-
-            await _commonApiService.RegistInterface(_webSocketService)
+            await _commonApiService.RegistInterface(_webSocketService.LoadConfiguration(_configuration))
                 .RegistController(_configuration)
                 .StartAsync();
         }

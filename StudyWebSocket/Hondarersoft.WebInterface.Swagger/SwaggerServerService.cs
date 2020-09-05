@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,11 @@ namespace Hondarersoft.WebInterface.Swagger
         {
             SwaggerYamlResolver = swaggerYamlResolver;
             return this;
+        }
+
+        public ISwaggerServerService LoadConfiguration(IConfiguration configurationRoot)
+        {
+            return base.LoadConfiguration(configurationRoot) as ISwaggerServerService;
         }
 
         protected override async Task Invoke(HttpListenerContext httpListenerContext)

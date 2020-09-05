@@ -28,6 +28,11 @@ namespace Hondarersoft.WebInterface
         {
             WebInterfaceConfigEntry webInterfaceConfig = configurationRoot.Get<WebInterfaceConfigEntry>();
 
+            return LoadConfiguration(webInterfaceConfig);
+        }
+
+        protected IWebInterface LoadConfiguration(WebInterfaceConfigEntry webInterfaceConfig)
+        {
             if (string.IsNullOrWhiteSpace(webInterfaceConfig.Hostname) != true)
             {
                 Hostname = webInterfaceConfig.Hostname;

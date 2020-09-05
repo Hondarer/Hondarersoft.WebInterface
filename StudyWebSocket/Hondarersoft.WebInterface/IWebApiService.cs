@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
@@ -21,5 +22,7 @@ namespace Hondarersoft.WebInterface
         public event WebApiRequestHandler WebApiRequest;
 
         public bool AllowCORS { get; set; }
+
+        public IWebApiService LoadConfiguration(IConfiguration configurationRoot);
     }
 }

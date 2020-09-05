@@ -2,6 +2,7 @@
 
 using Hondarersoft.Utility;
 using Hondarersoft.Utility.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,18 @@ namespace Hondarersoft.WebInterface
         public WebApiService(ILogger<WebApiService> logger) : base(logger)
         {
             Hostname = "+";
+        }
+
+        public IWebApiService LoadConfiguration(IConfiguration configurationRoot)
+        {
+            WebApiServiceConfigEntry webApiServiceConfig = configurationRoot.Get<WebApiServiceConfigEntry>();
+
+            if (webApiServiceConfig.AllowCORS != null)
+            {
+                AllowCORS = (bool)webApiServiceConfig.AllowCORS;
+            }
+
+            return base.LoadConfiguration(webApiServiceConfig) as IWebApiService;
         }
 
         /// <summary>

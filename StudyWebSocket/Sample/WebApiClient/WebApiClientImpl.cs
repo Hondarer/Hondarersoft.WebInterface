@@ -24,9 +24,8 @@ namespace WebApiClient
         {
             await base.OnStartedAsync();
 
-            _webApiClient.LoadConfiguration(_configuration);
-
-            await _commonApiService.RegistInterface(_webApiClient).StartAsync();
+            await _commonApiService.RegistInterface(_webApiClient.LoadConfiguration(_configuration))
+                .StartAsync();
 
             CommonApiRequest request = new CommonApiRequest()
             {
