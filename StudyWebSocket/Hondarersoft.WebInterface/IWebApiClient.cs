@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface IWebApiClient
+    public interface IWebApiClient : IWebInterface
     {
         public Task<HttpResponseMessage> GetAsync(string requestUri);
         public Task<HttpResponseMessage> GetAsync(string requestUri, TimeSpan timeout);

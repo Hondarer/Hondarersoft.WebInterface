@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public abstract class WebSocketBase : WebInterface, IWebSocketBase, IWebInterfaceService
+    public abstract class WebSocketBase : WebInterface, IWebSocketBase
     {
         protected readonly Dictionary<string, WebSocket> webSockets = new Dictionary<string, WebSocket>();
         protected readonly Dictionary<WebSocket, string> webSocketIdentities = new Dictionary<WebSocket, string>();

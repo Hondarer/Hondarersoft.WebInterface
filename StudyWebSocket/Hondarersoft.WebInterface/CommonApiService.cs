@@ -502,25 +502,25 @@ namespace Hondarersoft.WebInterface
 
             try
             {
-                e.Response.ContentEncoding = Encoding.UTF8;
+                e.HttpListenerContext.Response.ContentEncoding = Encoding.UTF8;
 
-                reader = new StreamReader(e.Request.InputStream);
-                writer = new StreamWriter(e.Response.OutputStream);
+                reader = new StreamReader(e.HttpListenerContext.Request.InputStream);
+                writer = new StreamWriter(e.HttpListenerContext.Response.OutputStream);
                 string reqBody = reader.ReadToEnd();
 
                 // クエリストリングを除いたパスの取得
-                string path = e.Request.RawUrl.Split('?').First();
+                string path = e.HttpListenerContext.Request.RawUrl.Split('?').First();
 
                 // GET で クエリストリングが存在する場合に、
                 // 内部処理では body に書かれたものとしてパラメーターを処理するため詰め替える。
                 // パラメーターはキー名がメンバ名となり、値は常に string[] となる。
-                if ((e.Request.HttpMethod == "GET") && (e.Request.QueryString.Count > 0))
+                if ((e.HttpListenerContext.Request.HttpMethod == "GET") && (e.HttpListenerContext.Request.QueryString.Count > 0))
                 {
                     dynamic document = new ExpandoObject();
 
-                    foreach (string key in e.Request.QueryString.AllKeys)
+                    foreach (string key in e.HttpListenerContext.Request.QueryString.AllKeys)
                     {
-                        string[] queryValues = e.Request.QueryString.GetValues(key);
+                        string[] queryValues = e.HttpListenerContext.Request.QueryString.GetValues(key);
 
                         string _key;
                         if (key == null)
@@ -555,17 +555,17 @@ namespace Hondarersoft.WebInterface
                 }
 
                 CommonApiArgs commonApiArgs =
-                    new CommonApiArgs(e.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.Request.HttpMethod), path, reqBody);
+                    new CommonApiArgs(e.HttpListenerContext.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.HttpListenerContext.Request.HttpMethod), path, reqBody);
 
                 OnRequest(commonApiArgs);
 
                 if (commonApiArgs.Error == CommonApiArgs.Errors.None)
                 {
-                    e.Response.StatusCode = (int)HttpStatusCode.OK;
+                    e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
                     if (commonApiArgs.ResponseBody != null)
                     {
-                        e.Response.ContentType = CONTENT_TYPE_JSON;
+                        e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
                         writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(commonApiArgs.ResponseBody));
                     }
                 }
@@ -584,31 +584,31 @@ namespace Hondarersoft.WebInterface
                         case CommonApiArgs.Errors.InvalidRequest:
                         // No Break
                         case CommonApiArgs.Errors.InvalidParams:
-                            e.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                             break;
                         case CommonApiArgs.Errors.MethodNotFound:
-                            e.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                             break;
                         case CommonApiArgs.Errors.InternalError:
-                            e.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                             break;
                         case CommonApiArgs.Errors.MethodNotAvailable:
-                            e.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                             break;
                         default:
                             // 下記は念のため(本来通過することはない)
-                            e.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                             break;
                     }
                     
-                    e.Response.ContentType = CONTENT_TYPE_JSON;
+                    e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
                     writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(new Error() { Code = code, Message = commonApiArgs.ErrorMessage }));
                 }
             }
             catch (Exception ex)
             {
                 //resBoby = CreateErrorResponse(ErrorCode.SYSTEM_ERROR, String.Format(Resources.ErrorUnexpected, ex.Message));
-                e.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 //log.Error(ex.ToString());
             }
             finally

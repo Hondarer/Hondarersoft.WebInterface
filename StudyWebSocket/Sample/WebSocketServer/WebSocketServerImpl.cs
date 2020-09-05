@@ -23,9 +23,9 @@ namespace WebSocketServer
         {
             await base.OnStartedAsync();
 
-            IWebInterface webInterace = (_webSocketService as IWebInterface).LoadConfiguration(_configuration);
+            _webSocketService.LoadConfiguration(_configuration);
 
-            await _commonApiService.RegistInterface(webInterace)
+            await _commonApiService.RegistInterface(_webSocketService)
                 .RegistController(_configuration)
                 .StartAsync();
         }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface IWebInterfaceService
+    public interface IWebInterfaceService : IWebInterface
     {
         public Task StartAsync();
     }

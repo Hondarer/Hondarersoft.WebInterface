@@ -24,9 +24,9 @@ namespace WebSocketClient
         {
             await base.OnStartedAsync();
 
-            IWebInterface webInterace = (_webSocketClient as IWebInterface).LoadConfiguration(_configuration);
+            _webSocketClient.LoadConfiguration(_configuration);
 
-            await _commonApiService.RegistInterface(webInterace).StartAsync();
+            await _commonApiService.RegistInterface(_webSocketClient).StartAsync();
 
             CommonApiRequest request = new CommonApiRequest()
             {

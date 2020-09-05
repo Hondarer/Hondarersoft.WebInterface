@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface IWebSocketBase
+    public interface IWebSocketBase : IWebInterfaceService
     {
         public class WebSocketRecieveTextEventArgs : EventArgs
         {

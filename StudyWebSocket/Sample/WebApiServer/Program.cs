@@ -11,6 +11,7 @@ using Hondarersoft.Hosting;
 using Microsoft.Extensions.Configuration.Json;
 using System.Text.Json;
 using System.Reflection;
+using Hondarersoft.WebInterface.Swagger;
 
 namespace WebApiServer
 {
@@ -81,6 +82,7 @@ namespace WebApiServer
                 // 基本のサービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
                 services.AddTransient<IWebApiService, Hondarersoft.WebInterface.WebApiService>();
+                services.AddTransient<ISwaggerServerService, SwaggerServerService>();
                 services.AddSingleton<ICommonApiService, CommonApiService>();
 
                 // コントローラーの動作に必要となる追加のサービス処理の紐づけ

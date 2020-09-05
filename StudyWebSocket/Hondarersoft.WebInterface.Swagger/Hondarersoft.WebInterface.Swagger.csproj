@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="SwaggerUI\favicon-16x16.png" />
+    <None Remove="SwaggerUI\favicon-32x32.png" />
+    <None Remove="SwaggerUI\index.html" />
+    <None Remove="SwaggerUI\oauth2-redirect.html" />
+    <None Remove="SwaggerUI\swagger-ui-bundle.js" />
+    <None Remove="SwaggerUI\swagger-ui-bundle.js.map" />
+    <None Remove="SwaggerUI\swagger-ui-standalone-preset.js" />
+    <None Remove="SwaggerUI\swagger-ui-standalone-preset.js.map" />
+    <None Remove="SwaggerUI\swagger-ui.css" />
+    <None Remove="SwaggerUI\swagger-ui.css.map" />
+    <None Remove="SwaggerUI\swagger-ui.js" />
+    <None Remove="SwaggerUI\swagger-ui.js.map" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="SwaggerUI\favicon-16x16.png" />
+    <EmbeddedResource Include="SwaggerUI\favicon-32x32.png" />
+    <EmbeddedResource Include="SwaggerUI\index.html" />
+    <EmbeddedResource Include="SwaggerUI\oauth2-redirect.html" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui-bundle.js" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui-bundle.js.map" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui-standalone-preset.js" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui-standalone-preset.js.map" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui.css" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui.css.map" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui.js" />
+    <EmbeddedResource Include="SwaggerUI\swagger-ui.js.map" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hondarersoft.WebInterface\Hondarersoft.WebInterface.csproj" />
+  </ItemGroup>
+
+</Project>

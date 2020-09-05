@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface IWebSocketClient
+    public interface IWebSocketClient : IWebSocketBase
     {
         public Task ConnectAsync();
 

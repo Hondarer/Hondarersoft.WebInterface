@@ -5,17 +5,15 @@ using System.Text;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface IWebApiService
+    public interface IWebApiService : IWebInterfaceService
     {
         public class WebApiRequestEventArgs : EventArgs
         {
-            public HttpListenerRequest Request { get; }
-            public HttpListenerResponse Response { get; }
+            public HttpListenerContext HttpListenerContext { get; }
 
-            public WebApiRequestEventArgs(HttpListenerRequest request, HttpListenerResponse response)
+            public WebApiRequestEventArgs(HttpListenerContext httpListenerContext)
             {
-                Request = request;
-                Response = response;
+                HttpListenerContext = httpListenerContext;
             }
         }
 

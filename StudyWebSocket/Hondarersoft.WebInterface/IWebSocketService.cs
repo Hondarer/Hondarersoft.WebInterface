@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Hondarersoft.WebInterface
 {
-    public interface IWebSocketService
+    public interface IWebSocketService : IWebSocketBase
     {
     }
 }

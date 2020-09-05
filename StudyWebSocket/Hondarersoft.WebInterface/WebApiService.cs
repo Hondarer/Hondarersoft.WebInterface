@@ -70,50 +70,40 @@ namespace Hondarersoft.WebInterface
                 while (httpListener.IsListening == true)
                 {
                     // 接続待機
-                    HttpListenerContext context = await httpListener.GetContextAsync();
+                    HttpListenerContext httpListenerContext = await httpListener.GetContextAsync();
 
                     if (httpListener.IsListening == false)
                     {
                         break;
                     }
 
-                    HttpListenerRequest req = context.Request;
-                    HttpListenerResponse res = context.Response;
-
                     if (AllowCORS == true)
                     {
-                        if (req.HttpMethod == "OPTIONS")
+                        if (httpListenerContext.Request.HttpMethod == "OPTIONS")
                         {
-                            res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-                            res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                            res.AddHeader("Access-Control-Max-Age", "1728000");
+                            httpListenerContext.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+                            httpListenerContext.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+                            httpListenerContext.Response.AddHeader("Access-Control-Max-Age", "1728000");
                         }
-                        res.AppendHeader("Access-Control-Allow-Origin", "*");
+                        httpListenerContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
                     }
 
                     try
                     {
-                        _logger.LogInformation("Request: {0} {1} {2}", req.RequestTraceIdentifier.ToString(), req.HttpMethod, req.RawUrl);
-
-                        if (WebApiRequest != null)
-                        {
-                            // この中の例外は、WebApiRequest メソッド内でハンドルされているため、catch 節は無処理となる。
-                            WebApiRequest(this, new IWebApiService.WebApiRequestEventArgs(req, res));
-                        }
+                        await Invoke(httpListenerContext);
                     }
                     catch
                     {
                         // レスポンスにある程度値がセットされている場合、このタイミングで 500 にすることができない。
-                        // ステータスコードの判定は、WebApiRequest メソッドの責務とする。
                         // NOP
                     }
                     finally
                     {
-                        _logger.LogInformation("Response: {0} {1} {2}", req.RequestTraceIdentifier.ToString(), res.StatusCode, res.StatusDescription);
+                        _logger.LogInformation("Response: {0} {1} {2}", httpListenerContext.Request.RequestTraceIdentifier.ToString(), httpListenerContext.Response.StatusCode, httpListenerContext.Response.StatusDescription);
 
-                        if (res != null)
+                        if (httpListenerContext.Response != null)
                         {
-                            res.Close();
+                            httpListenerContext.Response.Close();
                         }
                     }
                 }
@@ -123,6 +113,16 @@ namespace Hondarersoft.WebInterface
                 _logger.LogError("Exception at ProcessHttpRequest method.\r\n{0}", ex.ToString());
 
                 Stop();
+            }
+        }
+
+        protected virtual async Task Invoke(HttpListenerContext httpListenerContext)
+        {
+            _logger.LogInformation("Request: {0} {1} {2}", httpListenerContext.Request.RequestTraceIdentifier.ToString(), httpListenerContext.Request.HttpMethod, httpListenerContext.Request.RawUrl);
+
+            if (WebApiRequest != null)
+            {
+                WebApiRequest(this, new IWebApiService.WebApiRequestEventArgs(httpListenerContext));
             }
         }
 
