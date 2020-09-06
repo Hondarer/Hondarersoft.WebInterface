@@ -1,7 +1,6 @@
 ﻿// https://github.com/yunbow/CSharp-WebAPI
 
 using Hondarersoft.Utility;
-using Hondarersoft.Utility.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,9 +17,8 @@ namespace Hondarersoft.WebInterface
 {
     public class HttpService : WebInterface, IHttpService, IWebInterfaceService
     {
-        public event IHttpService.HttpRequestHandler HttpRequest;
+        public event EventHandler<HttpRequestEventArgs> HttpRequest;
 
-        //private static Logger log = Logger.GetInstance();
         private HttpListener _listener = null;
 
         public bool AllowCORS { get; set; } = false;
@@ -43,7 +41,7 @@ namespace Hondarersoft.WebInterface
         }
 
         /// <summary>
-        /// APIサービスを起動する
+        /// HTTP サービスを起動する
         /// </summary>
         public Task StartAsync()
         {
@@ -53,7 +51,7 @@ namespace Hondarersoft.WebInterface
                 throw new Exception("invalid endpoint parameter");
             }
 
-            // HTTPサーバーを起動する
+            // HTTP サーバーを起動する
             _listener = new HttpListener();
 
             string ssl = string.Empty;
@@ -135,18 +133,17 @@ namespace Hondarersoft.WebInterface
 
             if (HttpRequest != null)
             {
-                HttpRequest(this, new IHttpService.HttpRequestEventArgs(httpListenerContext));
+                HttpRequest(this, new HttpRequestEventArgs(httpListenerContext));
             }
         }
 
         /// <summary>
-        /// APIサービスを停止する
+        /// HTTP サービスを停止する
         /// </summary>
         public void Stop()
         {
             try
             {
-                // HTTPサーバーを停止する
                 _listener.Stop();
                 _listener.Close();
 

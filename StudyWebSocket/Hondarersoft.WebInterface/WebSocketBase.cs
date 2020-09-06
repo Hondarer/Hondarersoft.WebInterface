@@ -1,5 +1,4 @@
 ﻿using Hondarersoft.Utility;
-using Hondarersoft.Utility.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -36,7 +35,7 @@ namespace Hondarersoft.WebInterface
             return Task.CompletedTask;
         }
 
-        public event EventHandler<IWebSocketBase.WebSocketRecieveTextEventArgs> WebSocketRecieveText;
+        public event EventHandler<WebSocketRecieveTextEventArgs> WebSocketRecieveText;
 
         public async Task SendTextAsync(string webSocketIdentify, string message)
         {
@@ -148,7 +147,7 @@ namespace Hondarersoft.WebInterface
         {
             if (WebSocketRecieveText != null)
             {
-                WebSocketRecieveText(this, new IWebSocketBase.WebSocketRecieveTextEventArgs(webSocketIdentify, message));
+                WebSocketRecieveText(this, new WebSocketRecieveTextEventArgs(webSocketIdentify, message));
             }
 
             return Task.CompletedTask;

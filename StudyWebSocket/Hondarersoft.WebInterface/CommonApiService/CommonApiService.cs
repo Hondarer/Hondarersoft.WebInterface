@@ -1,6 +1,5 @@
 ﻿using Hondarersoft.Hosting;
 using Hondarersoft.Utility;
-using Hondarersoft.Utility.Extensions;
 using Hondarersoft.WebInterface.Controllers;
 using Hondarersoft.WebInterface.Schemas;
 using Microsoft.Extensions.Configuration;
@@ -324,12 +323,12 @@ namespace Hondarersoft.WebInterface
             return response;
         }
 
-        private void WebSocketService_WebSocketRecieveText(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
+        private void WebSocketService_WebSocketRecieveText(object sender, WebSocketRecieveTextEventArgs e)
         {
             WebSocketService_WebSocketRecieveTextImpl(sender, e).NoWaitAndWatchException();
         }
 
-        private async Task WebSocketService_WebSocketRecieveTextImpl(object sender, IWebSocketBase.WebSocketRecieveTextEventArgs e)
+        private async Task WebSocketService_WebSocketRecieveTextImpl(object sender, WebSocketRecieveTextEventArgs e)
         {
             // TODO: バッチ処理に対応していない(仕様にはあるが必要性は疑問)
             //       受信したデータがいきなり配列の場合はバッチ処理
@@ -493,7 +492,7 @@ namespace Hondarersoft.WebInterface
             }
         }
 
-        private void HttpService_HttpRequest(object sender, IHttpService.HttpRequestEventArgs e)
+        private void HttpService_HttpRequest(object sender, HttpRequestEventArgs e)
         {
             StreamReader reader = null;
             StreamWriter writer = null;

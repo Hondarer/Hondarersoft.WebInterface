@@ -13,6 +13,5 @@ namespace Hondarersoft.WebInterface
         public string BasePath { get; set; }
 
         public bool? UseSSL { get; set; }
-
     }
 }

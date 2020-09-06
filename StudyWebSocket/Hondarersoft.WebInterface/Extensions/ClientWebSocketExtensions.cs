@@ -3,7 +3,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hondarersoft.Utility.Extensions
+namespace Hondarersoft.WebInterface
 {
     /// <summary>
     /// <see cref="ClientWebSocket"/> の拡張メソッドを提供します。

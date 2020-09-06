@@ -8,18 +8,8 @@ namespace Hondarersoft.WebInterface
 {
     public interface IHttpService : IWebInterfaceService
     {
-        public class HttpRequestEventArgs : EventArgs
-        {
-            public HttpListenerContext HttpListenerContext { get; }
 
-            public HttpRequestEventArgs(HttpListenerContext httpListenerContext)
-            {
-                HttpListenerContext = httpListenerContext;
-            }
-        }
-
-        public delegate void HttpRequestHandler(object sender, HttpRequestEventArgs e);
-        public event HttpRequestHandler HttpRequest;
+        public event EventHandler<HttpRequestEventArgs> HttpRequest;
 
         public bool AllowCORS { get; set; }
 

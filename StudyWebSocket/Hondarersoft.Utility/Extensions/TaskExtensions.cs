@@ -4,11 +4,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace Hondarersoft.Utility.Extensions
+namespace Hondarersoft.Utility
 {
     public static class TaskExtensions
     {
-        public static event EventHandler<UnobservedTaskExceptionEventArgs> UnobservedTaskException;
+        public static event EventHandler<NoWaitTaskExceptionEventArgs> NoWaitTaskException;
 
         /// <summary>
         /// <see cref="Task"/> を待ち合わせないことを明示的に宣言します。
@@ -18,9 +18,9 @@ namespace Hondarersoft.Utility.Extensions
         {
             task.ContinueWith(x =>
             {
-                if (UnobservedTaskException != null)
+                if (NoWaitTaskException != null)
                 {
-                    UnobservedTaskException(null, new UnobservedTaskExceptionEventArgs(x.Exception)); // TODO: ログレベルに応じた異常時のふるまいができるようにする。
+                    NoWaitTaskException(null, new NoWaitTaskExceptionEventArgs(x.Exception, logLevel));
                 }
             }, TaskContinuationOptions.OnlyOnFaulted);
         }

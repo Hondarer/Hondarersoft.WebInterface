@@ -8,19 +8,6 @@ namespace Hondarersoft.WebInterface
 {
     public interface IWebSocketBase : IWebInterfaceService
     {
-        public class WebSocketRecieveTextEventArgs : EventArgs
-        {
-            public string WebSocketIdentify { get; }
-
-            public string Message { get; }
-
-            public WebSocketRecieveTextEventArgs(string webSocketIdentify, string message)
-            {
-                WebSocketIdentify = webSocketIdentify;
-                Message = message;
-            }
-        }
-
         public event EventHandler<WebSocketRecieveTextEventArgs> WebSocketRecieveText;
 
         public IReadOnlyList<string> WebSocketIdentifies { get; }

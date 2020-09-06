@@ -14,14 +14,12 @@ namespace Hondarersoft.WebInterface.Test
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            //throw new NotImplementedException();
             return true;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             // TODO: テストコードで必要なら、なにかしらここにログを蓄積するコードを書く
-            //throw new NotImplementedException();
         }
     }
 }
