@@ -143,7 +143,7 @@ namespace Hondarersoft.WebInterface
 
                     Console.WriteLine($"Unable to connect {retry}/3 time(s). Retry after 3000 milliseconds."); // TODO: ILogger & Const
 
-                    if (retry >= 3) // TODO: クラスのプロパティに
+                    if (retry >= 20) // TODO: クラスのプロパティに
                     {
                         throw;
                     }
