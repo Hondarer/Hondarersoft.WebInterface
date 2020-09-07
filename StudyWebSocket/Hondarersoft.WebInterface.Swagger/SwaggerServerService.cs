@@ -64,7 +64,7 @@ namespace Hondarersoft.WebInterface.Swagger
             string path = httpListenerContext.Request.RawUrl.Substring(BasePath.Length + 1);
             if (string.IsNullOrEmpty(path) == true)
             {
-                httpListenerContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                httpListenerContext.Response.Redirect(httpListenerContext.Request.RawUrl + "/");
                 return;
             }
             if (path == "/")
