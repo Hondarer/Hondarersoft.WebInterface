@@ -7,7 +7,7 @@ namespace Hondarersoft.Hosting
 {
     public static class IServiceProviderExtensions
     {
-        private static Dictionary<Tuple<string, string>, object> singletonCache = new Dictionary<Tuple<string, string>, object>();
+        private static readonly Dictionary<Tuple<string, string>, object> singletonCache = new Dictionary<Tuple<string, string>, object>();
 
         public static object GetService(this IServiceProvider serviceProvider, string assemblyName, string classFullName, bool isSingleton = false)
         {
