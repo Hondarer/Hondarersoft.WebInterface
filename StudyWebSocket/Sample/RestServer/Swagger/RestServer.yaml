@@ -15,7 +15,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/cpumodes'
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/cpumodes'
+            text/xml:
+              schema:
+                xml:
+                  name: results
+                properties:
+                  result:
+                    $ref: '#/components/schemas/cpumodes'
   /cpumodes/{hostname}:
     get:
       summary: テスト
@@ -32,11 +42,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/cpumode'
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/cpumode'
+            text/xml:
+              schema:
+                type: object
+                xml:
+                  name: results
+                properties:
+                  result:
+                    $ref: '#/components/schemas/cpumode'
         404:
           description: 要求したホスト名が存在しない場合のレスポンスを表します。
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            text/xml:
               schema:
                 $ref: '#/components/schemas/error'
 components:

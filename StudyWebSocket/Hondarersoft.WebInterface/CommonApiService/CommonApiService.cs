@@ -4,6 +4,7 @@ using Hondarersoft.WebInterface.Controllers;
 using Hondarersoft.WebInterface.Schemas;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -15,12 +16,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Hondarersoft.WebInterface
 {
     public class CommonApiService : ICommonApiService // TODO: IDisposable 化
     {
         private const string CONTENT_TYPE_JSON = "application/json";
+        private const string CONTENT_TYPE_XML = "text/xml";
 
         protected static readonly Dictionary<CommonApiArgs.Errors, int> ErrorsToCode = new Dictionary<CommonApiArgs.Errors, int>()
         {
@@ -311,7 +314,7 @@ namespace Hondarersoft.WebInterface
             {
                 try
                 {
-                    response.ResponseBody = JsonSerializer.Deserialize<T>(response.ResponseBody.ToString());
+                    response.ResponseBody = System.Text.Json.JsonSerializer.Deserialize<T>(response.ResponseBody.ToString());
                 }
                 catch
                 {
@@ -338,7 +341,7 @@ namespace Hondarersoft.WebInterface
 
             try
             {
-                document = JsonSerializer.Deserialize<ExpandoObject>(e.Message);
+                document = System.Text.Json.JsonSerializer.Deserialize<ExpandoObject>(e.Message);
             }
             catch
             {
@@ -401,7 +404,7 @@ namespace Hondarersoft.WebInterface
                 {
                     try
                     {
-                        commonApiResponse.Error = JsonSerializer.Deserialize<Error>(DynamicHelper.GetProperty(document, "error").ToString());
+                        commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<Error>(DynamicHelper.GetProperty(document, "error").ToString());
                     }
                     catch
                     {
@@ -552,7 +555,7 @@ namespace Hondarersoft.WebInterface
                         }
                     }
 
-                    reqBody = JsonSerializer.Serialize(document);
+                    reqBody = System.Text.Json.JsonSerializer.Serialize(document);
                 }
 
                 CommonApiArgs commonApiArgs =
@@ -566,8 +569,23 @@ namespace Hondarersoft.WebInterface
 
                     if (commonApiArgs.ResponseBody != null)
                     {
-                        e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
-                        writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(commonApiArgs.ResponseBody));
+                        // Excel か、text/xml しか処理できない相手には XML を返す。
+                        // TODO: Content を受けるときもこの判断必要。また、判定は、json が処理できず、text/xml または application/xml が処理できる場合としたほうがいい。
+                        if ((e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true) ||
+                            ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && (e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml")))
+                        {
+                            // xml
+                            e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
+                            XDocument xDocument;
+                            xDocument = JsonConvert.DeserializeXNode(System.Text.Json.JsonSerializer.Serialize(new RestNormalResponse() { Result = commonApiArgs.ResponseBody }), "results");
+                            writer.BaseStream.Write(Encoding.UTF8.GetBytes(xDocument.ToString()));
+                        }
+                        else
+                        {
+                            // json
+                            e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
+                            writer.BaseStream.Write(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new RestNormalResponse() { Result = commonApiArgs.ResponseBody }));
+                        }
                     }
                 }
                 else
@@ -601,9 +619,26 @@ namespace Hondarersoft.WebInterface
                             e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                             break;
                     }
-                    
-                    e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
-                    writer.BaseStream.Write(JsonSerializer.SerializeToUtf8Bytes(new Error() { Code = code, Message = commonApiArgs.ErrorMessage }));
+
+                    RestErrorResponse restErrorResponse = new RestErrorResponse() { Error = new Error() { Code = code, Message = commonApiArgs.ErrorMessage } };
+
+                    // Excel か、text/xml しか処理できない相手には XML を返す。
+                    // TODO: Content を受けるときもこの判断必要。また、判定は、json が処理できず、text/xml または application/xml が処理できる場合としたほうがいい。
+                    if ((e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true) ||
+                        ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && (e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml")))
+                    {
+                        // xml
+                        e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
+                        XDocument xDocument = JsonConvert.DeserializeXNode(System.Text.Json.JsonSerializer.Serialize(restErrorResponse));
+                        writer.BaseStream.Write(Encoding.UTF8.GetBytes(xDocument.ToString()));
+                    }
+                    else
+                    {
+                        // json
+                        e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
+                        writer.BaseStream.Write(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(restErrorResponse));
+                    }
+
                 }
             }
             catch (Exception ex)
