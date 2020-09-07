@@ -497,6 +497,10 @@ namespace Hondarersoft.WebInterface
             StreamReader reader = null;
             StreamWriter writer = null;
 
+            // TODO: User-Agent が "Excel/" で始まっている場合は Excel。
+            // Excel の場合は、後続の処理を考慮すると、XML で返したほうが優しい。
+            // Accept type は Excel からの場合、null だった。
+
             try
             {
                 e.HttpListenerContext.Response.ContentEncoding = Encoding.UTF8;
