@@ -44,7 +44,7 @@ namespace RestClient
             {
                 if (response.Error != null)
                 {
-                    _logger.LogError("Error. error.code = {0}, error.message = {1}", response.Error.Code, response.Error.Message);
+                    _logger.LogError("Error. error.code = {0}, error.message = {1}, error.data = {2}", response.Error.Code, response.Error.Message, response.Error.Data);
                 }
                 else
                 {

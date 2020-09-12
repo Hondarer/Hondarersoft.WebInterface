@@ -11,6 +11,6 @@ namespace Hondarersoft.WebInterface
 
         public object ResponseBody { get; set; }
 
-        public Error Error { get; set; }
+        public ErrorWithData Error { get; set; }
     }
 }

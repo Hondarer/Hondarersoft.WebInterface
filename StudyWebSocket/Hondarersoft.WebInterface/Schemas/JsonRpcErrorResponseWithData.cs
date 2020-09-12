@@ -5,13 +5,13 @@ using System.Text.Json.Serialization;
 
 namespace Hondarersoft.WebInterface.Schemas
 {
-    public class JsonRpcErrorResponse : JsonRpc
+    public class JsonRpcErrorResponseWithData : JsonRpc
     {
         [JsonPropertyName("id")]
         public object Id { get; set; }
 
         [JsonPropertyName("error")]
 
-        public Error Error { get; set; }
+        public new ErrorWithData Error { get; set; }
     }
 }

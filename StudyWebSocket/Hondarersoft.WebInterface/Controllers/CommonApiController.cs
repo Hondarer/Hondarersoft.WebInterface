@@ -8,7 +8,7 @@ namespace Hondarersoft.WebInterface.Controllers
 {
     public abstract class CommonApiController : ICommonApiController
     {
-        protected readonly ILogger logger;
+        protected readonly ILogger _logger;
 
         public string ApiPath { get; protected set; }
 
@@ -16,11 +16,11 @@ namespace Hondarersoft.WebInterface.Controllers
 
         public CommonApiController(ILogger logger)
         {
-            this.logger = logger;
-            getApiPathAttribute();
+            _logger = logger;
+            GetApiPathAttribute();
         }
 
-        protected void getApiPathAttribute()
+        protected void GetApiPathAttribute()
         {
             ICustomAttributeProvider provider = GetType();
 
@@ -89,22 +89,18 @@ namespace Hondarersoft.WebInterface.Controllers
 
         protected virtual void ProcGet(CommonApiArgs apiArgs)
         {
-            logger.LogInformation("Get: apiArgs: {0}", apiArgs);
         }
 
         protected virtual void ProcPost(CommonApiArgs apiArgs)
         {
-            logger.LogInformation("Post: apiArgs: {0}", apiArgs);
         }
 
         protected virtual void ProcPut(CommonApiArgs apiArgs)
         {
-            logger.LogInformation("Put: apiArgs: {0}", apiArgs);
         }
 
         protected virtual void ProcDelete(CommonApiArgs apiArgs)
         {
-            logger.LogInformation("Delete: apiArgs: {0}", apiArgs);
         }
     }
 }

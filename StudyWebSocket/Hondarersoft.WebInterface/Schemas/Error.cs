@@ -14,8 +14,5 @@ namespace Hondarersoft.WebInterface.Schemas
 
         [JsonPropertyName("message")]
         public string Message { get; set; }
-
-        [JsonPropertyName("data")]
-        public object Data { get; set; } = null;
     }
 }

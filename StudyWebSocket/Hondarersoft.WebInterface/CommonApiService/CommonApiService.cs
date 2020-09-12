@@ -180,10 +180,10 @@ namespace Hondarersoft.WebInterface
                 else
                 {
                     // API呼び出しに失敗
-                    Error result;
+                    ErrorWithData result;
                     try
                     {
-                        result = await httpResponse.Content.ReadAsJsonAsync<Error>();
+                        result = await httpResponse.Content.ReadAsJsonAsync<ErrorWithData>();
                     }
                     catch
                     {
@@ -382,7 +382,7 @@ namespace Hondarersoft.WebInterface
 
                     // 規約上は id フィールドは null も許容されるが、本実装では許容しない。
                     // (id が特定できなかった際のレスポンスには、id が null のレスポンスを送ることになっている。
-                    //  本実装ではこの処理も省略している。)
+                    //  本実装ではこの処理も今のところ省略している。)
                     return;
                 }
             }
@@ -404,7 +404,7 @@ namespace Hondarersoft.WebInterface
                 {
                     try
                     {
-                        commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<Error>(DynamicHelper.GetProperty(document, "error").ToString());
+                        commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<ErrorWithData>(DynamicHelper.GetProperty(document, "error").ToString());
                     }
                     catch
                     {
@@ -487,7 +487,26 @@ namespace Hondarersoft.WebInterface
                         code = ErrorsToCode[apiArgs.Error];
                     }
 
-                    response = new JsonRpcErrorResponse() { Id = apiArgs.Identifier, Error = new Error() { Code = code, Message = apiArgs.ErrorMessage } };
+                    Error error;
+                    if (apiArgs.ErrorDetails != null)
+                    {
+                        error = new ErrorWithData() { Data = apiArgs.ErrorDetails };
+                    }
+                    else
+                    {
+                        error = new Error();
+                    }
+                    error.Code = code;
+                    error.Message = apiArgs.ErrorMessage;
+
+                    if (apiArgs.ErrorDetails != null)
+                    {
+                        response = new JsonRpcErrorResponseWithData() { Id = apiArgs.Identifier, Error = error as ErrorWithData };
+                    }
+                    else
+                    {
+                        response = new JsonRpcErrorResponse() { Id = apiArgs.Identifier, Error = error };
+                    }
                 }
 
                 // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
@@ -561,8 +580,11 @@ namespace Hondarersoft.WebInterface
                 CommonApiArgs commonApiArgs =
                     new CommonApiArgs(e.HttpListenerContext.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.HttpListenerContext.Request.HttpMethod), path, reqBody);
 
+                _logger.LogInformation("OnRequest: apiArgs: {0}", commonApiArgs);
+
                 OnRequest(commonApiArgs);
 
+                string responseContent;
                 if (commonApiArgs.Error == CommonApiArgs.Errors.None)
                 {
                     e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -578,14 +600,18 @@ namespace Hondarersoft.WebInterface
                             e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
                             XDocument xDocument;
                             xDocument = JsonConvert.DeserializeXNode(System.Text.Json.JsonSerializer.Serialize(new RestNormalResponse() { Result = commonApiArgs.ResponseBody }), "results");
-                            writer.BaseStream.Write(Encoding.UTF8.GetBytes(xDocument.ToString()));
+                            responseContent = xDocument.ToString();
                         }
                         else
                         {
                             // json
                             e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
-                            writer.BaseStream.Write(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new RestNormalResponse() { Result = commonApiArgs.ResponseBody }));
+                            responseContent = System.Text.Json.JsonSerializer.Serialize(new RestNormalResponse() { Result = commonApiArgs.ResponseBody });
                         }
+                    }
+                    else
+                    {
+                        responseContent = null;
                     }
                 }
                 else
@@ -620,26 +646,46 @@ namespace Hondarersoft.WebInterface
                             break;
                     }
 
-                    RestErrorResponse restErrorResponse = new RestErrorResponse() { Error = new Error() { Code = code, Message = commonApiArgs.ErrorMessage } };
+                    Error error;
+                    if (commonApiArgs.ErrorDetails != null)
+                    {
+                        error = new ErrorWithData() { Data = commonApiArgs.ErrorDetails };
+                    }
+                    else
+                    {
+                        error = new Error();
+                    }
+                    error.Code = code;
+                    error.Message = commonApiArgs.ErrorMessage;
 
                     // Excel か、text/xml しか処理できない相手には XML を返す。
                     // TODO: Content を受けるときもこの判断必要。また、判定は、json が処理できず、text/xml または application/xml が処理できる場合としたほうがいい。
-                    if ((e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true) ||
+                    if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
                         ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && (e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml")))
                     {
                         // xml
+                        RestErrorResponse restErrorResponse = new RestErrorResponse() { Error = error };
                         e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
                         XDocument xDocument = JsonConvert.DeserializeXNode(System.Text.Json.JsonSerializer.Serialize(restErrorResponse));
-                        writer.BaseStream.Write(Encoding.UTF8.GetBytes(xDocument.ToString()));
+                        responseContent = xDocument.ToString();
                     }
                     else
                     {
                         // json
                         e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
-                        writer.BaseStream.Write(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(restErrorResponse));
+                        if (commonApiArgs.ErrorDetails != null)
+                        {
+                            responseContent = System.Text.Json.JsonSerializer.Serialize(error as ErrorWithData);
+                        }
+                        else
+                        {
+                            responseContent = System.Text.Json.JsonSerializer.Serialize(error);
+                        }
                     }
-
                 }
+
+                _logger.LogInformation("Response: {0}, {1}, {2}", e.HttpListenerContext.Response.StatusCode, e.HttpListenerContext.Response.ContentType, responseContent);
+                writer.BaseStream.Write(Encoding.UTF8.GetBytes(responseContent));
             }
             catch (Exception ex)
             {

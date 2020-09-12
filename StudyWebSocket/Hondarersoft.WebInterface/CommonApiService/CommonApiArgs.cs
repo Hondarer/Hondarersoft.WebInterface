@@ -64,25 +64,24 @@ namespace Hondarersoft.WebInterface
 
         public string ErrorMessage { get; protected set; }
 
+        public object ErrorDetails { get; protected set; }
+
         public void SetError(Errors error)
         {
             SetError(error, error.ToString());
         }
 
-        public void SetError(Errors error, string message)
+        public void SetError(Errors error, string message, object errorDetails = null)
         {
             Error = error;
             ErrorMessage = message;
+            ErrorDetails = errorDetails;
             Handled = true;
         }
 
         public void SetException(Exception ex)
         {
-#if DEBUG
-            SetError(Errors.InternalError, ex.ToString());
-#else
-            SetError(Errors.InternalError, ex.Message);
-#endif
+            SetError(Errors.InternalError, $"{Errors.InternalError}: {ex.GetType().Name}", ex.ToString());
         }
 
         public string Path { get; }
