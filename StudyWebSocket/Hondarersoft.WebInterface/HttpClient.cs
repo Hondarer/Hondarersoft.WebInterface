@@ -116,8 +116,10 @@ namespace Hondarersoft.WebInterface
             }
         }
 
-        public Task<HttpResponseMessage> GetAsync(string requestUri)
+        protected void SetBaseAddress()
         {
+            // TODO: 依存する各プロパティの set アクセサーから再評価すればよい。
+
             if ((string.IsNullOrEmpty(Hostname) == true) ||
                 (PortNumber == 0))
             {
@@ -137,15 +139,30 @@ namespace Hondarersoft.WebInterface
             }
 
             BaseAddress = $"http{ssl}://{Hostname}:{PortNumber}/{BasePath}{tail}";
+        }
 
+        public Task<HttpResponseMessage> GetAsync(string requestUri)
+        {
+            SetBaseAddress();
             return Client.GetAsync(requestUri);
         }
 
         public Task<HttpResponseMessage> GetAsync(string requestUri, TimeSpan timeout)
         {
             Client.Timeout = timeout;
-
             return GetAsync(requestUri);
+        }
+
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+        {
+            SetBaseAddress();
+            return Client.PostAsync(requestUri, content);
+        }
+
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content, TimeSpan timeout)
+        {
+            Client.Timeout = timeout;
+            return PostAsync(requestUri, content);
         }
     }
 }

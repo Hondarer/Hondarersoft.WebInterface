@@ -138,10 +138,25 @@ namespace Hondarersoft.WebInterface
                 HttpResponseMessage httpResponse = null;
                 try
                 {
+                    StringContent content;
+                    if (request.RequestBody != null)
+                    {
+
+                        content = new StringContent(System.Text.Json.JsonSerializer.Serialize(request.RequestBody), Encoding.UTF8, @"application/json");
+                    }
+                    else
+                    {
+                        content = null;
+                    }
+
                     switch(request.Method)
                     {
                         case CommonApiMethods.GET:
+                            // GET に content は指定不可
                             httpResponse = await (webInterface as IHttpClient).GetAsync(request.Path, request.Timeout);
+                            break;
+                        case CommonApiMethods.POST:
+                            httpResponse = await (webInterface as IHttpClient).PostAsync(request.Path, content, request.Timeout);
                             break;
                         default:
                             // 未実装

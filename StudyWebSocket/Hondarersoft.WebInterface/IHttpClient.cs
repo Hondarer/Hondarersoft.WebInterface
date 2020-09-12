@@ -10,5 +10,7 @@ namespace Hondarersoft.WebInterface
     {
         public Task<HttpResponseMessage> GetAsync(string requestUri);
         public Task<HttpResponseMessage> GetAsync(string requestUri, TimeSpan timeout);
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content);
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content, TimeSpan timeout);
     }
 }
