@@ -351,8 +351,11 @@ namespace Hondarersoft.WebInterface
             // TODO: バッチ処理に対応していない(仕様にはあるが必要性は疑問)
             //       受信したデータがいきなり配列の場合はバッチ処理
 
+            // メソッド全体(バッチ処理の場合はひとつひとつ)を try - catch する。
+
             WebSocketBase webSocketBase = sender as WebSocketBase;
             dynamic document;
+            object response;
 
             try
             {
@@ -360,17 +363,22 @@ namespace Hondarersoft.WebInterface
             }
             catch
             {
-                // この段階の例外は応答する術がない
+                // json でない
+                response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
                 return;
             }
-
-            object response;
 
             // jsonrpc メンバーのチェック
             if ((DynamicHelper.IsPropertyExist(document, "jsonrpc") == false) ||
                 (document.jsonrpc.ToString() != "2.0"))
             {
-                // NOP(レスポンスを返すことができない)
+                // jsonrpc メンバーがないか、バージョンが異なる
+                // TODO: 詳細エラーを返すようにする
+                response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
                 return;
             }
 
@@ -383,7 +391,7 @@ namespace Hondarersoft.WebInterface
                 {
                     // 規約上、Numbers SHOULD NOT contain fractional parts
                     // とあるので、整数として扱う。少数の場合は動作不定となる。
-                    id = idElement.GetInt64();
+                    id = idElement.GetInt64(); // TODO: 念のため try - catch したほうがいい
                 }
                 else if (idElement.ValueKind == JsonValueKind.String)
                 {
@@ -392,12 +400,10 @@ namespace Hondarersoft.WebInterface
                 else
                 {
                     // id フィールドのフォーマット不良。
-                    // レスポンスを返すことができない、受け取ったレスポンスを処理することができない。
-                    // この場合は処理をしない。
-
-                    // 規約上は id フィールドは null も許容されるが、本実装では許容しない。
-                    // (id が特定できなかった際のレスポンスには、id が null のレスポンスを送ることになっている。
-                    //  本実装ではこの処理も今のところ省略している。)
+                    // TODO: 詳細エラーを返すようにする
+                    response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+                    // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                    await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
                     return;
                 }
             }
@@ -444,6 +450,17 @@ namespace Hondarersoft.WebInterface
                 return;
             }
 
+            // この段階でリクエスト電文なので method があるはず
+            if (DynamicHelper.IsPropertyExist(document, "result") != true)
+            {
+                // リクエストでもレスポンスでもない
+                // TODO: 詳細エラーを返すようにする
+                response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                return;
+            }
+
             // メソッド名の特定
             // JSON-RPC メソッド名の末尾を HTTP メソッドとして取り出し、
             // ドット結合をピリオド結合にし、ルート記号を付加する
@@ -463,11 +480,10 @@ namespace Hondarersoft.WebInterface
             // HTTP メソッド名で終わっていない JSON-RPC メソッド名は、エラーとして扱う
             if (method == CommonApiMethods.UNKNOWN)
             {
-                if (id != null)
-                {
-                    response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.MethodNotFound], Message = CommonApiArgs.Errors.MethodNotFound.ToString() } };
-                    await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
-                }
+                // TODO: 詳細エラーを返すようにする
+                response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.MethodNotFound], Message = CommonApiArgs.Errors.MethodNotFound.ToString() } };
+                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
                 return;
             }
 
@@ -486,47 +502,52 @@ namespace Hondarersoft.WebInterface
 
             OnRequest(apiArgs);
 
-            if (id != null)
+            if (apiArgs.Error == CommonApiArgs.Errors.None)
             {
-                // 応答用の id が存在する場合に返送処理を行う
-
-                if (apiArgs.Error == CommonApiArgs.Errors.None)
+                if (apiArgs.Identifier != null)
                 {
+                    // id が設定されている場合のレスポンス
                     response = new JsonRpcNormalResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
                 }
                 else
                 {
-                    int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
-                    if (ErrorsToCode.ContainsKey(apiArgs.Error) == true)
-                    {
-                        code = ErrorsToCode[apiArgs.Error];
-                    }
-
-                    Error error;
-                    if (apiArgs.ErrorDetails != null)
-                    {
-                        error = new ErrorWithData() { Data = apiArgs.ErrorDetails };
-                    }
-                    else
-                    {
-                        error = new Error();
-                    }
-                    error.Code = code;
-                    error.Message = apiArgs.ErrorMessage;
-
-                    if (apiArgs.ErrorDetails != null)
-                    {
-                        response = new JsonRpcErrorResponseWithData() { Id = apiArgs.Identifier, Error = error as ErrorWithData };
-                    }
-                    else
-                    {
-                        response = new JsonRpcErrorResponse() { Id = apiArgs.Identifier, Error = error };
-                    }
+                    // id が設定されていない場合は、notify。
+                    // 正常終了の場合は、返送不要。エラーの場合は id = null でエラーを返す。
+                    return;
+                }
+            }
+            else
+            {
+                int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
+                if (ErrorsToCode.ContainsKey(apiArgs.Error) == true)
+                {
+                    code = ErrorsToCode[apiArgs.Error];
                 }
 
-                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                Error error;
+                if (apiArgs.ErrorDetails != null)
+                {
+                    error = new ErrorWithData() { Data = apiArgs.ErrorDetails };
+                }
+                else
+                {
+                    error = new Error();
+                }
+                error.Code = code;
+                error.Message = apiArgs.ErrorMessage;
+
+                if (apiArgs.ErrorDetails != null)
+                {
+                    response = new JsonRpcErrorResponseWithData() { Id = apiArgs.Identifier, Error = error as ErrorWithData };
+                }
+                else
+                {
+                    response = new JsonRpcErrorResponse() { Id = apiArgs.Identifier, Error = error };
+                }
             }
+
+            // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+            await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
         }
 
         private void HttpService_HttpRequest(object sender, HttpRequestEventArgs e)
