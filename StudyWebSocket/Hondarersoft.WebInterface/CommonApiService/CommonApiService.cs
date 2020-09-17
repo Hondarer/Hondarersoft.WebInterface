@@ -400,6 +400,7 @@ namespace Hondarersoft.WebInterface
                 else
                 {
                     // id フィールドのフォーマット不良。
+                    // TODO: レスポンスでここにたどり着くケースは、エラーを返すべきではないかも
                     // TODO: 詳細エラーを返すようにする
                     response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
                     // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
@@ -417,26 +418,41 @@ namespace Hondarersoft.WebInterface
 
                 if (DynamicHelper.IsPropertyExist(document, "result") == true)
                 {
-                    commonApiResponse.ResponseBody = DynamicHelper.GetProperty(document, "result").ToString();
+                    object result = DynamicHelper.GetProperty(document, "result");
+
+                    if (result != null)
+                    {
+                        commonApiResponse.ResponseBody = result.ToString();
+                    }
 
                     commonApiResponse.IsSuccess = true;
                 }
-                else if (DynamicHelper.IsPropertyExist(document, "error") == true)
+
+                if (DynamicHelper.IsPropertyExist(document, "error") == true)
                 {
                     try
                     {
+                        // error: null の場合は例外処理にまかせる
                         commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<ErrorWithData>(DynamicHelper.GetProperty(document, "error").ToString());
                     }
                     catch
                     {
                         // Errorのパース失敗
+                        // レスポンスに対して発生したエラーの返送は規約には規定がない。無限ループの危険性を排除するため NOP とする
+                        // TODO: ログ
+                        return;
                     }
                 }
-                else
+
+                if (id == null)
                 {
-                    // 想定外
+                    // 相手方で id が特定できなかった場合のレスポンスやエラー通知
+                    // 何かの処理を行うことはしない。エラーが相手で発生したことを記録する。
+                    // TODO: ログ
+                    return;
                 }
 
+                // 待ち合わせ中の要求があったら、応答データを登録する
                 string idString = id.ToString();
                 lock (this)
                 {
