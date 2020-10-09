@@ -4,15 +4,14 @@ using System.Text;
 
 namespace Hondarersoft.WebInterface
 {
-    public class WebSocketRecieveTextEventArgs : EventArgs
+    public class WebSocketRecieveTextEventArgs : WebSocketEventArgs
     {
         public string WebSocketIdentify { get; }
 
         public string Message { get; }
 
-        public WebSocketRecieveTextEventArgs(string webSocketIdentify, string message)
+        public WebSocketRecieveTextEventArgs(string webSocketIdentify, string message) : base(webSocketIdentify)
         {
-            WebSocketIdentify = webSocketIdentify;
             Message = message;
         }
     }

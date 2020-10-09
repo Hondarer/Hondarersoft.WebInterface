@@ -100,7 +100,7 @@ namespace Hondarersoft.WebInterface
             }
             if (webInterfaceBase is IWebSocketBase)
             {
-                (webInterfaceBase as IWebSocketBase).WebSocketRecieveText += WebSocketService_WebSocketRecieveText;
+                (webInterfaceBase as IWebSocketBase).WebSocketTextRecieved += WebSocketService_WebSocketRecieveText;
             }
 
             if(webInterfaceIdentify == null)

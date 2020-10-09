@@ -35,7 +35,9 @@ namespace Hondarersoft.WebInterface
             return Task.CompletedTask;
         }
 
-        public event EventHandler<WebSocketRecieveTextEventArgs> WebSocketRecieveText;
+        public event EventHandler<WebSocketRecieveTextEventArgs> WebSocketTextRecieved;
+        public event EventHandler<WebSocketEventArgs> WebSocketConnected;
+        public event EventHandler<WebSocketEventArgs> WebSocketDisconnected;
 
         public async Task SendTextAsync(string webSocketIdentify, string message)
         {
@@ -75,7 +77,7 @@ namespace Hondarersoft.WebInterface
             try
             {
                 // 接続完了イベントの処理
-                await OnConnected(webSocket);
+                await OnConnected(webSocketIdentify, webSocket);
 
                 //情報取得待ちループ
                 while (webSocket.State == WebSocketState.Open)
@@ -139,28 +141,39 @@ namespace Hondarersoft.WebInterface
                 _logger.LogInformation("Session Closed. webSocketIdentify = {0}, Description = {1}.", webSocketIdentify, webSocket.CloseStatusDescription);
 
                 // 接続終了イベントの処理
-                await OnClosed(webSocket);
+                await OnDisconnected(webSocketIdentify, webSocket);
             }
         }
 
         protected virtual Task OnRecieveText(string webSocketIdentify, string message)
         {
-            if (WebSocketRecieveText != null)
+            if (WebSocketTextRecieved != null)
             {
-                WebSocketRecieveText(this, new WebSocketRecieveTextEventArgs(webSocketIdentify, message));
+                WebSocketTextRecieved(this, new WebSocketRecieveTextEventArgs(webSocketIdentify, message));
             }
 
             return Task.CompletedTask;
         }
 
-        protected virtual Task OnConnected(WebSocket webSocket)
+        protected virtual Task OnConnected(string webSocketIdentify, WebSocket webSocket)
         {
+            if (WebSocketConnected != null)
+            {
+                WebSocketConnected(this, new WebSocketEventArgs(webSocketIdentify));
+            }
+
             return Task.CompletedTask;
         }
 
-        protected virtual Task OnClosed(WebSocket webSocket)
+        protected virtual Task OnDisconnected(string webSocketIdentify, WebSocket webSocket)
         {
             webSocket.Dispose();
+
+            if (WebSocketDisconnected != null)
+            {
+                WebSocketDisconnected(this, new WebSocketEventArgs(webSocketIdentify));
+            }
+
             return Task.CompletedTask;
         }
 
