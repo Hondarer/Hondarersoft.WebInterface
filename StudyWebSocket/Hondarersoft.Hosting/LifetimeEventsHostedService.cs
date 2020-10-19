@@ -14,6 +14,9 @@ namespace Hondarersoft.Hosting
         protected readonly IConfiguration _configuration = null;
         protected readonly IExitService _exitService = null;
 
+        private readonly CancellationTokenSource _cancellationTokenSource = null;
+        protected readonly CancellationToken _cancellationToken = default;
+
         /// <summary>
         /// 明示的に指定されない異常終了の終了コードを取得または設定します。
         /// </summary>
@@ -26,6 +29,9 @@ namespace Hondarersoft.Hosting
             _appLifetime = appLifetime;
             _configuration = configuration;
             _exitService = exitService;
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            _cancellationToken = _cancellationTokenSource.Token;
 
             // Task.NoWait() による戻り値を管理しない Task の例外を補足する。
             Utility.TaskExtensions.NoWaitTaskException += NoWaitTaskException;
@@ -120,6 +126,7 @@ namespace Hondarersoft.Hosting
             try
             {
                 _logger.LogInformation("OnStopping has been called.");
+                _cancellationTokenSource.Cancel();
                 OnStoppingAsync().Wait();
             }
             catch (Exception ex)
