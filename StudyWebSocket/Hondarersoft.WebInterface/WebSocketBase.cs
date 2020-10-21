@@ -79,48 +79,47 @@ namespace Hondarersoft.WebInterface
                 // 接続完了イベントの処理
                 await OnConnected(webSocketIdentify, webSocket);
 
-                //情報取得待ちループ
+                // 情報取得待ちループ
                 while (webSocket.State == WebSocketState.Open)
                 {
                     byte[] buffer = new byte[1024];
 
-                    //所得情報確保用の配列を準備
+                    // 所得情報確保用の配列を準備
                     ArraySegment<byte> segment = new ArraySegment<byte>(buffer);
 
-                    //サーバからのレスポンス情報を取得
+                    // サーバからのレスポンス情報を取得
                     WebSocketReceiveResult result = await webSocket.ReceiveAsync(segment, CancellationToken.None);
 
-                    //エンドポイントCloseの場合、処理を中断
+                    // エンドポイントCloseの場合、処理を中断
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Accept", CancellationToken.None);
                         break;
                     }
 
-                    //バイナリの場合は、当処理では扱えないため、処理を中断
+                    // バイナリの場合は、当処理では扱えないため、処理を中断
                     if (result.MessageType == WebSocketMessageType.Binary)
                     {
                         await webSocket.CloseAsync(WebSocketCloseStatus.InvalidMessageType, "I don't do binary", CancellationToken.None);
                         break;
                     }
 
-                    //メッセージの最後まで取得
-                    // TODO: バッファの自動拡張に対応していない
+                    // メッセージの最後まで取得
                     int count = result.Count;
                     while (!result.EndOfMessage)
                     {
                         if (count >= buffer.Length)
                         {
-                            await webSocket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "That's too long", CancellationToken.None);
-                            break;
+                            Array.Resize(ref buffer, buffer.Length + 1024);
                         }
+
                         segment = new ArraySegment<byte>(buffer, count, buffer.Length - count);
                         result = await webSocket.ReceiveAsync(segment, CancellationToken.None);
 
                         count += result.Count;
                     }
 
-                    //メッセージを取得
+                    // メッセージを取得
                     string message = Encoding.UTF8.GetString(buffer, 0, count);
 
                     _logger.LogInformation("Recieve from {0}: {1}", webSocketIdentify, message);

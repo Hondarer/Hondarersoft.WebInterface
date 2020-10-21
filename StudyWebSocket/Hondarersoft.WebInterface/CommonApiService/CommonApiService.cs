@@ -467,7 +467,7 @@ namespace Hondarersoft.WebInterface
             }
 
             // この段階でリクエスト電文なので method があるはず
-            if (DynamicHelper.IsPropertyExist(document, "result") != true)
+            if (DynamicHelper.IsPropertyExist(document, "method") != true)
             {
                 // リクエストでもレスポンスでもない
                 // TODO: 詳細エラーを返すようにする
