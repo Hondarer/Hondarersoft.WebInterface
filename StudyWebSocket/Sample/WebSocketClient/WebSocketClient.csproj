@@ -17,12 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Hondarersoft.Hosting" Version="1.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Hondarersoft.Hosting\Hondarersoft.Hosting.csproj" />
     <ProjectReference Include="..\..\Hondarersoft.WebInterface\Hondarersoft.WebInterface.csproj" />
     <ProjectReference Include="..\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj" />
   </ItemGroup>
