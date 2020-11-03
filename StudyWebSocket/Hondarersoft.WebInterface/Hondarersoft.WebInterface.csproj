@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hondarersoft.Hosting\Hondarersoft.Hosting.csproj" />
-    <ProjectReference Include="..\Hondarersoft.Utility\Hondarersoft.Utility.csproj" />
   </ItemGroup>
 
 </Project>

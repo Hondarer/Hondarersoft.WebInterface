@@ -21,6 +21,7 @@ namespace Hondarersoft.WebInterface.Swagger
         /// <returns>この <see cref="ISwaggerServerService"/> のインスタンス。</returns>
         public ISwaggerServerService SetSwaggerYamlResolver(Func<Stream> swaggerYamlResolver);
 
+        /// <summary>
         /// 設定を読み込みます。
         /// </summary>
         /// <param name="configurationRoot">読み込みの基準となる <see cref="IConfiguration"/>。</param>
