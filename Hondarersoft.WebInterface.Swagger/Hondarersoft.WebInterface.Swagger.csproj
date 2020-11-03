@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Hondarer/Hondarersoft.WebInterface</PackageProjectUrl>
+    <Authors>Tetsuo Honda</Authors>
+    <Company>Tetsuo Honda</Company>
+    <Copyright>2020 Tetsuo Honda</Copyright>
+    <RepositoryUrl>https://github.com/Hondarer/Hondarersoft.WebInterface</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hondarersoft.WebInterface\Hondarersoft.WebInterface.csproj" />
+    <PackageReference Include="Hondarersoft.WebInterface" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
