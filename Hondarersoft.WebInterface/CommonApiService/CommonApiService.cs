@@ -737,19 +737,21 @@ namespace Hondarersoft.WebInterface
                 }
 
                 _logger.LogInformation("Response: {0}, {1}, {2}", e.HttpListenerContext.Response.StatusCode, e.HttpListenerContext.Response.ContentType, responseContent);
-                writer.BaseStream.Write(Encoding.UTF8.GetBytes(responseContent));
+
+                if (responseContent != null)
+                {
+                    writer.BaseStream.Write(Encoding.UTF8.GetBytes(responseContent));
+                }
             }
             catch (Exception ex)
             {
-                //resBoby = CreateErrorResponse(ErrorCode.SYSTEM_ERROR, String.Format(Resources.ErrorUnexpected, ex.Message));
                 e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                //log.Error(ex.ToString());
+                _logger.LogError(ex.ToString());
             }
             finally
             {
                 try
                 {
-                    //writer.Write(resBoby);
                     writer.Flush();
 
                     if (null != reader)
@@ -761,9 +763,9 @@ namespace Hondarersoft.WebInterface
                         writer.Close();
                     }
                 }
-                catch (Exception clsEx)
+                catch
                 {
-                    //log.Error(clsEx.ToString());
+                    // NOP
                 }
             }
         }
