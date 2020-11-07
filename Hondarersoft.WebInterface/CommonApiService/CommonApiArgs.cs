@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Text.Json;
 
 namespace Hondarersoft.WebInterface
@@ -14,7 +12,33 @@ namespace Hondarersoft.WebInterface
 
         public CommonApiMethods Method { get; }
 
+        public string Path { get; }
+
         public Dictionary<string, string> RegExMatchGroups { get; internal set; } = null;
+
+        public string RequestBody { get; }
+
+        /// <summary>
+        /// この要求を処理したことを取得または設定します。
+        /// <see cref="ResponseBody"/> プロパティを設定した場合、本プロパティは <c>true</c> に設定されます。
+        /// レスポンスが無いメソッドの処理完了を設定するときは、明示的に本プロパティを <c>true</c> に設定してください。
+        /// </summary>
+        public bool Handled { get; set; } = false;
+
+        private object _responseBody = null;
+
+        public object ResponseBody
+        {
+            get
+            {
+                return _responseBody;
+            }
+            set
+            {
+                Handled = true;
+                _responseBody = value;
+            }
+        }
 
         public enum Errors : int
         {
@@ -83,32 +107,6 @@ namespace Hondarersoft.WebInterface
         {
             SetError(Errors.InternalError, $"{Errors.InternalError}: {ex.GetType().Name}", ex.ToString());
         }
-
-        public string Path { get; }
-
-        public string RequestBody { get; }
-
-        private object responseBody = null;
-
-        public object ResponseBody 
-        {
-            get
-            {
-                return responseBody;
-            }
-            set
-            {
-                Handled = true;
-                responseBody = value;
-            }
-        }
-
-        /// <summary>
-        /// この要求を処理したことを取得または設定します。
-        /// <see cref="ResponseBody"/> プロパティを設定した場合、本プロパティは <c>true</c> に設定されます。
-        /// レスポンスが無いメソッドの処理完了を設定するときは、明示的に本プロパティを <c>true</c> に設定してください。
-        /// </summary>
-        public bool Handled { get; set; } = false;
 
         public CommonApiArgs(object identifier, CommonApiMethods method, string path, string requestBody = null)
         {

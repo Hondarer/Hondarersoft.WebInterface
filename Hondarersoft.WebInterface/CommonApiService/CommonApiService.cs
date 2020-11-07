@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -354,12 +353,12 @@ namespace Hondarersoft.WebInterface
             // メソッド全体(バッチ処理の場合はひとつひとつ)を try - catch する。
 
             WebSocketBase webSocketBase = sender as WebSocketBase;
-            dynamic document;
+            JsonElement document;
             object response;
 
             try
             {
-                document = System.Text.Json.JsonSerializer.Deserialize<ExpandoObject>(e.Message);
+                document = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(e.Message);
             }
             catch
             {
@@ -371,10 +370,18 @@ namespace Hondarersoft.WebInterface
             }
 
             // jsonrpc メンバーのチェック
-            if ((DynamicHelper.IsPropertyExist(document, "jsonrpc") == false) ||
-                (document.jsonrpc.ToString() != "2.0"))
+            if (document.TryGetProperty("jsonrpc", out JsonElement jsonrpcElement) == false)
             {
-                // jsonrpc メンバーがないか、バージョンが異なる
+                // jsonrpc メンバーがない
+                // TODO: 詳細エラーを返すようにする
+                response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                return;
+            }
+            if ((jsonrpcElement.ValueKind != JsonValueKind.String) || (jsonrpcElement.GetString() != "2.0"))
+            {
+                // jsonrpc メンバーが不正
                 // TODO: 詳細エラーを返すようにする
                 response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
                 // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
@@ -384,8 +391,7 @@ namespace Hondarersoft.WebInterface
 
             // id メンバーの取り出し
             object id = null;
-            JsonElement idElement = document.id;
-            if (DynamicHelper.IsPropertyExist(document, "id") == true)
+            if (document.TryGetProperty("id", out JsonElement idElement) == true)
             {
                 if (idElement.ValueKind == JsonValueKind.Number)
                 {
@@ -409,31 +415,33 @@ namespace Hondarersoft.WebInterface
                 }
             }
 
+
             // result か error があったら応答電文
-            if ((DynamicHelper.IsPropertyExist(document, "result") == true) || (DynamicHelper.IsPropertyExist(document, "error") == true))
+            
+            JsonElement resultElement;
+            bool isResult = document.TryGetProperty("result", out resultElement);
+
+            JsonElement errorElement;
+            bool isError = document.TryGetProperty("error", out errorElement);
+
+            if ((isResult == true) || (isError == true))
             {
                 // 応答電文の処理
 
                 CommonApiResponse commonApiResponse = new CommonApiResponse();
 
-                if (DynamicHelper.IsPropertyExist(document, "result") == true)
+                if (isResult == true)
                 {
-                    object result = DynamicHelper.GetProperty(document, "result");
-
-                    if (result != null)
-                    {
-                        commonApiResponse.ResponseBody = result.ToString();
-                    }
-
+                    commonApiResponse.ResponseBody = resultElement.GetString();
                     commonApiResponse.IsSuccess = true;
                 }
 
-                if (DynamicHelper.IsPropertyExist(document, "error") == true)
+                if (isError == true)
                 {
                     try
                     {
                         // error: null の場合は例外処理にまかせる
-                        commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<ErrorWithData>(DynamicHelper.GetProperty(document, "error").ToString());
+                        commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<ErrorWithData>(errorElement.ToString());
                     }
                     catch
                     {
@@ -467,7 +475,7 @@ namespace Hondarersoft.WebInterface
             }
 
             // この段階でリクエスト電文なので method があるはず
-            if (DynamicHelper.IsPropertyExist(document, "method") != true)
+            if (document.TryGetProperty("method", out JsonElement methodElement) == false)
             {
                 // リクエストでもレスポンスでもない
                 // TODO: 詳細エラーを返すようにする
@@ -480,12 +488,13 @@ namespace Hondarersoft.WebInterface
             // メソッド名の特定
             // JSON-RPC メソッド名の末尾を HTTP メソッドとして取り出し、
             // ドット結合をピリオド結合にし、ルート記号を付加する
-            string jsonrpcMethod = document.method.ToString();
+            string jsonrpcMethod = methodElement.GetString();
+            string upperJsonrpcMethod = jsonrpcMethod.ToUpper();
             CommonApiMethods method = CommonApiMethods.UNKNOWN;
             string path = string.Empty;
             foreach (string methodEnum in Enum.GetNames(typeof(CommonApiMethods)))
             {
-                if (jsonrpcMethod.EndsWith("." + methodEnum.ToLower()) == true)
+                if (upperJsonrpcMethod.EndsWith("." + methodEnum) == true)
                 {
                     method = (CommonApiMethods)Enum.Parse(typeof(CommonApiMethods), methodEnum);
                     path = "/" + jsonrpcMethod.Substring(0, jsonrpcMethod.Length - methodEnum.Length - 1).Replace('.', '/');
@@ -504,13 +513,9 @@ namespace Hondarersoft.WebInterface
             }
 
             object paramsValue = null;
-            if (DynamicHelper.IsPropertyExist(document, "params") == true)
+            if (document.TryGetProperty("params", out JsonElement paramsElement) == true)
             {
-                paramsValue = DynamicHelper.GetProperty(document, "params");
-            }
-            if (paramsValue != null)
-            {
-                paramsValue = paramsValue.ToString();
+                paramsValue = paramsElement.ToString();
             }
 
             CommonApiArgs apiArgs =
@@ -591,7 +596,7 @@ namespace Hondarersoft.WebInterface
                 // パラメーターはキー名がメンバ名となり、値は常に string[] となる。
                 if ((e.HttpListenerContext.Request.HttpMethod == "GET") && (e.HttpListenerContext.Request.QueryString.Count > 0))
                 {
-                    dynamic document = new ExpandoObject();
+                    Dictionary<string, List<string>> queryDictionary = new Dictionary<string, List<string>>();
 
                     foreach (string key in e.HttpListenerContext.Request.QueryString.AllKeys)
                     {
@@ -616,23 +621,25 @@ namespace Hondarersoft.WebInterface
                         }
 
                         // 引数が 1 つの場合でカンマ区切りの場合は、カンマを Split する。
+                        if (queryDictionary.ContainsKey(_key) == false)
+                        {
+                            queryDictionary.Add(_key, new List<string>());
+                        }
                         if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
                         {
-                            DynamicHelper.AddProperty(document, _key, queryValues.First().Split(","));
+                            queryDictionary[_key].AddRange(queryValues.First().Split(","));
                         }
                         else
                         {
-                            DynamicHelper.AddProperty(document, _key, queryValues);
+                            queryDictionary[_key].AddRange(queryValues);
                         }
                     }
 
-                    reqBody = System.Text.Json.JsonSerializer.Serialize(document);
+                    reqBody = System.Text.Json.JsonSerializer.Serialize(queryDictionary);
                 }
 
                 CommonApiArgs commonApiArgs =
                     new CommonApiArgs(e.HttpListenerContext.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.HttpListenerContext.Request.HttpMethod), path, reqBody);
-
-                _logger.LogInformation("OnRequest: apiArgs: {0}", commonApiArgs);
 
                 OnRequest(commonApiArgs);
 
@@ -645,7 +652,7 @@ namespace Hondarersoft.WebInterface
                     {
                         // Excel か、text/xml しか処理できない相手には XML を返す。
                         // TODO: Content を受けるときもこの判断必要。また、判定は、json が処理できず、text/xml または application/xml が処理できる場合としたほうがいい。
-                        if ((e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true) ||
+                        if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
                             ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && (e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml")))
                         {
                             // xml
@@ -772,6 +779,15 @@ namespace Hondarersoft.WebInterface
 
         public virtual void OnRequest(CommonApiArgs apiArgs)
         {
+            _logger.LogInformation("OnRequest START: {0}", System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>() 
+            {
+                { "Identifier",apiArgs.Identifier },
+                { "Method",apiArgs.Method.ToString() },
+                { "Path",apiArgs.Path },
+                { "RegExMatchGroups",apiArgs.RegExMatchGroups },
+                { "RequestBody",apiArgs.RequestBody }
+            }));
+
             // 登録されているコントローラーでループする。
             foreach (var commonApiController in commonApiControllers)
             {
@@ -792,6 +808,7 @@ namespace Hondarersoft.WebInterface
                 // 処理完了していたら、他のコントローラーのチェックは行わない。
                 if (apiArgs.Handled == true)
                 {
+                    _logger.LogInformation("OnRequest PROCESSED: {0}", ((object)commonApiController).GetType().FullName);
                     break;
                 }
             }
@@ -799,8 +816,17 @@ namespace Hondarersoft.WebInterface
             // どのコントローラーも処理しなかった場合は、エラーを返す。
             if (apiArgs.Handled == false)
             {
-                apiArgs.SetError(CommonApiArgs.Errors.MethodNotFound);
+                apiArgs.SetError(CommonApiArgs.Errors.MethodNotFound, "Not eligible for processing for all registered controllers.");
             }
+
+            _logger.LogInformation("OnRequest END: {0}", System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>()
+            {
+                { "Handled",apiArgs.Handled },
+                { "ResponseBody",apiArgs.ResponseBody },
+                { "Error",apiArgs.Error },
+                { "ErrorMessage",apiArgs.ErrorMessage },
+                { "ErrorDetails",apiArgs.ErrorDetails }
+            }));
         }
     }
 }

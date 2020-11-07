@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/Hondarer/Hondarersoft.WebInterface</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Hondarer/Hondarersoft.WebInterface</PackageProjectUrl>
     <Copyright>2020 Tetsuo Honda</Copyright>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
