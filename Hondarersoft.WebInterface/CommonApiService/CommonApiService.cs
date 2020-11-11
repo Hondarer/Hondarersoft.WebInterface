@@ -214,7 +214,7 @@ namespace Hondarersoft.WebInterface
                 methodsName += "." + request.Method.ToString().ToLower();
                 if (methodsName.StartsWith(".") == true)
                 {
-                    methodsName = methodsName.Substring(1);
+                    methodsName = methodsName[1..];
                 }
 
                 string requestId = null;
@@ -417,12 +417,10 @@ namespace Hondarersoft.WebInterface
 
 
             // result か error があったら応答電文
-            
-            JsonElement resultElement;
-            bool isResult = document.TryGetProperty("result", out resultElement);
 
-            JsonElement errorElement;
-            bool isError = document.TryGetProperty("error", out errorElement);
+            bool isResult = document.TryGetProperty("result", out JsonElement resultElement);
+
+            bool isError = document.TryGetProperty("error", out JsonElement errorElement);
 
             if ((isResult == true) || (isError == true))
             {
