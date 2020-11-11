@@ -432,10 +432,10 @@ namespace Hondarersoft.WebInterface
 
                 if (isResult == true)
                 {
-                    commonApiResponse.ResponseBody = resultElement.GetString();
+                    commonApiResponse.ResponseBody = resultElement.ToString();
                     commonApiResponse.IsSuccess = true;
                 }
-
+                
                 if (isError == true)
                 {
                     try
