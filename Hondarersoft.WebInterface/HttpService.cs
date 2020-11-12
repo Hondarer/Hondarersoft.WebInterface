@@ -88,19 +88,30 @@ namespace Hondarersoft.WebInterface
                         break;
                     }
 
-                    if (AllowCORS == true)
-                    {
-                        if (httpListenerContext.Request.HttpMethod == "OPTIONS")
-                        {
-                            httpListenerContext.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-                            httpListenerContext.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                            httpListenerContext.Response.AddHeader("Access-Control-Max-Age", "1728000");
-                        }
-                        httpListenerContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
-                    }
-
                     try
                     {
+                        if (AllowCORS == true)
+                        {
+                            httpListenerContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+                        }
+
+                        // プリフライトリクエストには、OK を返す。
+                        if (httpListenerContext.Request.HttpMethod == "OPTIONS")
+                        {
+                            if (AllowCORS == true)
+                            {
+                                httpListenerContext.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+                                httpListenerContext.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                                httpListenerContext.Response.AddHeader("Access-Control-Max-Age", "1728000");
+                                httpListenerContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                            }
+                            else
+                            {
+                                httpListenerContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                            }
+                            continue;
+                        }
+
                         await Invoke(httpListenerContext);
                     }
                     catch
@@ -110,7 +121,7 @@ namespace Hondarersoft.WebInterface
                     }
                     finally
                     {
-                        _logger.LogInformation("Response: {0} {1} {2}", httpListenerContext.Request.RequestTraceIdentifier.ToString(), httpListenerContext.Response.StatusCode, httpListenerContext.Response.StatusDescription);
+                        //_logger.LogInformation("Response: {0} {1} {2}", httpListenerContext.Request.RequestTraceIdentifier.ToString(), httpListenerContext.Response.StatusCode, httpListenerContext.Response.StatusDescription);
 
                         if (httpListenerContext.Response != null)
                         {
@@ -129,7 +140,7 @@ namespace Hondarersoft.WebInterface
 
         protected virtual async Task Invoke(HttpListenerContext httpListenerContext)
         {
-            _logger.LogInformation("Request: {0} {1} {2}", httpListenerContext.Request.RequestTraceIdentifier.ToString(), httpListenerContext.Request.HttpMethod, httpListenerContext.Request.RawUrl);
+            //_logger.LogInformation("Request: {0} {1} {2}", httpListenerContext.Request.RequestTraceIdentifier.ToString(), httpListenerContext.Request.HttpMethod, httpListenerContext.Request.RawUrl);
 
             if (HttpRequest != null)
             {

@@ -61,7 +61,7 @@ namespace Hondarersoft.WebInterface.Swagger
             // reference embedded resouces
             const string prefix = "Hondarersoft.WebInterface.Swagger.SwaggerUI.";
 
-            string path = httpListenerContext.Request.RawUrl.Substring(BasePath.Length + 1);
+            string path = httpListenerContext.Request.RawUrl[(BasePath.Length + 1)..];
             if (string.IsNullOrEmpty(path) == true)
             {
                 httpListenerContext.Response.Redirect(httpListenerContext.Request.RawUrl + "/");
