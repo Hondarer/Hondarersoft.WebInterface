@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Hondarersoft.WebInterface
@@ -22,7 +23,7 @@ namespace Hondarersoft.WebInterface
     public class CommonApiService : ICommonApiService // TODO: IDisposable 化
     {
         private const string CONTENT_TYPE_JSON = "application/json";
-        private const string CONTENT_TYPE_XML = "text/xml";
+        private const string CONTENT_TYPE_XML = "application/xml";
 
         protected static readonly Dictionary<CommonApiArgs.Errors, int> ErrorsToCode = new Dictionary<CommonApiArgs.Errors, int>()
         {
@@ -86,6 +87,13 @@ namespace Hondarersoft.WebInterface
                 // TODO: 型があっていないと null になるのでチェック要
                 ICommonApiController commonApiController = _serviceProvider.GetService(entry.AssemblyName, entry.ClassFullName, entry.IsSingleton) as ICommonApiController;
                 commonApiControllers.Add(commonApiController);
+
+                _logger.LogInformation("RegistController REGIST: {0}", System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>()
+                {
+                    { "commonApiController", commonApiController.GetType().FullName },
+                    { "ApiPath",commonApiController.ApiPath },
+                    { "MatchingMethod",commonApiController.MatchingMethod.ToString() }
+                }));
             }
 
             return this;
@@ -574,10 +582,6 @@ namespace Hondarersoft.WebInterface
             StreamReader reader = null;
             StreamWriter writer = null;
 
-            // TODO: User-Agent が "Excel/" で始まっている場合は Excel。
-            // Excel の場合は、後続の処理を考慮すると、XML で返したほうが優しい。
-            // Accept type は Excel からの場合、null だった。
-
             try
             {
                 e.HttpListenerContext.Response.ContentEncoding = Encoding.UTF8;
@@ -636,6 +640,14 @@ namespace Hondarersoft.WebInterface
                     reqBody = System.Text.Json.JsonSerializer.Serialize(queryDictionary);
                 }
 
+                // body が xml の場合、json に変換する。
+                if ((e.HttpListenerContext.Request.ContentType == "application/xml") || (e.HttpListenerContext.Request.ContentType == "text/xml"))
+                {
+                    XmlDocument xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(reqBody);
+                    reqBody = JsonConvert.SerializeXmlNode(xmlDocument);
+                }
+
                 CommonApiArgs commonApiArgs =
                     new CommonApiArgs(e.HttpListenerContext.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.HttpListenerContext.Request.HttpMethod), path, reqBody);
 
@@ -644,14 +656,13 @@ namespace Hondarersoft.WebInterface
                 string responseContent;
                 if (commonApiArgs.Error == CommonApiArgs.Errors.None)
                 {
-                    e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.OK;
-
                     if (commonApiArgs.ResponseBody != null)
                     {
-                        // Excel か、text/xml しか処理できない相手には XML を返す。
-                        // TODO: Content を受けるときもこの判断必要。また、判定は、json が処理できず、text/xml または application/xml が処理できる場合としたほうがいい。
+                        e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.OK;
+
+                        // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
                         if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
-                            ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && (e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml")))
+                            ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml"))))
                         {
                             // xml
                             e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
@@ -668,6 +679,8 @@ namespace Hondarersoft.WebInterface
                     }
                     else
                     {
+                        e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
+
                         responseContent = null;
                     }
                 }
@@ -715,10 +728,9 @@ namespace Hondarersoft.WebInterface
                     error.Code = code;
                     error.Message = commonApiArgs.ErrorMessage;
 
-                    // Excel か、text/xml しか処理できない相手には XML を返す。
-                    // TODO: Content を受けるときもこの判断必要。また、判定は、json が処理できず、text/xml または application/xml が処理できる場合としたほうがいい。
+                    // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
                     if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
-                        ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && (e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml")))
+                        ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml"))))
                     {
                         // xml
                         RestErrorResponse restErrorResponse = new RestErrorResponse() { Error = error };
@@ -821,7 +833,7 @@ namespace Hondarersoft.WebInterface
             {
                 { "Handled",apiArgs.Handled },
                 { "ResponseBody",apiArgs.ResponseBody },
-                { "Error",apiArgs.Error },
+                { "Error",apiArgs.Error.ToString() },
                 { "ErrorMessage",apiArgs.ErrorMessage },
                 { "ErrorDetails",apiArgs.ErrorDetails }
             }));
