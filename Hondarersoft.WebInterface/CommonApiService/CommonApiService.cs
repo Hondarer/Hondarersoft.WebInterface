@@ -23,7 +23,7 @@ namespace Hondarersoft.WebInterface
     public class CommonApiService : ICommonApiService // TODO: IDisposable 化
     {
         private const string CONTENT_TYPE_JSON = "application/json";
-        private const string CONTENT_TYPE_XML = "application/xml";
+        private const string CONTENT_TYPE_XML = "text/xml";
 
         protected static readonly Dictionary<CommonApiArgs.Errors, int> ErrorsToCode = new Dictionary<CommonApiArgs.Errors, int>()
         {
@@ -590,143 +590,184 @@ namespace Hondarersoft.WebInterface
                 writer = new StreamWriter(e.HttpListenerContext.Response.OutputStream);
                 string reqBody = reader.ReadToEnd();
 
-                // クエリストリングを除いたパスの取得
-                string path = e.HttpListenerContext.Request.RawUrl.Split('?').First();
+                string responseContent;
 
-                // GET で クエリストリングが存在する場合に、
-                // 内部処理では body に書かれたものとしてパラメーターを処理するため詰め替える。
-                // パラメーターはキー名がメンバ名となり、値は常に string[] となる。
-                if ((e.HttpListenerContext.Request.HttpMethod == "GET") && (e.HttpListenerContext.Request.QueryString.Count > 0))
+                try
                 {
-                    Dictionary<string, List<string>> queryDictionary = new Dictionary<string, List<string>>();
-
-                    foreach (string key in e.HttpListenerContext.Request.QueryString.AllKeys)
+                    // body が xml の場合、json に変換する。
+                    if (string.IsNullOrEmpty(reqBody) != true)
                     {
-                        string[] queryValues = e.HttpListenerContext.Request.QueryString.GetValues(key);
+                        if ((e.HttpListenerContext.Request.ContentType == "application/xml") || (e.HttpListenerContext.Request.ContentType == "text/xml"))
+                        {
+                            XDocument xDocument = XDocument.Parse(reqBody);
 
-                        string _key;
-                        if (key == null)
-                        {
-                            // キーなしは null キーになるが、json で表せないのでキーを与える。
-                            _key = "_defaultKey";
-                        }
-                        else if (key == "_defaultKey")
-                        {
-                            // 上記の処理との都合で、要求自体に "_defaultKey" キーが含まれている場合は、
-                            // キー重複になってしなうので、当該キーの処理は行わない。
-                            // API 仕様策定時、"_defaultKey" キーを規定しないこと。
-                            continue;
-                        }
-                        else
-                        {
-                            _key = key;
-                        }
-
-                        // 引数が 1 つの場合でカンマ区切りの場合は、カンマを Split する。
-                        if (queryDictionary.ContainsKey(_key) == false)
-                        {
-                            queryDictionary.Add(_key, new List<string>());
-                        }
-                        if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
-                        {
-                            queryDictionary[_key].AddRange(queryValues.First().Split(","));
-                        }
-                        else
-                        {
-                            queryDictionary[_key].AddRange(queryValues);
+                            // omitRootObject を true にし、ルートオブジェクトを json に含めないようにしている。
+                            // xml で要求が来た場合のルートオブジェクト名は必須ではあるが何でもよい。
+                            reqBody = JsonConvert.SerializeXNode(xDocument.Root, Newtonsoft.Json.Formatting.None, true);
                         }
                     }
 
-                    reqBody = System.Text.Json.JsonSerializer.Serialize(queryDictionary);
-                }
+                    // クエリストリングを除いたパスの取得
+                    string path = e.HttpListenerContext.Request.RawUrl.Split('?').First();
 
-                // body が xml の場合、json に変換する。
-                if ((e.HttpListenerContext.Request.ContentType == "application/xml") || (e.HttpListenerContext.Request.ContentType == "text/xml"))
-                {
-                    XmlDocument xmlDocument = new XmlDocument();
-                    xmlDocument.LoadXml(reqBody);
-                    reqBody = JsonConvert.SerializeXmlNode(xmlDocument);
-                }
-
-                CommonApiArgs commonApiArgs =
-                    new CommonApiArgs(e.HttpListenerContext.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.HttpListenerContext.Request.HttpMethod), path, reqBody);
-
-                OnRequest(commonApiArgs);
-
-                string responseContent;
-                if (commonApiArgs.Error == CommonApiArgs.Errors.None)
-                {
-                    if (commonApiArgs.ResponseBody != null)
+                    // GET で クエリストリングが存在する場合に、
+                    // 内部処理では body に書かれたものとしてパラメーターを処理するため詰め替える。
+                    // パラメーターはキー名がメンバ名となり、値は常に string[] となる。
+                    if ((e.HttpListenerContext.Request.HttpMethod == "GET") && (e.HttpListenerContext.Request.QueryString.Count > 0))
                     {
-                        e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.OK;
+                        Dictionary<string, List<string>> queryDictionary = new Dictionary<string, List<string>>();
+
+                        foreach (string key in e.HttpListenerContext.Request.QueryString.AllKeys)
+                        {
+                            string[] queryValues = e.HttpListenerContext.Request.QueryString.GetValues(key);
+
+                            string _key;
+                            if (key == null)
+                            {
+                                // キーなしは null キーになるが、json で表せないのでキーを与える。
+                                _key = "_defaultKey";
+                            }
+                            else if (key == "_defaultKey")
+                            {
+                                // 上記の処理との都合で、要求自体に "_defaultKey" キーが含まれている場合は、
+                                // キー重複になってしなうので、当該キーの処理は行わない。
+                                // API 仕様策定時、"_defaultKey" キーを規定しないこと。
+                                continue;
+                            }
+                            else
+                            {
+                                _key = key;
+                            }
+
+                            // 引数が 1 つの場合でカンマ区切りの場合は、カンマを Split する。
+                            if (queryDictionary.ContainsKey(_key) == false)
+                            {
+                                queryDictionary.Add(_key, new List<string>());
+                            }
+                            if ((queryValues.Length == 1) && (queryValues.First().Contains(",") == true))
+                            {
+                                queryDictionary[_key].AddRange(queryValues.First().Split(","));
+                            }
+                            else
+                            {
+                                queryDictionary[_key].AddRange(queryValues);
+                            }
+                        }
+
+                        reqBody = System.Text.Json.JsonSerializer.Serialize(queryDictionary);
+                    }
+
+                    CommonApiArgs commonApiArgs =
+                        new CommonApiArgs(e.HttpListenerContext.Request.RequestTraceIdentifier, Enum.Parse<CommonApiMethods>(e.HttpListenerContext.Request.HttpMethod), path, reqBody);
+
+                    OnRequest(commonApiArgs);
+
+                    if (commonApiArgs.Error == CommonApiArgs.Errors.None)
+                    {
+                        if (commonApiArgs.ResponseBody != null)
+                        {
+                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.OK;
+
+                            // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
+                            if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
+                                ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml"))))
+                            {
+                                // xml
+                                e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
+                                XDocument xDocument;
+                                xDocument = JsonConvert.DeserializeXNode(System.Text.Json.JsonSerializer.Serialize(new RestNormalResponse() { Result = commonApiArgs.ResponseBody }), "results");
+                                responseContent = xDocument.ToString();
+                            }
+                            else
+                            {
+                                // json
+                                e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
+                                responseContent = System.Text.Json.JsonSerializer.Serialize(new RestNormalResponse() { Result = commonApiArgs.ResponseBody });
+                            }
+                        }
+                        else
+                        {
+                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
+
+                            responseContent = null;
+                        }
+                    }
+                    else
+                    {
+                        int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
+                        if (ErrorsToCode.ContainsKey(commonApiArgs.Error) == true)
+                        {
+                            code = ErrorsToCode[commonApiArgs.Error];
+                        }
+
+                        switch (commonApiArgs.Error)
+                        {
+                            case CommonApiArgs.Errors.ParseError:
+                            // No Break
+                            case CommonApiArgs.Errors.InvalidRequest:
+                            // No Break
+                            case CommonApiArgs.Errors.InvalidParams:
+                                e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                                break;
+                            case CommonApiArgs.Errors.MethodNotFound:
+                                e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                                break;
+                            case CommonApiArgs.Errors.InternalError:
+                                e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                                break;
+                            case CommonApiArgs.Errors.MethodNotAvailable:
+                                e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                                break;
+                            default:
+                                // 下記は念のため(本来通過することはない)
+                                e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                                break;
+                        }
+
+                        Error error;
+                        if (commonApiArgs.ErrorDetails != null)
+                        {
+                            error = new ErrorWithData() { Data = commonApiArgs.ErrorDetails };
+                        }
+                        else
+                        {
+                            error = new Error();
+                        }
+                        error.Code = code;
+                        error.Message = commonApiArgs.ErrorMessage;
 
                         // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
                         if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
                             ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml"))))
                         {
                             // xml
+                            RestErrorResponse restErrorResponse = new RestErrorResponse() { Error = error };
                             e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
-                            XDocument xDocument;
-                            xDocument = JsonConvert.DeserializeXNode(System.Text.Json.JsonSerializer.Serialize(new RestNormalResponse() { Result = commonApiArgs.ResponseBody }), "results");
+                            XDocument xDocument = JsonConvert.DeserializeXNode(System.Text.Json.JsonSerializer.Serialize(restErrorResponse));
                             responseContent = xDocument.ToString();
                         }
                         else
                         {
                             // json
                             e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
-                            responseContent = System.Text.Json.JsonSerializer.Serialize(new RestNormalResponse() { Result = commonApiArgs.ResponseBody });
+                            if (commonApiArgs.ErrorDetails != null)
+                            {
+                                responseContent = System.Text.Json.JsonSerializer.Serialize(error as ErrorWithData);
+                            }
+                            else
+                            {
+                                responseContent = System.Text.Json.JsonSerializer.Serialize(error);
+                            }
                         }
                     }
-                    else
-                    {
-                        e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
-
-                        responseContent = null;
-                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
-                    if (ErrorsToCode.ContainsKey(commonApiArgs.Error) == true)
-                    {
-                        code = ErrorsToCode[commonApiArgs.Error];
-                    }
+                    e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-                    switch (commonApiArgs.Error)
-                    {
-                        case CommonApiArgs.Errors.ParseError:
-                        // No Break
-                        case CommonApiArgs.Errors.InvalidRequest:
-                        // No Break
-                        case CommonApiArgs.Errors.InvalidParams:
-                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            break;
-                        case CommonApiArgs.Errors.MethodNotFound:
-                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                            break;
-                        case CommonApiArgs.Errors.InternalError:
-                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                            break;
-                        case CommonApiArgs.Errors.MethodNotAvailable:
-                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                            break;
-                        default:
-                            // 下記は念のため(本来通過することはない)
-                            e.HttpListenerContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                            break;
-                    }
-
-                    Error error;
-                    if (commonApiArgs.ErrorDetails != null)
-                    {
-                        error = new ErrorWithData() { Data = commonApiArgs.ErrorDetails };
-                    }
-                    else
-                    {
-                        error = new Error();
-                    }
-                    error.Code = code;
-                    error.Message = commonApiArgs.ErrorMessage;
+                    ErrorWithData error = new ErrorWithData() { Data = ex.ToString() };
+                    error.Code = ErrorsToCode[CommonApiArgs.Errors.ParseError];
+                    error.Message = CommonApiArgs.Errors.ParseError.ToString();
 
                     // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
                     if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
@@ -742,14 +783,7 @@ namespace Hondarersoft.WebInterface
                     {
                         // json
                         e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
-                        if (commonApiArgs.ErrorDetails != null)
-                        {
-                            responseContent = System.Text.Json.JsonSerializer.Serialize(error as ErrorWithData);
-                        }
-                        else
-                        {
                             responseContent = System.Text.Json.JsonSerializer.Serialize(error);
-                        }
                     }
                 }
 
