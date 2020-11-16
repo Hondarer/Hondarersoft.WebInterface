@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -23,13 +23,12 @@
 
   <ItemGroup>
     <PackageReference Include="Hondarersoft.Hosting" Version="1.0.1" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.9" />
+    <PackageReference Include="Hondarersoft.WebInterface.Swagger" Version="1.0.6" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Hondarersoft.WebInterface.Swagger\Hondarersoft.WebInterface.Swagger.csproj" />
-    <ProjectReference Include="..\..\Hondarersoft.WebInterface\Hondarersoft.WebInterface.csproj" />
     <ProjectReference Include="..\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj" />
   </ItemGroup>
 
