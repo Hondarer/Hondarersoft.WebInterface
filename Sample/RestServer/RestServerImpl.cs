@@ -4,7 +4,6 @@ using Hondarersoft.WebInterface.Swagger;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -34,7 +33,7 @@ namespace RestServer
             await _swaggerService.LoadConfiguration(_configuration.GetSection("SwaggerService"))
                 .SetSwaggerYamlResolver(() =>
                 {
-                    var myAssembly = typeof(RestServerImpl).GetTypeInfo().Assembly;
+                    Assembly myAssembly = GetType().GetTypeInfo().Assembly;
                     return myAssembly.GetManifestResourceStream("RestServer.Swagger.RestServer.yaml");
                 })
                 .StartAsync();
