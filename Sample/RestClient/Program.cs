@@ -60,7 +60,7 @@ namespace RestClient
                 loggingBuilder.SetMinimumLevel(LogLevel.Information);
 
                 // Console ロガーの追加
-                loggingBuilder.AddConsole(configure =>
+                loggingBuilder.AddSimpleConsole(configure =>
                 {
                     configure.TimestampFormat = "[HH:mm:ss.fff] ";
                 });

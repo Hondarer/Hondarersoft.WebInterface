@@ -110,7 +110,7 @@ namespace Hondarersoft.WebInterface
                 (webInterfaceBase as IWebSocketBase).WebSocketTextRecieved += WebSocketService_WebSocketRecieveText;
             }
 
-            if(webInterfaceIdentify == null)
+            if (webInterfaceIdentify == null)
             {
                 webInterfaceIdentify = Guid.NewGuid().ToString();
             }
@@ -156,7 +156,7 @@ namespace Hondarersoft.WebInterface
                         content = null;
                     }
 
-                    switch(request.Method)
+                    switch (request.Method)
                     {
                         case CommonApiMethods.GET:
                             // GET に content は指定不可
@@ -169,7 +169,7 @@ namespace Hondarersoft.WebInterface
                             // 未実装
                             break;
                     }
-                    if(httpResponse == null)
+                    if (httpResponse == null)
                     {
                         // 未実装メソッドの指定がなされた
                         return response;
@@ -332,11 +332,11 @@ namespace Hondarersoft.WebInterface
         {
             CommonApiResponse response = await SendRequestAsync(request, interfaceIdentify, sessionIdentify);
 
-            if((response.IsSuccess == true) && (response.ResponseBody != null))
+            if ((response.IsSuccess == true) && (response.ResponseBody != null))
             {
                 try
                 {
-                    response.ResponseBody = System.Text.Json.JsonSerializer.Deserialize<T>(response.ResponseBody.ToString());
+                    response.ResponseBody = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string,T>>(response.ResponseBody.ToString())["result"];
                 }
                 catch
                 {
@@ -355,226 +355,255 @@ namespace Hondarersoft.WebInterface
 
         private async Task WebSocketService_WebSocketRecieveTextImpl(object sender, WebSocketRecieveTextEventArgs e)
         {
-            // TODO: バッチ処理に対応していない(仕様にはあるが必要性は疑問)
-            //       受信したデータがいきなり配列の場合はバッチ処理
-
-            // メソッド全体(バッチ処理の場合はひとつひとつ)を try - catch する。
-
+            List<JsonElement> documents = new List<JsonElement>();
             WebSocketBase webSocketBase = sender as WebSocketBase;
-            JsonElement document;
-            object response;
 
             try
             {
-                document = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(e.Message);
+                JsonElement recieveDocument = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(e.Message);
+
+                if (recieveDocument.ValueKind == JsonValueKind.Array)
+                {
+                    documents.AddRange(recieveDocument.EnumerateArray());
+                }
+                else
+                {
+                    documents.Add(recieveDocument);
+                }
             }
             catch
             {
                 // json でない
-                response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
-                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                object _response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+
+                // このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                try
+                {
+                    await webSocketBase.SendJsonAsync(e.WebSocketIdentify, _response);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("WebSocketService_WebSocketRecieveTextImpl Exception: {0}", ex.ToString());
+                }
                 return;
             }
 
-            // jsonrpc メンバーのチェック
-            if (document.TryGetProperty("jsonrpc", out JsonElement jsonrpcElement) == false)
+            foreach (JsonElement document in documents)
             {
-                // jsonrpc メンバーがない
-                // TODO: 詳細エラーを返すようにする
-                response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
-                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
-                return;
-            }
-            if ((jsonrpcElement.ValueKind != JsonValueKind.String) || (jsonrpcElement.GetString() != "2.0"))
-            {
-                // jsonrpc メンバーが不正
-                // TODO: 詳細エラーを返すようにする
-                response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
-                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
-                return;
-            }
+                object response;
+                try
+                {
+                    // jsonrpc メンバーのチェック
+                    if (document.TryGetProperty("jsonrpc", out JsonElement jsonrpcElement) == false)
+                    {
+                        // jsonrpc メンバーがない
+                        // TODO: 詳細エラーを返すようにする
+                        response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
 
-            // id メンバーの取り出し
-            object id = null;
-            if (document.TryGetProperty("id", out JsonElement idElement) == true)
-            {
-                if (idElement.ValueKind == JsonValueKind.Number)
-                {
-                    // 規約上、Numbers SHOULD NOT contain fractional parts
-                    // とあるので、整数として扱う。少数の場合は動作不定となる。
-                    id = idElement.GetInt64(); // TODO: 念のため try - catch したほうがいい
-                }
-                else if (idElement.ValueKind == JsonValueKind.String)
-                {
-                    id = idElement.GetString();
-                }
-                else
-                {
-                    // id フィールドのフォーマット不良。
-                    // TODO: レスポンスでここにたどり着くケースは、エラーを返すべきではないかも
-                    // TODO: 詳細エラーを返すようにする
-                    response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
-                    // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
+                        // このタイミングで例外が発生しうる。全体の try-catch で対応。
+                        await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                        continue;
+                    }
+                    if ((jsonrpcElement.ValueKind != JsonValueKind.String) || (jsonrpcElement.GetString() != "2.0"))
+                    {
+                        // jsonrpc メンバーが不正
+                        // TODO: 詳細エラーを返すようにする
+                        response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+
+                        // このタイミングで例外が発生しうる。全体の try-catch で対応。
+                        await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                        continue;
+                    }
+
+                    // result か error があったら応答電文
+
+                    bool isResult = document.TryGetProperty("result", out JsonElement resultElement);
+
+                    bool isError = document.TryGetProperty("error", out JsonElement errorElement);
+
+                    // id メンバーの取り出し
+                    object id = null;
+                    if (document.TryGetProperty("id", out JsonElement idElement) == true)
+                    {
+                        if (idElement.ValueKind == JsonValueKind.Number)
+                        {
+                            // 規約上、Numbers SHOULD NOT contain fractional parts
+                            // とあるので、整数として扱う。少数の場合は動作不定となる。
+                            id = idElement.GetInt64(); // TODO: 念のため try - catch したほうがいい
+                        }
+                        else if (idElement.ValueKind == JsonValueKind.String)
+                        {
+                            id = idElement.GetString();
+                        }
+                        else
+                        {
+                            // id フィールドのフォーマット不良。
+                            // レスポンスでここにたどり着くケースは、エラーを返すべきではない
+                            if ((isResult != true) && (isError != true))
+                            {
+                                // TODO: 詳細エラーを返すようにする
+                                response = new JsonRpcErrorResponse() { Id = null, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+
+                                // このタイミングで例外が発生しうる。全体の try-catch で対応。
+                                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                            }
+                            continue;
+                        }
+                    }
+
+                    if ((isResult == true) || (isError == true))
+                    {
+                        // 応答電文の処理
+
+                        CommonApiResponse commonApiResponse = new CommonApiResponse();
+
+                        if (isResult == true)
+                        {
+                            commonApiResponse.ResponseBody = resultElement.ToString();
+                            commonApiResponse.IsSuccess = true;
+                        }
+
+                        if (isError == true)
+                        {
+                            try
+                            {
+                                // error: null の場合は例外処理にまかせる
+                                commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<ErrorWithData>(errorElement.ToString());
+                            }
+                            catch
+                            {
+                                // Errorのパース失敗
+                                // レスポンスに対して発生したエラーの返送は規約には規定がない。無限ループの危険性を排除するため NOP とする
+                                // TODO: ログ
+                                continue;
+                            }
+                        }
+
+                        if (id == null)
+                        {
+                            // 相手方で id が特定できなかった場合のレスポンスやエラー通知
+                            // 何かの処理を行うことはしない。エラーが相手で発生したことを記録する。
+                            // TODO: ログ
+                            continue;
+                        }
+
+                        // 待ち合わせ中の要求があったら、応答データを登録する
+                        string idString = id.ToString();
+                        lock (this)
+                        {
+                            if (_waitingReplyEvent.ContainsKey(idString) == true)
+                            {
+                                _waitingReplyData.Add(idString, commonApiResponse);
+                                _waitingReplyEvent[idString].Signal();
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    // この段階でリクエスト電文なので method があるはず
+                    if (document.TryGetProperty("method", out JsonElement methodElement) == false)
+                    {
+                        // リクエストでもレスポンスでもない
+                        // TODO: 詳細エラーを返すようにする
+                        response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
+
+                        // このタイミングで例外が発生しうる。全体の try-catch で対応。
+                        await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                        continue;
+                    }
+
+                    // メソッド名の特定
+                    // JSON-RPC メソッド名の末尾を HTTP メソッドとして取り出し、
+                    // ドット結合をピリオド結合にし、ルート記号を付加する
+                    string jsonrpcMethod = methodElement.GetString();
+                    string upperJsonrpcMethod = jsonrpcMethod.ToUpper();
+                    CommonApiMethods method = CommonApiMethods.UNKNOWN;
+                    string path = string.Empty;
+                    foreach (string methodEnum in Enum.GetNames(typeof(CommonApiMethods)))
+                    {
+                        if (upperJsonrpcMethod.EndsWith("." + methodEnum) == true)
+                        {
+                            method = (CommonApiMethods)Enum.Parse(typeof(CommonApiMethods), methodEnum);
+                            path = "/" + jsonrpcMethod.Substring(0, jsonrpcMethod.Length - methodEnum.Length - 1).Replace('.', '/');
+                            break;
+                        }
+                    }
+
+                    // HTTP メソッド名で終わっていない JSON-RPC メソッド名は、エラーとして扱う
+                    if (method == CommonApiMethods.UNKNOWN)
+                    {
+                        // TODO: 詳細エラーを返すようにする
+                        response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.MethodNotFound], Message = CommonApiArgs.Errors.MethodNotFound.ToString() } };
+
+                        // このタイミングで例外が発生しうる。全体の try-catch で対応。
+                        await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
+                        continue;
+                    }
+
+                    object paramsValue = null;
+                    if (document.TryGetProperty("params", out JsonElement paramsElement) == true)
+                    {
+                        paramsValue = paramsElement.ToString();
+                    }
+
+                    CommonApiArgs apiArgs =
+                        new CommonApiArgs(id, method, path, (string)paramsValue);
+
+                    OnRequest(apiArgs);
+
+                    if (apiArgs.Error == CommonApiArgs.Errors.None)
+                    {
+                        if (apiArgs.Identifier != null)
+                        {
+                            // id が設定されている場合のレスポンス
+                            response = new JsonRpcNormalResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
+                        }
+                        else
+                        {
+                            // id が設定されていない場合は、notify。
+                            // 正常終了の場合は、返送不要。
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
+                        if (ErrorsToCode.ContainsKey(apiArgs.Error) == true)
+                        {
+                            code = ErrorsToCode[apiArgs.Error];
+                        }
+
+                        Error error;
+                        if (apiArgs.ErrorDetails != null)
+                        {
+                            error = new ErrorWithData() { Data = apiArgs.ErrorDetails };
+                        }
+                        else
+                        {
+                            error = new Error();
+                        }
+                        error.Code = code;
+                        error.Message = apiArgs.ErrorMessage;
+
+                        if (apiArgs.ErrorDetails != null)
+                        {
+                            response = new JsonRpcErrorResponseWithData() { Id = apiArgs.Identifier, Error = error as ErrorWithData };
+                        }
+                        else
+                        {
+                            response = new JsonRpcErrorResponse() { Id = apiArgs.Identifier, Error = error };
+                        }
+                    }
+
+                    // このタイミングで例外が発生しうる。全体の try-catch で対応。
                     await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
-                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("WebSocketService_WebSocketRecieveTextImpl Exception: {0}", ex.ToString());
                 }
             }
-
-
-            // result か error があったら応答電文
-
-            bool isResult = document.TryGetProperty("result", out JsonElement resultElement);
-
-            bool isError = document.TryGetProperty("error", out JsonElement errorElement);
-
-            if ((isResult == true) || (isError == true))
-            {
-                // 応答電文の処理
-
-                CommonApiResponse commonApiResponse = new CommonApiResponse();
-
-                if (isResult == true)
-                {
-                    commonApiResponse.ResponseBody = resultElement.ToString();
-                    commonApiResponse.IsSuccess = true;
-                }
-                
-                if (isError == true)
-                {
-                    try
-                    {
-                        // error: null の場合は例外処理にまかせる
-                        commonApiResponse.Error = System.Text.Json.JsonSerializer.Deserialize<ErrorWithData>(errorElement.ToString());
-                    }
-                    catch
-                    {
-                        // Errorのパース失敗
-                        // レスポンスに対して発生したエラーの返送は規約には規定がない。無限ループの危険性を排除するため NOP とする
-                        // TODO: ログ
-                        return;
-                    }
-                }
-
-                if (id == null)
-                {
-                    // 相手方で id が特定できなかった場合のレスポンスやエラー通知
-                    // 何かの処理を行うことはしない。エラーが相手で発生したことを記録する。
-                    // TODO: ログ
-                    return;
-                }
-
-                // 待ち合わせ中の要求があったら、応答データを登録する
-                string idString = id.ToString();
-                lock (this)
-                {
-                    if (_waitingReplyEvent.ContainsKey(idString) == true)
-                    {
-                        _waitingReplyData.Add(idString, commonApiResponse);
-                        _waitingReplyEvent[idString].Signal();
-                    }
-                }
-
-                return;
-            }
-
-            // この段階でリクエスト電文なので method があるはず
-            if (document.TryGetProperty("method", out JsonElement methodElement) == false)
-            {
-                // リクエストでもレスポンスでもない
-                // TODO: 詳細エラーを返すようにする
-                response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.InternalError], Message = CommonApiArgs.Errors.InternalError.ToString() } };
-                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
-                return;
-            }
-
-            // メソッド名の特定
-            // JSON-RPC メソッド名の末尾を HTTP メソッドとして取り出し、
-            // ドット結合をピリオド結合にし、ルート記号を付加する
-            string jsonrpcMethod = methodElement.GetString();
-            string upperJsonrpcMethod = jsonrpcMethod.ToUpper();
-            CommonApiMethods method = CommonApiMethods.UNKNOWN;
-            string path = string.Empty;
-            foreach (string methodEnum in Enum.GetNames(typeof(CommonApiMethods)))
-            {
-                if (upperJsonrpcMethod.EndsWith("." + methodEnum) == true)
-                {
-                    method = (CommonApiMethods)Enum.Parse(typeof(CommonApiMethods), methodEnum);
-                    path = "/" + jsonrpcMethod.Substring(0, jsonrpcMethod.Length - methodEnum.Length - 1).Replace('.', '/');
-                    break;
-                }
-            }
-
-            // HTTP メソッド名で終わっていない JSON-RPC メソッド名は、エラーとして扱う
-            if (method == CommonApiMethods.UNKNOWN)
-            {
-                // TODO: 詳細エラーを返すようにする
-                response = new JsonRpcErrorResponse() { Id = id, Error = new Error() { Code = ErrorsToCode[CommonApiArgs.Errors.MethodNotFound], Message = CommonApiArgs.Errors.MethodNotFound.ToString() } };
-                // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-                await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
-                return;
-            }
-
-            object paramsValue = null;
-            if (document.TryGetProperty("params", out JsonElement paramsElement) == true)
-            {
-                paramsValue = paramsElement.ToString();
-            }
-
-            CommonApiArgs apiArgs =
-                new CommonApiArgs(id, method, path, (string)paramsValue);
-
-            OnRequest(apiArgs);
-
-            if (apiArgs.Error == CommonApiArgs.Errors.None)
-            {
-                if (apiArgs.Identifier != null)
-                {
-                    // id が設定されている場合のレスポンス
-                    response = new JsonRpcNormalResponse() { Id = apiArgs.Identifier, Result = apiArgs.ResponseBody };
-                }
-                else
-                {
-                    // id が設定されていない場合は、notify。
-                    // 正常終了の場合は、返送不要。エラーの場合は id = null でエラーを返す。
-                    return;
-                }
-            }
-            else
-            {
-                int code = ErrorsToCode[CommonApiArgs.Errors.InternalError];
-                if (ErrorsToCode.ContainsKey(apiArgs.Error) == true)
-                {
-                    code = ErrorsToCode[apiArgs.Error];
-                }
-
-                Error error;
-                if (apiArgs.ErrorDetails != null)
-                {
-                    error = new ErrorWithData() { Data = apiArgs.ErrorDetails };
-                }
-                else
-                {
-                    error = new Error();
-                }
-                error.Code = code;
-                error.Message = apiArgs.ErrorMessage;
-
-                if (apiArgs.ErrorDetails != null)
-                {
-                    response = new JsonRpcErrorResponseWithData() { Id = apiArgs.Identifier, Error = error as ErrorWithData };
-                }
-                else
-                {
-                    response = new JsonRpcErrorResponse() { Id = apiArgs.Identifier, Error = error };
-                }
-            }
-
-            // TODO: このタイミングで例外が発生しうる。その場合は何もできないので、ここで握りつぶす。
-            await webSocketBase.SendJsonAsync(e.WebSocketIdentify, response);
         }
 
         private void HttpService_HttpRequest(object sender, HttpRequestEventArgs e)
@@ -783,7 +812,7 @@ namespace Hondarersoft.WebInterface
                     {
                         // json
                         e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_JSON;
-                            responseContent = System.Text.Json.JsonSerializer.Serialize(error);
+                        responseContent = System.Text.Json.JsonSerializer.Serialize(error);
                     }
                 }
 
@@ -823,7 +852,7 @@ namespace Hondarersoft.WebInterface
 
         public virtual void OnRequest(CommonApiArgs apiArgs)
         {
-            _logger.LogInformation("OnRequest START: {0}", System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>() 
+            _logger.LogInformation("OnRequest START: {0}", System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>()
             {
                 { "Identifier",apiArgs.Identifier },
                 { "Method",apiArgs.Method.ToString() },

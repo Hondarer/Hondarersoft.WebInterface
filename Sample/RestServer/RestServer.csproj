@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -23,13 +23,13 @@
 
   <ItemGroup>
     <PackageReference Include="Hondarersoft.Hosting" Version="1.0.2" />
-    <PackageReference Include="Hondarersoft.WebInterface.Swagger" Version="1.0.6" />
+    <PackageReference Include="Hondarersoft.WebInterface.Swagger" Version="1.0.8" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Hondarersoft.WebInterface.Sample\Hondarersoft.WebInterface.Sample.csproj" />
-  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(SolutionDir)\Sample\Hondarersoft.WebInterface.Sample\bin\$(ConfigurationName)\netstandard2.1\Hondarersoft.WebInterface.Sample.* $(OutDir)\." />
+  </Target>
 
 </Project>

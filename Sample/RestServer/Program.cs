@@ -67,7 +67,7 @@ namespace RestServer
                 loggingBuilder.SetMinimumLevel(LogLevel.Information);
 
                 // Console ロガーの追加
-                loggingBuilder.AddConsole(configure =>
+                loggingBuilder.AddSimpleConsole(configure =>
                 {
                     configure.TimestampFormat = "[HH:mm:ss.fff] ";
                 });
@@ -81,7 +81,7 @@ namespace RestServer
             {
                 // 基本のサービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
-                services.AddTransient<IHttpService, Hondarersoft.WebInterface.HttpService>();
+                services.AddTransient<IHttpService, HttpService>();
                 services.AddTransient<ISwaggerServerService, SwaggerServerService>();
                 services.AddSingleton<ICommonApiService, CommonApiService>();
 

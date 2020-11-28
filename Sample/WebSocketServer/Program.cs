@@ -70,7 +70,7 @@ namespace WebSocketServer
                 loggingBuilder.SetMinimumLevel(LogLevel.Information);
 
                 // Console ロガーの追加
-                loggingBuilder.AddConsole(configure =>
+                loggingBuilder.AddSimpleConsole(configure =>
                 {
                     configure.TimestampFormat = "[HH:mm:ss.fff] ";
                 });
@@ -84,7 +84,7 @@ namespace WebSocketServer
             {
                 // サービス処理の紐づけ(AddTransient, AddSingleton)
                 services.AddSingleton<IExitService, ExitService>();
-                services.AddTransient<IWebSocketService, Hondarersoft.WebInterface.WebSocketService>();
+                services.AddTransient<IWebSocketService, WebSocketService>();
                 services.AddSingleton<ICommonApiService, CommonApiService>();
 
                 // コントローラーの動作に必要となる追加のサービス処理の紐づけ

@@ -22,7 +22,7 @@
 
     "CommonApiControllers": [
         {
-            "AssemblyName": "Hondarersoft.WebInterface.Sample",
+            "AssemblyName": "Hondarersoft.WebInterface.Sample.dll",
             "ClassFullName": "Hondarersoft.WebInterface.Sample.Controllers.CpuModesController",
             "IsSingleton": true
         }
