@@ -699,7 +699,7 @@ namespace Hondarersoft.WebInterface
 
                             // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
                             if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
-                                ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml"))))
+                                ((e.HttpListenerContext.Request.AcceptTypes != null) && ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml")))))
                             {
                                 // xml
                                 e.HttpListenerContext.Response.ContentType = CONTENT_TYPE_XML;
@@ -767,7 +767,7 @@ namespace Hondarersoft.WebInterface
 
                         // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
                         if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
-                            ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml"))))
+                            ((e.HttpListenerContext.Request.AcceptTypes != null) && ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml")))))
                         {
                             // xml
                             RestErrorResponse restErrorResponse = new RestErrorResponse() { Error = error };
@@ -800,7 +800,7 @@ namespace Hondarersoft.WebInterface
 
                     // Excel か、xml しか処理できない相手には XML を返す。(Excel からの要求は、AcceptType 未指定のため本判定が必要)
                     if (((e.HttpListenerContext.Request.UserAgent != null) && (e.HttpListenerContext.Request.UserAgent.StartsWith("Excel/") == true)) ||
-                        ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml"))))
+                        ((e.HttpListenerContext.Request.AcceptTypes != null) && ((e.HttpListenerContext.Request.AcceptTypes.Length == 1) && ((e.HttpListenerContext.Request.AcceptTypes.First() == "text/xml") || (e.HttpListenerContext.Request.AcceptTypes.First() == "application/xml")))))
                     {
                         // xml
                         RestErrorResponse restErrorResponse = new RestErrorResponse() { Error = error };
