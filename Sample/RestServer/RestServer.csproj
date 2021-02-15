@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Hondarersoft.Hosting" Version="1.0.3" />
-    <PackageReference Include="Hondarersoft.WebInterface.Swagger" Version="1.0.8" />
+    <PackageReference Include="Hondarersoft.WebInterface.Swagger" Version="1.0.10" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
   </ItemGroup>

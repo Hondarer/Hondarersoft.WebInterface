@@ -9,7 +9,7 @@
     <Copyright>2020 Tetsuo Honda</Copyright>
     <RepositoryUrl>https://github.com/Hondarer/Hondarersoft.WebInterface</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.9</Version>
+    <Version>1.0.10</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hondarersoft.WebInterface" Version="1.0.9" />
+    <PackageReference Include="Hondarersoft.WebInterface" Version="1.0.10" />
   </ItemGroup>
 
 </Project>
