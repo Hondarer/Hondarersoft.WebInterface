@@ -196,7 +196,7 @@ namespace Hondarersoft.WebInterface
                         return response;
                     }
 
-                    response.ResponseBody = result;
+                    response.ResponseBody = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(result)["result"].ToString();
                     response.IsSuccess = true;
                 }
                 else
@@ -336,7 +336,7 @@ namespace Hondarersoft.WebInterface
             {
                 try
                 {
-                    response.ResponseBody = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string,T>>(response.ResponseBody.ToString())["result"];
+                    response.ResponseBody = System.Text.Json.JsonSerializer.Deserialize<T>(response.ResponseBody.ToString());
                 }
                 catch
                 {
